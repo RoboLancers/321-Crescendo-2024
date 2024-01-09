@@ -1,6 +1,8 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2024.1.1"
+    id 'com.diffplug.spotless' version '6.12.0'
+    id "com.peterabeles.gversion" version "1.10"
 }
 
 java {
@@ -8,7 +10,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-def ROBOT_MAIN_CLASS = "frc.robot.Main"
+def ROBOT_MAIN_CLASS = "org.robolancers321.Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -47,8 +49,6 @@ wpi.java.debugJni = false
 // Set this to true to enable desktop support.
 def includeDesktopSupport = false
 
-// Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
-// Also defines JUnit 5.
 dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
@@ -98,4 +98,70 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+
+spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        toggleOffOn()
+        googleJavaFormat().reflowLongStrings()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        licenseHeader '/* (C) Robolancers 2024 */'
+    }
+    kotlin {
+        // by default the target is every '.kt' and '.kts` file in the java sourcesets
+        target fileTree(".") {
+            include "**/*.kt"
+            exclude "**/BuildConstants.kt", "**/build/**", "src/main/kotlin/com/team4099/lib/sim/**"
+        }
+        ktfmt()
+        ktlint().userData(['max_line_length': '120', 'insert_final_newline': 'true', 'indent_size': '2', 'continuation_indent_size': '2'])
+
+        licenseHeader '/* (C) Robolancers 2024 */'
+    }
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        greclipse()
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format 'xml', {
+        target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        eclipseWtp('xml')
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+    format 'misc', {
+        target fileTree('.') {
+            include '**/*.md', '**/.gitignore'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+}
+
+project.compileJava.dependsOn(createVersionFile)
+gversion {
+    srcDir       = "src/main/java/"
+    classPackage = "org.robolancers321"
+    className    = "BuildConstants"
+    dateFormat   = "yyyy-MM-dd HH:mm:ss z"
+    timeZone     = "America/New_York" // Use preferred time zone
+    indent       = "  "
 }
