@@ -9,19 +9,20 @@ import edu.wpi.first.wpilibj.util.Color;
 import java.util.List;
 
 /*
-  99.9% of this class is written by FRC Team 6328 Mechanical Advantage, huge thanks to them
+  99.9% of this class is written by FRC Team 6328 Mechanical Advantage, huge thanks to them - Vincent Z
+  Yeah your led thingy was too good to not steal thank you for making it - Alex T
  */
 
-public class Leds extends VirtualSubsystem{
+public class LEDs extends VirtualSubsystem{
     public static final int kLEDPWMPort = 0;
-    public static final int kLEDStripLength = 69;
+    public static final int kLEDStripLength = 20;
     private static final double breathDuration = 1.0;
     private static final double waveExponent = 0.4;
 
     private final AddressableLED ledStrip;
     private final AddressableLEDBuffer ledBuffer;
 
-    public Leds() {
+    public LEDs() {
         this.ledStrip = new AddressableLED(kLEDPWMPort);
 
         this.ledBuffer = new AddressableLEDBuffer(kLEDStripLength);
@@ -119,6 +120,7 @@ public class Leds extends VirtualSubsystem{
 
     @Override
     public void periodic() {
-        // TODO Auto-generated method stub
+        solid(Section.FULL, Color.kRed);
+        ledStrip.setData(ledBuffer);
     }
 }
