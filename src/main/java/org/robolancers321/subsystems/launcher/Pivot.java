@@ -9,6 +9,7 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -141,8 +142,8 @@ public class Pivot extends SubsystemBase {
   }
 
   private void useController(){
-    // TODO: docs are not specific as to units of measurement for velocity
-    double feedforwardOutput = this.feedforwardController.calculate(this.getPositionRad(), this.getVelocityRad());
+    State setpointState = this.feedbackController.getSetpoint();
+    double feedforwardOutput = this.feedforwardController.calculate(setpointState.position, setpointState.velocity);
 
     double feedbackOutput = this.feedbackController.calculate(this.getPositionDeg());
 
