@@ -2,166 +2,150 @@
 package org.robolancers321.subsystems.launcher;
 
 import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
-import static org.robolancers321.util.TunableSet.Tunable.tune;
+
+import java.util.function.DoubleSupplier;
 
 import com.revrobotics.*;
-import edu.wpi.first.math.MathUtil;
+import com.revrobotics.CANSparkBase.ControlType;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.robolancers321.util.TunableSet;
 
 public class Indexer extends SubsystemBase {
-  private static Indexer INSTANCE;
+  /*
+   * Singleton
+   */
 
+  private static Indexer instance;
   public static Indexer getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new Indexer();
-    }
-    return INSTANCE;
+    if (instance == null) instance = new Indexer();
+
+    return instance;
   }
 
-  /* Constants */
-  public static final String tunablePrefix = "Tune Indexer";
-  public boolean tuning = false;
+  /*
+   * Constants
+   */
 
-  private final TunableSet tuner = new TunableSet("Indexer");
-  private static int kDeviceID = 0;
+  private static final int kMotorPort = 0;
+  private static final int kBeamBreakPort = 0;
 
-  private static int kCurrentLimit = 0;
+  private static final boolean kInvertMotor = false;
+  private static final int kCurrentLimit = 20;
 
-  private static double kWheelCircumference = 0;
+  private static final double kP = 0;
+  private static final double kI = 0;
+  private static final double kD = 0;
+  private static final double kFF = 0;
 
-  private static boolean kInverted = false;
-  private static double kP = 0;
+  private static final double kMaxRPM = 5700;
+  private static final double kIntakeSpeedRPM = 500;
+  private static final double kOuttakeSpeedRPM = -500;
+  
+  /*
+   * Implementation
+   */
 
-  private static double kI = 0;
+  private CANSparkMax motor;
+  private SparkPIDController controller;
+  private RelativeEncoder encoder;
 
-  private static double kD = 0;
-
-  private static double kFF = 0;
-
-  private static int kBBC = 0;
-
-  private static double kMinOutput = -1;
-
-  private static double kMaxOutput = 1;
-
-  private static double kMaxRPM = 5700;
-  private double desiredVelocity;
-  /*Indexer Motor*/
-  private static CANSparkMax m_indexerMotor;
-
-  private static SparkPIDController m_pidController;
-
-  private static AbsoluteEncoder m_absoluteEncoder;
-
-  private static DigitalInput bb = new DigitalInput(kBBC);
+  private DigitalInput beamBreak;
 
   private Indexer() {
-    m_indexerMotor = new CANSparkMax(kDeviceID, kBrushless);
+    this.motor = new CANSparkMax(kMotorPort, kBrushless);
+    this.encoder = this.motor.getEncoder();
+    this.controller = this.motor.getPIDController();
 
-    configureMotor();
+    this.beamBreak = new DigitalInput(kBeamBreakPort);
 
-    m_pidController = m_indexerMotor.getPIDController();
-
-    m_absoluteEncoder = m_indexerMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-
-    m_absoluteEncoder.setVelocityConversionFactor(kWheelCircumference);
+    this.configureMotor();
+    this.configureEncoder();
+    this.configureController();
   }
 
   private void configureMotor() {
-    m_indexerMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    m_indexerMotor.setSmartCurrentLimit(kCurrentLimit);
-    m_pidController.setOutputRange(kMinOutput, kMaxOutput);
-
-    configureMotorValues();
+    this.motor.setInverted(kInvertMotor);
+    this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    this.motor.setSmartCurrentLimit(kCurrentLimit);
+    this.motor.enableVoltageCompensation(12);
   }
 
-  private void configureMotorValues() {
-    m_indexerMotor.setInverted(kInverted);
-    m_absoluteEncoder.setInverted(kInverted);
-
-    m_pidController.setP(kP);
-    m_pidController.setI(kI);
-    m_pidController.setD(kD);
-    m_pidController.setFF(kFF);
+  private void configureEncoder(){
+    this.encoder.setInverted(kInvertMotor);
   }
 
-  private void setTunables() {
-    // using static tune to avoid double prefix
-    tuning = tune(tunablePrefix, tuning);
+  private void configureController() {
+    this.controller.setP(kP);
+    this.controller.setI(kI);
+    this.controller.setD(kD);
+    this.controller.setFF(kFF);
+  }
 
-    if (tuning) {
-      // Changing constant values, this does not matter as the constructor is run once with the
-      // initial values
-      kP = tuner.tune("kP", kP);
-      kI = tuner.tune("kI", kI);
-      kD = tuner.tune("kD", kD);
-      kFF = tuner.tune("kFF", kFF);
+  public double getIntakeVelocityRPM() {
+    return this.encoder.getVelocity();
+  }
 
-      kInverted = tuner.tune("motor inverted", kInverted);
+  public boolean jawnDetected() {
+    return this.beamBreak.get();
+  }
 
-      // reset all the tunables
+  public void dangerouslySetRPM(double rpm) {
+    this.motor.set(rpm / kMaxRPM);
+  }
 
-      configureMotorValues();
-    }
+  public void dangerouslySetSpeed(double speed) {
+    this.motor.set(speed);
+  }
+
+  public void intakeJawn() {
+    this.controller.setReference(kIntakeSpeedRPM, ControlType.kVelocity);
+  }
+
+  public void outtakeJawn() {
+    this.controller.setReference(kOuttakeSpeedRPM, ControlType.kVelocity);
+  }
+
+  public void stopSpinningJawn() {
+    this.controller.setReference(0.0, ControlType.kVelocity);
+  }
+
+  public Command manualIndex(DoubleSupplier appliedSpeedSupplier) {
+    return run(() -> dangerouslySetSpeed(appliedSpeedSupplier.getAsDouble()));
+  }
+
+  public Command manualIndex(double appliedSpeed) {
+    return this.manualIndex(() -> appliedSpeed);
+  }
+
+  private void doSendables() {
+    SmartDashboard.putNumber("Indexer Velocity (rpm)", this.getIntakeVelocityRPM());
+    SmartDashboard.putBoolean("Note Detected", this.jawnDetected());
   }
 
   @Override
   public void periodic() {
-    setTunables();
-    doSendables();
+    this.doSendables();
   }
 
-  public void setDesiredVelocity(double desiredVelocity) {
-    this.desiredVelocity = desiredVelocity;
+  public void initTuning(){
+    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kp", kP));
+    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer ki", kI));
+    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kd", kD));
+    SmartDashboard.putNumber("indexer kff", SmartDashboard.getNumber("indexer kff", kFF));
   }
 
-  public double getDesiredVelocity() {
-    return this.desiredVelocity;
-  }
-
-  public void setSpeedRPM(double rpm) {
-    m_indexerMotor.set(Math.signum(rpm) * (Math.abs(rpm) / kMaxRPM));
-  }
-
-  public void setSpeed(double speed) {
-
-    m_indexerMotor.set(MathUtil.clamp(speed, -1, 1));
-  }
-
-  public void intakeJawn() {
-    m_pidController.setReference(this.desiredVelocity, CANSparkBase.ControlType.kVelocity);
-  }
-  // Probably not needed but nice to have
-  public void outtakeJawn() {
-    m_pidController.setReference(-this.desiredVelocity, CANSparkBase.ControlType.kVelocity);
-  }
-
-  public void stopSpinningJawn() {
-    m_pidController.setReference(0.0, CANSparkBase.ControlType.kVelocity);
-  }
-
-  public boolean noteDetected() {
-    return bb.get();
-  }
-
-  public double getIntakeVelocity() {
-    return m_absoluteEncoder.getVelocity();
-  }
-
-  public Command manualIndex(double appliedSpeed) {
-    return run(() -> setSpeed(appliedSpeed));
-  }
-
-  private void doSendables() {
-    SmartDashboard.putNumber("Indexer velocity", getIntakeVelocity());
-    SmartDashboard.putNumber("Indexer set speed", m_indexerMotor.get());
-    SmartDashboard.putNumber("Indexer voltage", m_indexerMotor.getBusVoltage());
-    SmartDashboard.putNumber("Indexer amperage", m_indexerMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Indexer motor temp", m_indexerMotor.getMotorTemperature());
-    SmartDashboard.putBoolean("Note detected", noteDetected());
+  public void tune(){
+    double tunedP = SmartDashboard.getNumber("indexer kp", kP);
+    double tunedI = SmartDashboard.getNumber("indexer ki", kI);
+    double tunedD = SmartDashboard.getNumber("indexer kd", kD);
+    double tunedFF = SmartDashboard.getNumber("indexer kff", kFF);
+    
+    this.controller.setP(tunedP);
+    this.controller.setI(tunedI);
+    this.controller.setD(tunedD);
+    this.controller.setFF(tunedFF);
   }
 }
