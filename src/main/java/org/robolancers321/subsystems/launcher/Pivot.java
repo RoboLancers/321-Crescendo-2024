@@ -1,74 +1,63 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.launcher;
 
-import static org.robolancers321.util.TunableSet.Tunable.tune;
+import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
-import org.robolancers321.util.TunableSet;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Pivot extends ProfiledPIDSubsystem {
+public class Pivot extends SubsystemBase {
+  /*
+   * Singleton
+   */
 
-  private static class PivotFeedForward {
-    private double kG;
-
-    private PivotFeedForward(double kG) {
-      this.kG = kG;
-    }
-
-    public void setkG(double kG) {
-      this.kG = kG;
-    }
-
-    // setpoint is in degrees
-    public double calculate(double setpoint) {
-      return kG * Math.cos(setpoint);
-    }
-  }
-
-  private static Pivot INSTANCE;
+  private static Pivot instance;
 
   public static Pivot getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new Pivot();
-    }
-    return INSTANCE;
+    if (instance == null) instance = new Pivot();
+
+    return instance;
   }
+  
+  /*
+   * Constants
+   */
 
-  /* Constants */
+  private static final int kMotorPort = 0;
 
-  private static String tunablePrefix = "Tune Pivot";
+  private static final boolean kInvertMotor = false;
+  private static final boolean kInvertEncoder = false;
+  private static final int kCurrentLimit = 40;
 
-  private static boolean tuning = false;
+  private static final double kGearRatio = 360.0;
+  private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
-  private static TunableSet tuner = new TunableSet("Pivot");
-  private static double kP = 0.0;
+  private static final float kMinAngle = 0.0f;
+  private static final float kMaxAngle = 270.0f;
 
-  private static double kI = 0.0;
+  private static final double kS = 0.0;
+  private static final double kG = 0.0;
+  private static final double kV = 0.0;
 
-  private static double kD = 0.0;
+  private static final double kP = 0.0;
+  private static final double kI = 0.0;
+  private static final double kD = 0.0;
+  private static final double kMaxVelocityDeg = 0.0;
+  private static final double kMaxAccelerationDeg = 0.0;
 
-  private static double kG = 0.0;
+  private static final double kToleranceDeg = 0.0;
 
-  private static double kMaxAngle = 270;
-
-  private static double kMinAngle = 0.0;
-  private static final int kCurrentLimit = 0;
-
-  private static final int kNominalVoltage = 12;
-
-  private static final double kDegreesPerRot = 360;
-
-  private static final double kTolerance = 0.0;
-
-  private static int kDeviceID = 0;
-
-  public enum PivotSetpoint {
-    SPEAKER(0.0),
-    AMP(0.0);
+  private static enum PivotSetpoint {
+    kRetracted(0.0),
+    kMating(0.0),
+    kSpeaker(0.0),
+    kAmp(0.0);
 
     private double angle;
 
@@ -80,105 +69,123 @@ public class Pivot extends ProfiledPIDSubsystem {
       return this.angle;
     }
   }
+  
+  /*
+   * Implementation
+   */
 
-  private static double kMaxVelocity = 0.0;
-
-  private static double kMaxAcceleration = 0.0;
-
-  private static PivotFeedForward pivotFF;
-
-  private static CANSparkMax m_pivotMotor;
-
-  private static AbsoluteEncoder m_absoluteEncoder;
+  private CANSparkMax motor;
+  private AbsoluteEncoder absoluteEncoder;
+  private ArmFeedforward feedforwardController;
+  private ProfiledPIDController feedbackController;
 
   private Pivot() {
-    // TODO: Determine real PID values needed and configure them here
-    //       as well as the TrapezoidProfile 'maxVelocity' & 'maxAcceleration' constraints
-    super(
-        new ProfiledPIDController(
-            kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration)));
+    this.motor = new CANSparkMax(kMotorPort, kBrushless);
+    this.absoluteEncoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
+    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
+    this.feedbackController = new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg));
 
-    pivotFF = new PivotFeedForward(kG);
-
-    m_pivotMotor = new CANSparkMax(kDeviceID, CANSparkLowLevel.MotorType.kBrushless);
-
-    m_absoluteEncoder = m_pivotMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-
-    m_absoluteEncoder.setPositionConversionFactor(kDegreesPerRot);
-
-    configureMotor();
+    this.configureMotor();
+    this.configureEncoder();
+    this.configureController();
   }
 
   private void configureMotor() {
-    m_pivotMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    m_pivotMotor.setSmartCurrentLimit(kCurrentLimit);
-    m_pivotMotor.enableVoltageCompensation(kNominalVoltage);
-    m_pivotMotor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
-    m_pivotMotor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
-    m_pivotMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
-    m_pivotMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
+    this.motor.setInverted(kInvertMotor);
+    this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    this.motor.setSmartCurrentLimit(kCurrentLimit);
+    this.motor.enableVoltageCompensation(12);
 
-    super.m_controller.setTolerance(kTolerance);
-    super.m_controller.enableContinuousInput(kMinAngle, kMinAngle);
+    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
+    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
+    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
+    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
   }
 
-  // used for tuning
-  private void configureMotorValues() {
-    super.m_controller.setPID(kP, kI, kD);
-    pivotFF.setkG(kG);
+  private void configureEncoder(){
+    this.absoluteEncoder.setInverted(kInvertEncoder);
+    this.absoluteEncoder.setPositionConversionFactor(kGearRatio);
+    this.absoluteEncoder.setVelocityConversionFactor(kRotPerMinToDegPerSec);
   }
 
-  private void setTunables() {
-    tuning = tune(tunablePrefix, tuning);
+  private void configureController(){
+    this.feedbackController.setTolerance(kToleranceDeg);
+  }
 
-    if (tuning) {
-      kP = tuner.tune("kP", kP);
-      kI = tuner.tune("kI", kI);
-      kD = tuner.tune("kD", kD);
-      kG = tuner.tune("kG", kG);
+  public double getPositionDeg(){
+    return this.absoluteEncoder.getPosition();
+  }
 
-      kMaxAcceleration = tuner.tune("kMaxAcceleration", kMaxAcceleration);
-      kMaxVelocity = tuner.tune("kMaxVelocity", kMaxVelocity);
+  public double getPositionRad(){
+    return this.getPositionDeg() * Math.PI / 180.0;
+  }
 
-      configureMotorValues();
+  public double getVelocityDeg(){
+    return this.absoluteEncoder.getVelocity();
+  }
+
+  public double getVelocityRad(){
+    return this.getVelocityDeg() * Math.PI / 180.0;
+  }
+
+  private boolean atGoal(){
+    return this.feedbackController.atGoal();
+  }
+
+  private void setGoal(double goal){
+    this.feedbackController.setGoal(new TrapezoidProfile.State(goal, 0.0));
+  }
+
+  private void setGoal(PivotSetpoint goal){
+    this.setGoal(goal.getAngle());
+  }
+
+  private void useController(){
+    // TODO: docs are not specific as to units of measurement for velocity
+    double feedforwardOutput = this.feedforwardController.calculate(this.getPositionRad(), this.getVelocityRad());
+
+    double feedbackOutput = this.feedbackController.calculate(this.getPositionDeg());
+
+    double controllerOutput = feedforwardOutput + feedbackOutput;
+
+    this.motor.setVoltage(controllerOutput);
+  }
+
+  public void doSendables(){
+    SmartDashboard.putBoolean("Pivot At Goal", this.atGoal());
+    SmartDashboard.putNumber("Pivot Position (deg)", this.getPositionDeg());
+  }
+
+  @Override
+  public void periodic(){
+    this.useController();
+    this.doSendables();
+  }
+
+  public void initTuning(){
+    SmartDashboard.putNumber("pivot ks", SmartDashboard.getNumber("pivot ks", kS));
+    SmartDashboard.putNumber("pivot kg", SmartDashboard.getNumber("pivot kg", kG));
+    SmartDashboard.putNumber("pivot kv", SmartDashboard.getNumber("pivot kv", kV));
+
+    SmartDashboard.putNumber("pivot kp", SmartDashboard.getNumber("pivot kp", kP));
+    SmartDashboard.putNumber("pivot ki", SmartDashboard.getNumber("pivot ki", kI));
+    SmartDashboard.putNumber("pivot kd", SmartDashboard.getNumber("pivot kd", kD));
+  }
+
+  public void tune(){
+    double tunedS = SmartDashboard.getNumber("pivot ks", kS);
+    double tunedG = SmartDashboard.getNumber("pivot kg", kG);
+    double tunedV = SmartDashboard.getNumber("pivot kv", kV);
+
+    // TODO: is there a better way to update this?
+    if(tunedS != this.feedforwardController.ks || tunedG != this.feedforwardController.kg || tunedV != this.feedforwardController.kv){
+      this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
     }
-  }
 
-  public void setAngleGoal(PivotSetpoint goal) {
-    super.setGoal(new TrapezoidProfile.State(goal.getAngle(), 0));
-  }
+    double tunedP = SmartDashboard.getNumber("pivot kp", kP);
+    double tunedI = SmartDashboard.getNumber("pivot ki", kI);
+    double tunedD = SmartDashboard.getNumber("pivot kd", kD);
 
-  public void setAngleGoal(double goal) {
-    super.setGoal(new TrapezoidProfile.State(goal, 0));
-  }
-
-  @Override
-  public void periodic() {
-    setTunables();
-    doSendables();
-  }
-
-  @Override
-  public double getMeasurement() {
-
-    return m_absoluteEncoder.getPosition();
-  }
-
-  @Override
-  protected void useOutput(double output, TrapezoidProfile.State setpoint) {
-
-    m_pivotMotor.setVoltage(output + pivotFF.calculate(setpoint.position));
-  }
-
-  public boolean atSetpoint() {
-    return super.m_controller.atSetpoint();
-  }
-
-  public void doSendables() {
-    SmartDashboard.putBoolean("Pivot at setpoint", atSetpoint());
-    SmartDashboard.putNumber("Pivot position", getMeasurement());
-    SmartDashboard.putNumber("Pivot voltage", m_pivotMotor.getBusVoltage());
-    SmartDashboard.putNumber("Pivot amperage", m_pivotMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Pivot motor temp", m_pivotMotor.getMotorTemperature());
+    this.feedbackController.setPID(tunedP, tunedI, tunedD);
   }
 }
