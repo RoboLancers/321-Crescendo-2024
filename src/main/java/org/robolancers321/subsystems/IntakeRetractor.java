@@ -26,8 +26,8 @@ public class IntakeRetractor extends SubsystemBase {
     AbsoluteEncoder retractorEncoder1;
     RelativeEncoder retractorEncoder2;
 
-    public double referencePosition = 0;
-    public double retractPosition = 90;
+    public double extendedPosition = 90;
+    public double retractedPosition = 0;
 
     public static final double kP = 0.000;
     public static final double kI = 0.000;
@@ -36,6 +36,7 @@ public class IntakeRetractor extends SubsystemBase {
     public static final double kErrorThreshold = 2.0;
 
     public static final int kPort = 0;
+    public static final int kRetractorBeamBreakPort = 0;
     public static final int kRetractorLimitSwitch = 0;
     private static final Type kDutyCycle = null;
 
@@ -45,9 +46,9 @@ public class IntakeRetractor extends SubsystemBase {
     this.retractorEncoder1 = retractorMotor.getAbsoluteEncoder(kDutyCycle);
     this.retractorEncoder2 = retractorMotor.getEncoder();
     retractorPIDController = retractorMotor.getPIDController();
+    this.retractorBeamBreak = new DigitalInput(kRetractorBeamBreakPort);
     retractorLimitSwitch = new DigitalInput(0);
-    retractorBeamBreak = new DigitalInput(0);
-
+    
     this.retractorEncoder1.setPositionConversionFactor(1.0);
 
     retractorPIDController.setD(kD);
@@ -84,26 +85,28 @@ public class IntakeRetractor extends SubsystemBase {
 //     return !this.retractorLimitSwitch.get();
 // }
 
+public void retractedPosition() {
+  retractorEncoder2.setPosition(retractedPosition);
+}
 
-public void setRetractorPosition() {
-  retractorEncoder2.setPosition(retractPosition);
+public void extendRetractor() {
+  retractorEncoder2.setPosition(extendedPosition);
 }
 
 public double getRetractPosition() {
   return retractorEncoder2.getPosition();
 }
 
-public boolean isRetractorAtCorrectPos(double position) {
+public boolean RetractorAtCorrectPos(double position) {
   return Math.abs(this.getRetractPosition() - position) < kErrorThreshold;
-}
-    
+}    
 
 public void resetEncoder() {
   retractorEncoder2.setPosition(0);
 }
 
-  public boolean isBeamBroken() {
-    return !this.retractorBeamBreak.get();
-  }
+public boolean beamBroken() {
+  return !this.retractorBeamBreak.get();
+}
 
 }
