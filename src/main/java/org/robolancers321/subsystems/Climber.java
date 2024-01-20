@@ -2,11 +2,13 @@
 package org.robolancers321.subsystems;
 
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -37,6 +39,8 @@ public class Climber extends SubsystemBase {
   private static final boolean kRightClimberInverted = false;
 
   private static final int kCurrentLimit = 40;
+  private static final float kMaxSoftLimit = 1;
+  private static final float kMinSoftLimit = 0;
   private static final double kMetersPerRot = 1;
   private static final double kRPMToMPS = kMetersPerRot / 60.0;
 
@@ -89,11 +93,15 @@ public class Climber extends SubsystemBase {
     leftClimberMotor.setIdleMode(IdleMode.kBrake);
     leftClimberMotor.setSmartCurrentLimit(kCurrentLimit);
     leftClimberMotor.enableVoltageCompensation(12.0);
+    leftClimberMotor.setSoftLimit(SoftLimitDirection.kForward, kMaxSoftLimit);
+    leftClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, kMinSoftLimit);
 
     rightClimberMotor.setInverted(kRightClimberInverted);
     rightClimberMotor.setIdleMode(IdleMode.kBrake);
     rightClimberMotor.setSmartCurrentLimit(kCurrentLimit);
     rightClimberMotor.enableVoltageCompensation(12.0);
+    rightClimberMotor.setSoftLimit(SoftLimitDirection.kForward, kMaxSoftLimit);
+    rightClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, kMinSoftLimit);
 
     // leftClimberMotor.burnFlash();
     // rightClimberMotor.burnFlash();
@@ -161,6 +169,21 @@ public class Climber extends SubsystemBase {
 
   private void doSendables() {
     // TODO: log position, velocity, limit switch, controller output
+    // tried new naming convention from 6328 Mechanical Advantage
+
+    SmartDashboard.putNumber("Climber/Left/Position", getLeftClimberPosition());
+    SmartDashboard.putNumber("Climber/Left/Velocity", getLeftClimberVelocity());
+    SmartDashboard.putBoolean("Climber/Left/LimitSwitch", leftLimitSwitch.get());
+    SmartDashboard.putNumber("Climber/Left/MotorOutput", leftClimberMotor.getAppliedOutput());
+    SmartDashboard.putNumber(
+        "Climber/Left/PIDOutput", leftClimberPID.calculate(getLeftClimberPosition()));
+
+    SmartDashboard.putNumber("Climber/Right/Position", getRightClimberPosition());
+    SmartDashboard.putNumber("Climber/Right/Velocity", getRightClimberVelocity());
+    SmartDashboard.putBoolean("Climber/Right/LimitSwitch", rightLimitSwitch.get());
+    SmartDashboard.putNumber("Climber/Right/MotorOutput", rightClimberMotor.getAppliedOutput());
+    SmartDashboard.putNumber(
+        "Climber/Right/PIDOutput", rightClimberPID.calculate(getRightClimberPosition()));
   }
 
   @Override
