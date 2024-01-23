@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.robolancers321.util.TunableConstant;
 
 public class Climber extends SubsystemBase {
   /*
@@ -44,9 +45,9 @@ public class Climber extends SubsystemBase {
   private static final double kMetersPerRot = 1;
   private static final double kRPMToMPS = kMetersPerRot / 60.0;
 
-  private static final double kP = 0;
-  private static final double kI = 0;
-  private static final double kD = 0;
+  private static final TunableConstant kP = new TunableConstant("Climber/kP", 0);
+  private static final TunableConstant kI = new TunableConstant("Climber/kI", 0);
+  private static final TunableConstant kD = new TunableConstant("Climber/kD", 0);
 
   private static final double kErrorTolerance = 0.1;
 
@@ -76,8 +77,8 @@ public class Climber extends SubsystemBase {
     this.leftClimberEncoder = leftClimberMotor.getEncoder();
     this.rightClimberEncoder = rightClimberMotor.getEncoder();
 
-    this.leftClimberPID = new PIDController(kP, kI, kD);
-    this.rightClimberPID = new PIDController(kP, kI, kD);
+    this.leftClimberPID = new PIDController(kP.get(), kI.get(), kD.get());
+    this.rightClimberPID = new PIDController(kP.get(), kI.get(), kD.get());
 
     this.leftLimitSwitch = new DigitalInput(kLeftLimitSwitchPort);
     this.rightLimitSwitch = new DigitalInput(kRightLimitSwitchPort);
@@ -184,6 +185,11 @@ public class Climber extends SubsystemBase {
     SmartDashboard.putNumber("Climber/Right/MotorOutput", rightClimberMotor.getAppliedOutput());
     SmartDashboard.putNumber(
         "Climber/Right/PIDOutput", rightClimberPID.calculate(getRightClimberPosition()));
+  }
+
+  private void tuneClimbers() {
+    leftClimberPID.setPID(kP.get(), kI.get(), kD.get());
+    rightClimberPID.setPID(kP.get(), kI.get(), kD.get());
   }
 
   @Override
