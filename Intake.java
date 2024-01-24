@@ -32,12 +32,12 @@ public class Intake extends SubsystemBase {
     IntakePIDController.setFF(kFF);
   }
 
-  public Command on (double power) {
+  public Command on(double power) {
 
     return runOnce(() -> intakemotor.set(power));
   }
 
-  public Command off (double power) {
+  public Command off(double power) {
 
     return runOnce(() -> intakemotor.set(0));
   }
