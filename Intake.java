@@ -8,6 +8,4 @@ public class Intake extends SubsystemBase{
     public Intake () {
 
         this.intakeMotor = new intakeMotor(0, brushless)
-
-    }
 }
