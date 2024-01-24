@@ -1,15 +1,17 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.intake;
+import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder.Type;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -35,14 +37,20 @@ public class IntakeRetractor extends SubsystemBase {
   private static final int kLimitSwitchPort = 0;
   private static final int kBeamBreakPort = 0;
 
-  // TODO: put constants for motor and encoder configuration here
+  private static final boolean kInvertMotor = false;
+  private static final int kCurrentLimit = 20;
 
   private static final double kP = 0.000;
   private static final double kI = 0.000;
   private static final double kD = 0.000;
-  
-  // TODO: feed forward controller using wpilib ArmFeedforward class
+  private static final double kS = 0.000;
+  private static final double kV = 0.000;
+  private static final double kA = 0.000;
+  private static final double kG = 0.000;
 
+  private static final double kMaxVelocityDeg = 0.0;
+  private static final double kMaxAccelerationDeg = 0.0;
+  
   private static final double kErrorThreshold = 2.0;
 
   public static enum RetractorSetpoint {
@@ -68,7 +76,8 @@ public class IntakeRetractor extends SubsystemBase {
   private CANSparkMax motor;
   private AbsoluteEncoder absoluteEncoder;
   private RelativeEncoder relativeEncoder;
-  private SparkPIDController feedbackController;
+  private ProfiledPIDController feedbackController;
+  private ArmFeedforward feedforwardController;
 
   private DigitalInput limitSwitch;
   private DigitalInput beamBreak;
@@ -79,31 +88,31 @@ public class IntakeRetractor extends SubsystemBase {
     this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
     this.absoluteEncoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
     this.relativeEncoder = this.motor.getEncoder();
-    this.feedbackController = this.motor.getPIDController();
+    this.feedbackController = new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg));
 
     this.limitSwitch = new DigitalInput(kLimitSwitchPort);
     this.beamBreak = new DigitalInput(kBeamBreakPort);
 
     this.configureMotor();
     this.configureEncoder();
-    this.configureController();
-
+    this.configureController(); 
     this.configureLimitSwitchResponder();
   }
 
   private void configureMotor(){
-    /*
-     * TODO
-     * 
-     * using constants set:
-     *    motor inversion, current limit (30?)
-     * 
-     * without constants set:
-     *    idle mode (brake), voltage compensation (12)
-     */
+    this.motor.setInverted(kInvertMotor);
+    this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    this.motor.setSmartCurrentLimit(kCurrentLimit);
+    this.motor.enableVoltageCompensation(12);
+  
   }
 
   private void configureEncoder(){
+    this.relativeEncoder.setInverted(kInvertMotor);
+    this.absoluteEncoder.setInverted(kInvertMotor);
+    this.relativeEncoder.setPositionConversionFactor(360);
+    this.absoluteEncoder.setPositionConversionFactor(360);
+
     /*
      * TODO
      * 
@@ -114,11 +123,11 @@ public class IntakeRetractor extends SubsystemBase {
   }
 
   private void configureController(){
-    this.feedbackController.setD(kD);
+    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
+
     this.feedbackController.setP(kP);
     this.feedbackController.setI(kI);
-
-    // TODO: also configure feed forward controller once it it written
+    this.feedbackController.setD(kD);
   }
 
   private void configureLimitSwitchResponder(){
@@ -133,13 +142,10 @@ public class IntakeRetractor extends SubsystemBase {
   }
 
   public boolean isLimitSwitchTriggered() {
-    // TODO: is this negation correct?
-
     return !this.limitSwitch.get();
   }
 
   public boolean isBeamBroken(){
-    // TODO: is this negation correct?
     return !this.beamBreak.get();
   }
 
@@ -154,8 +160,6 @@ public class IntakeRetractor extends SubsystemBase {
 
   public void resetEncoder(double position){
     this.relativeEncoder.setPosition(position);
-
-    // TODO: does it make sense to implement this for the mag offset of the absolute encoder?
   }
 
   public void resetEncoder(){
@@ -167,20 +171,20 @@ public class IntakeRetractor extends SubsystemBase {
   }
 
   private void useController(){
-    /*
-     * TODO
-     * 
-     * this method will be called periodically to set the motor voltage based on feedback and feedforward controllers
-     * 
-     * add the outputs of the feedback controller (pid) and feedforward controller (once it is written) and supply them to the motor via set()
-     * 
-     * good examples of this code are this years shooter pivot and last years arm
-     */
+    State setpointState = this.feedbackController.getSetpoint();
+
+    double feedforwardOutput = this.feedforwardController.calculate(setpointState.position, setpointState.velocity);
+    double feedbackOutput = this.feedbackController.calculate(this.getPosition());
+
+    double controllerOutput = feedforwardOutput + feedbackOutput;
+    this.motor.setVoltage(controllerOutput);
   }
 
   private void doSendables(){
-    // TODO: use smart dashboard to log the position, limit switch status, beam break status, etc.
-  }
+    SmartDashboard.putNumber("current position", relativeEncoder.getPosition());
+    SmartDashboard.putBoolean("note detected", this.isBeamBroken());
+    SmartDashboard.putBoolean("Retractor at position(deg)", this.isAtSetpoint());
+    }
 
   @Override
   public void periodic() {
@@ -189,16 +193,25 @@ public class IntakeRetractor extends SubsystemBase {
   }
 
   public void initTuning(){
-    SmartDashboard.putNumber("retractor kp", SmartDashboard.getNumber("retractor kp", kP));
-
-    // TODO: ^ do this for kI, kD, and any constants for the feedforward controller
+    SmartDashboard.putNumber("retractor kP", SmartDashboard.getNumber("retractor kP", kP));
+    SmartDashboard.putNumber("retractor kI", SmartDashboard.getNumber("retractor kI", kI));
+    SmartDashboard.putNumber("retractor kD", SmartDashboard.getNumber("retractor kD", kD));
+    SmartDashboard.putNumber("retractor kS", SmartDashboard.getNumber("retractor kS", kS));
+    SmartDashboard.putNumber("retractor kV", SmartDashboard.getNumber("retractor kV", kV));
+    SmartDashboard.putNumber("retractor kA", SmartDashboard.getNumber("retractor kA", kA));
+    SmartDashboard.putNumber("retractor kG", SmartDashboard.getNumber("retractor kG", kG));
   }
 
-  public void tune(){
+  public void tune(){ 
     double tunedP = SmartDashboard.getNumber("retractor kp", kP);
+    double tunedI = SmartDashboard.getNumber("retractor kI", kI);
+    double tunedD = SmartDashboard.getNumber("retractor kD", kD);
+
+    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
 
     this.feedbackController.setP(tunedP);
+    this.feedbackController.setI(tunedI);
+    this.feedbackController.setD(tunedD);
 
-    // TODO: ^ do this for kI, kD, and any constants for the feedforward controller
   }
 }

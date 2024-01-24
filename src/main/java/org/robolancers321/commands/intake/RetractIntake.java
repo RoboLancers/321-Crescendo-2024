@@ -21,8 +21,6 @@ public class RetractIntake extends Command {
 
     @Override
     public boolean isFinished() {
-        // TODO: encoder vs limit switch? limit switch MAY be more accurate but is also subject to physical damage
-
         return this.intakeRetractor.isAtSetpoint();
     }
 }
