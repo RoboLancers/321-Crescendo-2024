@@ -3,36 +3,34 @@ package org.robolancers321.subsystem;
 
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
 
-  public CANSparkMax intakemotor;
-  SparkPIDController IntakePIDController;
+  public CANSparkMax intakeMotor;
 
-  public int kport = 0;
+  public int kPort = 0;
   public double power = 0;
 
-  public void intake() {
+  public void Intake() {
 
-    this.intakemotor = new CANSparkMax(kport, MotorType.kBrushless);
-    this.intakemotor.setSmartCurrentLimit(20);
+    this.intakeMotor = new CANSparkMax(kPort, MotorType.kBrushless);
+    this.intakeMotor.setSmartCurrentLimit(20);
   }
 
   public Command in(double power) {
 
-    return runOnce(() -> intakemotor.set(power));
+    return runOnce(() -> intakeMotor.set(power));
   }
 
   public Command out(double power) {
 
-    return runOnce(() -> intakemotor.set(-power));
+    return runOnce(() -> intakeMotor.set(-power));
   }
 
   public Command off(double power) {
 
-    return runOnce(() -> intakemotor.set(0));
+    return runOnce(() -> intakeMotor.set(0));
   }
 }
