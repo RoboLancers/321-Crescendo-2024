@@ -27,56 +27,56 @@ public class Shooter extends SubsystemBase {
   private final int kLeftMotorID = 0;
   private final int kRightMotorID = 0;
 
-  private int kLeftCurrentLimit = 40;
+  private final int kLeftCurrentLimit = 40;
 
-  private int kRightCurrentLimit = 40;
+  private final int kRightCurrentLimit = 40;
 
-  private boolean kInvertLeftMotor = false;
+  private final boolean kInvertLeftMotor = false;
 
-  private boolean kInvertRightMotor = false;
+  private final boolean kInvertRightMotor = false;
 
-  private double kLeftRotPerMinToDegPerSec = 0.0;
+  private final double kLeftRotPerMinToDegPerSec = 0.0;
 
-  private double kRightRotPerMinToDegPerSec = 0.0;
+  private final double kRightRotPerMinToDegPerSec = 0.0;
 
-  private double kLeftFF = 0.0;
+  private final double kLeftFF = 0.0;
 
-  private double kRightFF = 0.0;
+  private final double kRightFF = 0.0;
 
-  private double kAmpLeftSpeed = 0.0;
+  private final double kAmpLeftSpeed = 0.0;
 
-  private double kRightAmpSpeed = 0.0;
+  private final double kRightAmpSpeed = 0.0;
 
   private double kRampUpRate = 0.5;
 
-  private double kErrorTolerance = 0.0;
+  private final double kErrorTolerance = 0.0;
 
-  private double kInterpolationThreshold = 0.0;
+  private final double kInterpolationThreshold = 0.0;
 
-  private int kBeamBreakChannelPort = 0;
+  private final int kBeamBreakChannelPort = 0;
   private double leftSetpointSpeed;
 
   private double rightSetpointSpeed;
 
-  private CANSparkMax left_motor;
+  private final CANSparkMax left_motor;
 
-  private CANSparkMax right_motor;
+  private final CANSparkMax right_motor;
 
-  private AbsoluteEncoder left_encoder;
+  private final AbsoluteEncoder left_encoder;
 
-  private AbsoluteEncoder right_encoder;
+  private final AbsoluteEncoder right_encoder;
 
-  private double latest_distance = 0.0;
+  private final double latest_distance = 0.0;
 
   private InterpolationTable.AimCharacteristic latest_characteristic;
 
-  private SparkPIDController left_controller;
-  private SparkPIDController right_controller;
+  private final SparkPIDController left_controller;
+  private final SparkPIDController right_controller;
 
-  private SlewRateLimiter left_limiter;
-  private SlewRateLimiter right_limiter;
+  private final SlewRateLimiter left_limiter;
+  private final SlewRateLimiter right_limiter;
 
-  private DigitalInput beam_break;
+  private final DigitalInput beam_break;
 
   private Shooter() {
 

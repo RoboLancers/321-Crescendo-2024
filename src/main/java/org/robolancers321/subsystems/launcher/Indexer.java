@@ -47,11 +47,11 @@ public class Indexer extends SubsystemBase {
    * Implementation
    */
 
-  private CANSparkMax motor;
-  private SparkPIDController controller;
-  private RelativeEncoder encoder;
+  private final CANSparkMax motor;
+  private final SparkPIDController controller;
+  private final RelativeEncoder encoder;
 
-  private DigitalInput beamBreak;
+  private final DigitalInput beamBreak;
 
   private Indexer() {
     this.motor = new CANSparkMax(kMotorPort, kBrushless);

@@ -58,7 +58,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   private static final double kInterpolationThreshold = 0.0;
 
-  private double latest_distance = 0.0;
+  private final double latest_distance = 0.0;
 
   private InterpolationTable.AimCharacteristic latest_characteristic;
 
@@ -68,7 +68,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     kSpeaker(0.0),
     kAmp(0.0);
 
-    private double angle;
+    private final double angle;
 
     PivotSetpoint(double angle) {
       this.angle = angle;
@@ -83,8 +83,8 @@ public class Pivot extends ProfiledPIDSubsystem {
    * Implementation
    */
 
-  private CANSparkMax motor;
-  private AbsoluteEncoder absoluteEncoder;
+  private final CANSparkMax motor;
+  private final AbsoluteEncoder absoluteEncoder;
   private ArmFeedforward feedforwardController;
 
   private Pivot() {
