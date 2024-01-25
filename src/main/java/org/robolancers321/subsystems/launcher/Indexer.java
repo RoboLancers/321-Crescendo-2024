@@ -3,15 +3,13 @@ package org.robolancers321.subsystems.launcher;
 
 import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
-import java.util.function.DoubleSupplier;
-
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.ControlType;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.DoubleSupplier;
 
 public class Indexer extends SubsystemBase {
   /*
@@ -19,6 +17,7 @@ public class Indexer extends SubsystemBase {
    */
 
   private static Indexer instance;
+
   public static Indexer getInstance() {
     if (instance == null) instance = new Indexer();
 
@@ -43,7 +42,7 @@ public class Indexer extends SubsystemBase {
   private static final double kMaxRPM = 5700;
   private static final double kIntakeSpeedRPM = 500;
   private static final double kOuttakeSpeedRPM = -500;
-  
+
   /*
    * Implementation
    */
@@ -73,7 +72,7 @@ public class Indexer extends SubsystemBase {
     this.motor.enableVoltageCompensation(12);
   }
 
-  private void configureEncoder(){
+  private void configureEncoder() {
     this.encoder.setInverted(kInvertMotor);
   }
 
@@ -120,6 +119,10 @@ public class Indexer extends SubsystemBase {
     return this.manualIndex(() -> appliedSpeed);
   }
 
+  public Command index() {
+    return run(this::intakeJawn).until(this::jawnDetected).finallyDo(this::stopSpinningJawn);
+  }
+
   private void doSendables() {
     SmartDashboard.putNumber("Indexer Velocity (rpm)", this.getIntakeVelocityRPM());
     SmartDashboard.putBoolean("Note Detected", this.jawnDetected());
@@ -130,19 +133,19 @@ public class Indexer extends SubsystemBase {
     this.doSendables();
   }
 
-  public void initTuning(){
+  public void initTuning() {
     SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kp", kP));
     SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer ki", kI));
     SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kd", kD));
     SmartDashboard.putNumber("indexer kff", SmartDashboard.getNumber("indexer kff", kFF));
   }
 
-  public void tune(){
+  public void tune() {
     double tunedP = SmartDashboard.getNumber("indexer kp", kP);
     double tunedI = SmartDashboard.getNumber("indexer ki", kI);
     double tunedD = SmartDashboard.getNumber("indexer kd", kD);
     double tunedFF = SmartDashboard.getNumber("indexer kff", kFF);
-    
+
     this.controller.setP(tunedP);
     this.controller.setI(tunedI);
     this.controller.setD(tunedD);
