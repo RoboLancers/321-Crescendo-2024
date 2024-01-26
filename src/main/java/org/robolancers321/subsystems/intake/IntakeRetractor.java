@@ -1,17 +1,17 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.intake;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
-
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -23,7 +23,7 @@ public class IntakeRetractor extends SubsystemBase {
 
   private static IntakeRetractor instance = null;
 
-  public static IntakeRetractor getInstance(){
+  public static IntakeRetractor getInstance() {
     if (instance == null) instance = new IntakeRetractor();
 
     return instance;
@@ -50,7 +50,7 @@ public class IntakeRetractor extends SubsystemBase {
 
   private static final double kMaxVelocityDeg = 0.0;
   private static final double kMaxAccelerationDeg = 0.0;
-  
+
   private static final double kErrorThreshold = 2.0;
 
   public static enum RetractorSetpoint {
@@ -60,11 +60,11 @@ public class IntakeRetractor extends SubsystemBase {
 
     private double angle;
 
-    private RetractorSetpoint(double angle){
+    private RetractorSetpoint(double angle) {
       this.angle = angle;
     }
 
-    public double getAngle(){
+    public double getAngle() {
       return this.angle;
     }
   }
@@ -88,26 +88,27 @@ public class IntakeRetractor extends SubsystemBase {
     this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
     this.absoluteEncoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
     this.relativeEncoder = this.motor.getEncoder();
-    this.feedbackController = new ProfiledPIDController(kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg));
+    this.feedbackController =
+        new ProfiledPIDController(
+            kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg));
 
     this.limitSwitch = new DigitalInput(kLimitSwitchPort);
     this.beamBreak = new DigitalInput(kBeamBreakPort);
 
     this.configureMotor();
     this.configureEncoder();
-    this.configureController(); 
+    this.configureController();
     this.configureLimitSwitchResponder();
   }
 
-  private void configureMotor(){
+  private void configureMotor() {
     this.motor.setInverted(kInvertMotor);
     this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
-  
   }
 
-  private void configureEncoder(){
+  private void configureEncoder() {
     this.relativeEncoder.setInverted(kInvertMotor);
     this.absoluteEncoder.setInverted(kInvertMotor);
     this.relativeEncoder.setPositionConversionFactor(360);
@@ -115,14 +116,14 @@ public class IntakeRetractor extends SubsystemBase {
 
     /*
      * TODO
-     * 
+     *
      * set position conversion rate (store this rate as a constant), set encoder inversion
-     * 
+     *
      * this should probably be done for both encoders just in case
      */
   }
 
-  private void configureController(){
+  private void configureController() {
     this.feedforwardController = new ArmFeedforward(kS, kG, kV);
 
     this.feedbackController.setP(kP);
@@ -130,7 +131,7 @@ public class IntakeRetractor extends SubsystemBase {
     this.feedbackController.setD(kD);
   }
 
-  private void configureLimitSwitchResponder(){
+  private void configureLimitSwitchResponder() {
     new Trigger(this::isLimitSwitchTriggered).whileTrue(new RunCommand(this::resetEncoder));
   }
 
@@ -145,46 +146,48 @@ public class IntakeRetractor extends SubsystemBase {
     return !this.limitSwitch.get();
   }
 
-  public boolean isBeamBroken(){
+  public boolean isBeamBroken() {
     return !this.beamBreak.get();
   }
 
-  // TODO: this method is totally fine but may be scrapped when we move to a motion profiling implementation
+  // TODO: this method is totally fine but may be scrapped when we move to a motion profiling
+  // implementation
   public boolean isAtPosition(double position) {
     return Math.abs(this.getPosition() - position) < kErrorThreshold;
   }
 
-  public boolean isAtSetpoint(){
+  public boolean isAtSetpoint() {
     return this.isAtPosition(this.setpoint.getAngle());
   }
 
-  public void resetEncoder(double position){
+  public void resetEncoder(double position) {
     this.relativeEncoder.setPosition(position);
   }
 
-  public void resetEncoder(){
+  public void resetEncoder() {
     this.resetEncoder(RetractorSetpoint.kRetracted.getAngle());
   }
 
-  public void setSetpoint(RetractorSetpoint setpoint){
+  public void setSetpoint(RetractorSetpoint setpoint) {
     this.setpoint = setpoint;
   }
 
-  private void useController(){
+  private void useController() {
     State setpointState = this.feedbackController.getSetpoint();
 
-    double feedforwardOutput = this.feedforwardController.calculate(setpointState.position, setpointState.velocity);
+    double feedforwardOutput =
+        this.feedforwardController.calculate(setpointState.position, setpointState.velocity);
     double feedbackOutput = this.feedbackController.calculate(this.getPosition());
 
     double controllerOutput = feedforwardOutput + feedbackOutput;
     this.motor.setVoltage(controllerOutput);
   }
 
-  private void doSendables(){
+  private void doSendables() {
     SmartDashboard.putNumber("current position", relativeEncoder.getPosition());
     SmartDashboard.putBoolean("note detected", this.isBeamBroken());
     SmartDashboard.putBoolean("Retractor at position(deg)", this.isAtSetpoint());
-    }
+  }
 
   @Override
   public void periodic() {
@@ -192,7 +195,7 @@ public class IntakeRetractor extends SubsystemBase {
     doSendables();
   }
 
-  public void initTuning(){
+  public void initTuning() {
     SmartDashboard.putNumber("retractor kP", SmartDashboard.getNumber("retractor kP", kP));
     SmartDashboard.putNumber("retractor kI", SmartDashboard.getNumber("retractor kI", kI));
     SmartDashboard.putNumber("retractor kD", SmartDashboard.getNumber("retractor kD", kD));
@@ -202,7 +205,7 @@ public class IntakeRetractor extends SubsystemBase {
     SmartDashboard.putNumber("retractor kG", SmartDashboard.getNumber("retractor kG", kG));
   }
 
-  public void tune(){ 
+  public void tune() {
     double tunedP = SmartDashboard.getNumber("retractor kp", kP);
     double tunedI = SmartDashboard.getNumber("retractor kI", kI);
     double tunedD = SmartDashboard.getNumber("retractor kD", kD);
@@ -212,6 +215,5 @@ public class IntakeRetractor extends SubsystemBase {
     this.feedbackController.setP(tunedP);
     this.feedbackController.setI(tunedI);
     this.feedbackController.setD(tunedD);
-
   }
 }
