@@ -9,14 +9,14 @@ import org.robolancers321.subsystems.launcher.Pivot;
 import org.robolancers321.subsystems.launcher.Shooter;
 
 public class YeetSpeaker extends ParallelCommandGroup {
-
-  private Indexer indexer = Indexer.getInstance();
-
-  private Pivot pivot = Pivot.getInstance();
-
-  private Shooter shooter = Shooter.getInstance();
+  private Indexer indexer;
+  private Pivot pivot;
+  private Shooter shooter;
 
   public YeetSpeaker(DoubleSupplier distanceFromSpeaker) {
+    this.indexer = Indexer.getInstance();
+    this.pivot = Pivot.getInstance();
+    this.shooter = Shooter.getInstance();
 
     addRequirements(indexer, pivot, shooter);
     // Run shooter and aim at the same time, index only after at setpoint

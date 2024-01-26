@@ -9,11 +9,15 @@ import org.robolancers321.subsystems.launcher.Shooter;
 
 public class YeetAmp extends SequentialCommandGroup {
 
-  private Indexer indexer = Indexer.getInstance();
-  private Pivot pivot = Pivot.getInstance();
-  private Shooter shooter = Shooter.getInstance();
+  private Indexer indexer;
+  private Pivot pivot;
+  private Shooter shooter;
 
   public YeetAmp() {
+    this.indexer = Indexer.getInstance();
+    this.pivot = Pivot.getInstance();
+    this.shooter = Shooter.getInstance();
+
     addRequirements(indexer, pivot, shooter);
     addCommands(
         pivot.positionAmp(), new ParallelCommandGroup(shooter.yeetNoteAmp(), indexer.index()));
