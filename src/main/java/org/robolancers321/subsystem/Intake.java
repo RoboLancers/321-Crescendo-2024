@@ -34,12 +34,12 @@ public class Intake extends SubsystemBase {
 
   public Command in(double power) {
 
-    return runOnce(() -> intakeMotor.set(/*Math.abs*/(power)));
+    return runOnce(() -> intakeMotor.set(/*Math.abs*/ (power)));
   }
 
   public Command out(double power) {
 
-    return runOnce(() -> intakeMotor.set(-/*Math.abs*/(power)));
+    return runOnce(() -> intakeMotor.set(- /*Math.abs*/(power)));
   }
 
   public Command off(double power) {
