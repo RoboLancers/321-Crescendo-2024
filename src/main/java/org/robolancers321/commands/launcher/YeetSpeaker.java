@@ -22,6 +22,9 @@ public class YeetSpeaker extends ParallelCommandGroup {
     // Run shooter and aim at the same time, index only after at setpoint
     addCommands(
         shooter.yeetNoteSpeaker(distanceFromSpeaker),
-        new SequentialCommandGroup(pivot.aimAtSpeaker(distanceFromSpeaker), indexer.index()));
+        new SequentialCommandGroup(
+            pivot.aimAtSpeaker(distanceFromSpeaker),
+            indexer.index() // TODO: only run this when shooter is at speed
+            ));
   }
 }

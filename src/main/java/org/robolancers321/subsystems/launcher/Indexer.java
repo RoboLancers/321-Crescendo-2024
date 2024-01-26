@@ -16,7 +16,7 @@ public class Indexer extends SubsystemBase {
    * Singleton
    */
 
-  private static Indexer instance;
+  private static Indexer instance = null;
 
   public static Indexer getInstance() {
     if (instance == null) instance = new Indexer();
@@ -120,6 +120,8 @@ public class Indexer extends SubsystemBase {
   }
 
   public Command index() {
+    // TODO: until beam break goes from true to false, also maybe add a time delay
+    // TODO: should this beam break be the same as shooter?
     return run(this::intakeJawn).until(this::jawnDetected).finallyDo(this::stopSpinningJawn);
   }
 

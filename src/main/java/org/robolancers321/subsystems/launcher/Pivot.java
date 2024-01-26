@@ -20,7 +20,7 @@ public class Pivot extends ProfiledPIDSubsystem {
    * Singleton
    */
 
-  private static Pivot instance;
+  private static Pivot instance = null;
 
   public static Pivot getInstance() {
     if (instance == null) instance = new Pivot();
@@ -58,7 +58,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   private static final double kInterpolationThreshold = 0.0;
 
-  private final double latest_distance = 0.0;
+  private double latest_distance = 0.0;
 
   private InterpolationTable.AimCharacteristic latest_characteristic;
 
@@ -157,14 +157,15 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   public void setAngleGoal(DoubleSupplier distance) {
-    if (!epsilonEquals(distance.getAsDouble(), latest_distance, kInterpolationThreshold))
+    if (!epsilonEquals(distance.getAsDouble(), latest_distance, kInterpolationThreshold)) {
       latest_characteristic = InterpolationTable.interpolate(distance.getAsDouble());
+      latest_distance = distance.getAsDouble();
+    }
 
     setAngleGoal(latest_characteristic.getPitchAngle());
   }
 
   public Command aimAtSpeaker(DoubleSupplier distance) {
-
     return run(() -> setAngleGoal(distance)).until(this::atGoal);
   }
 

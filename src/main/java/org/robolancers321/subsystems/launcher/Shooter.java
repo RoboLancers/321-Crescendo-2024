@@ -13,182 +13,166 @@ import java.util.function.DoubleSupplier;
 import org.robolancers321.util.InterpolationTable;
 
 public class Shooter extends SubsystemBase {
-  private static Shooter INSTANCE;
+  private static Shooter instance = null;
 
   public static Shooter getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new Shooter();
-    }
-    return INSTANCE;
+    if (instance == null) instance = new Shooter();
+
+    return instance;
   }
 
   /* Constants */
 
-  private final int kLeftMotorID = 0;
-  private final int kRightMotorID = 0;
+  private static final int kLeftMotorID = 0;
+  private static final int kRightMotorID = 0;
+  private static final int kBeamBreakPort = 0;
 
-  private final int kLeftCurrentLimit = 40;
+  private static final int kCurrentLimit = 40;
 
-  private final int kRightCurrentLimit = 40;
+  private static final boolean kInvertLeftMotor = false;
+  private static final boolean kInvertRightMotor = false;
 
-  private final boolean kInvertLeftMotor = false;
+  // TODO: store this better?
+  private static final double kAmpLeftSpeed = 0.0;
+  private static final double kRightAmpSpeed = 0.0;
 
-  private final boolean kInvertRightMotor = false;
+  private static double kRampUpRate = 0.5;
 
-  private final double kLeftRotPerMinToDegPerSec = 0.0;
-
-  private final double kRightRotPerMinToDegPerSec = 0.0;
-
-  private final double kLeftFF = 0.0;
-
-  private final double kRightFF = 0.0;
-
-  private final double kAmpLeftSpeed = 0.0;
-
-  private final double kRightAmpSpeed = 0.0;
-
-  private double kRampUpRate = 0.5;
+  private static final double kFF = 0.0;
 
   private final double kErrorTolerance = 0.0;
+  private final double kInterpolationCacheThreshold =
+      0.0; // the distance at which interpolation table recalculates setpoints
 
-  private final double kInterpolationThreshold = 0.0;
+  /*
+   * Implementation
+   */
 
-  private final int kBeamBreakChannelPort = 0;
-  private double leftSetpointSpeed;
+  private CANSparkMax leftMotor;
+  private CANSparkMax rightMotor;
 
-  private double rightSetpointSpeed;
+  private RelativeEncoder leftEncoder;
+  private RelativeEncoder rightEncoder;
 
-  private final CANSparkMax left_motor;
+  private SparkPIDController leftController;
+  private SparkPIDController rightController;
 
-  private final CANSparkMax right_motor;
+  private SlewRateLimiter leftLimiter;
+  private SlewRateLimiter rightLimiter;
 
-  private final AbsoluteEncoder left_encoder;
+  private DigitalInput beamBreak;
 
-  private final AbsoluteEncoder right_encoder;
+  private double latestDistance = 0.0;
+  private InterpolationTable.AimCharacteristic latestCharacteristic = null;
 
-  private final double latest_distance = 0.0;
-
-  private InterpolationTable.AimCharacteristic latest_characteristic;
-
-  private final SparkPIDController left_controller;
-  private final SparkPIDController right_controller;
-
-  private final SlewRateLimiter left_limiter;
-  private final SlewRateLimiter right_limiter;
-
-  private final DigitalInput beam_break;
+  private double leftSetpoint = 0.0;
+  private double rightSetpoint = 0.0;
 
   private Shooter() {
+    this.leftMotor = new CANSparkMax(kLeftMotorID, CANSparkLowLevel.MotorType.kBrushless);
+    this.rightMotor = new CANSparkMax(kRightMotorID, CANSparkLowLevel.MotorType.kBrushless);
 
-    beam_break = new DigitalInput(kBeamBreakChannelPort);
+    this.leftEncoder = this.leftMotor.getEncoder();
+    this.rightEncoder = this.rightMotor.getEncoder();
 
-    left_motor = new CANSparkMax(kLeftMotorID, CANSparkLowLevel.MotorType.kBrushless);
-    right_motor = new CANSparkMax(kRightMotorID, CANSparkLowLevel.MotorType.kBrushless);
+    this.leftController = this.leftMotor.getPIDController();
+    this.rightController = this.rightMotor.getPIDController();
 
-    left_encoder = left_motor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-    right_encoder = right_motor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+    this.leftLimiter = new SlewRateLimiter(kRampUpRate);
+    this.rightLimiter = new SlewRateLimiter(kRampUpRate);
 
-    left_controller = left_motor.getPIDController();
-    right_controller = right_motor.getPIDController();
+    this.beamBreak = new DigitalInput(kBeamBreakPort);
 
-    left_limiter = new SlewRateLimiter(kRampUpRate);
-    right_limiter = new SlewRateLimiter(kRampUpRate);
-
-    configureMotors();
-    configureControllers();
-    configureEncoders();
+    this.configureMotors();
+    this.configureControllers();
+    this.configureEncoders();
   }
 
   private void configureControllers() {
-    left_controller.setFF(kLeftFF);
-    right_controller.setFF(kRightFF);
+    this.leftController.setFF(kFF);
+    this.rightController.setFF(kFF);
   }
 
   private void configureMotors() {
-    left_motor.setInverted(kInvertLeftMotor);
-    left_motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    left_motor.setSmartCurrentLimit(kLeftCurrentLimit);
-    left_motor.enableVoltageCompensation(12);
-    left_motor.burnFlash();
+    this.leftMotor.setInverted(kInvertLeftMotor);
+    this.leftMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    this.leftMotor.setSmartCurrentLimit(kCurrentLimit);
+    this.leftMotor.enableVoltageCompensation(12);
+    this.leftMotor.burnFlash();
 
-    right_motor.setInverted(kInvertRightMotor);
-    right_motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    right_motor.setSmartCurrentLimit(kRightCurrentLimit);
-    right_motor.enableVoltageCompensation(12);
-    right_motor.burnFlash();
+    this.rightMotor.setInverted(kInvertRightMotor);
+    this.rightMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    this.rightMotor.setSmartCurrentLimit(kCurrentLimit);
+    this.rightMotor.enableVoltageCompensation(12);
+    this.rightMotor.burnFlash();
   }
 
   private void configureEncoders() {
-    left_encoder.setInverted(kInvertLeftMotor);
-    left_encoder.setVelocityConversionFactor(kLeftRotPerMinToDegPerSec);
-
-    right_encoder.setInverted(kInvertRightMotor);
-    right_encoder.setVelocityConversionFactor(kRightRotPerMinToDegPerSec);
+    this.leftEncoder.setInverted(kInvertLeftMotor);
+    this.rightEncoder.setInverted(kInvertRightMotor);
   }
 
   private double getLeftVelocity() {
-    return left_encoder.getVelocity();
+    // TODO: filter here?
+    return this.leftEncoder.getVelocity();
   }
 
   private double getRightVelocity() {
-    return right_encoder.getVelocity();
+    // TODO: filter here?
+    return this.rightEncoder.getVelocity();
   }
 
-  private void setGoalLR(double leftSpeed, double rightSpeed) {
-    left_controller.setReference(
-        left_limiter.calculate(leftSpeed), CANSparkBase.ControlType.kVelocity);
-    right_controller.setReference(
-        right_limiter.calculate(rightSpeed), CANSparkBase.ControlType.kVelocity);
+  private void useControllers(double leftSpeed, double rightSpeed) {
+    this.leftController.setReference(
+        this.leftLimiter.calculate(leftSpeed), CANSparkBase.ControlType.kVelocity);
+    this.rightController.setReference(
+        this.rightLimiter.calculate(rightSpeed), CANSparkBase.ControlType.kVelocity);
   }
 
   public void yeetNoteSpeaker(double distance) {
-    if (!epsilonEquals(distance, latest_distance, kInterpolationThreshold))
-      latest_characteristic = InterpolationTable.interpolate(distance);
+    if (!epsilonEquals(distance, latestDistance, kInterpolationCacheThreshold)) {
+      latestDistance = distance;
+      latestCharacteristic = InterpolationTable.interpolate(distance);
+    }
 
-    leftSetpointSpeed = latest_characteristic.getLeftSpeed();
-    rightSetpointSpeed = latest_characteristic.getRightSpeed();
+    this.leftSetpoint = latestCharacteristic.getLeftSpeed();
+    this.rightSetpoint = latestCharacteristic.getRightSpeed();
 
-    setGoalLR(leftSetpointSpeed, rightSetpointSpeed);
+    this.useControllers(this.leftSetpoint, this.rightSetpoint);
   }
 
   public Command yeetNoteSpeaker(DoubleSupplier distance) {
-    return run(() -> yeetNoteSpeaker(distance.getAsDouble())).until(beam_break::get);
-  }
-
-  public void setRampUpRate(double rate) {
-    kRampUpRate = rate;
+    // TODO: until beam break goes from true to false, also maybe add a time delay
+    return run(() -> this.yeetNoteSpeaker(distance.getAsDouble())).until(beamBreak::get);
   }
 
   public boolean atLeftSetpoint() {
-    return epsilonEquals(getLeftVelocity(), leftSetpointSpeed, kErrorTolerance);
+    return epsilonEquals(this.getLeftVelocity(), this.leftSetpoint, kErrorTolerance);
   }
 
   public boolean atRightSetpoint() {
-    return epsilonEquals(getRightVelocity(), leftSetpointSpeed, kErrorTolerance);
+    return epsilonEquals(this.getRightVelocity(), this.rightSetpoint, kErrorTolerance);
   }
 
   public boolean atSetpoint() {
-    return atLeftSetpoint() && atLeftSetpoint();
+    return this.atLeftSetpoint() && this.atLeftSetpoint();
   }
 
-  public void yeet(double speed) {
-    left_motor.set(speed);
-    right_motor.set(-speed);
+  public void dangerouslyYeet(double leftSpeed, double rightSpeed) {
+    this.leftMotor.set(leftSpeed);
+    this.rightMotor.set(rightSpeed);
   }
 
   public void yeetNoteAmp(double distance) {
-    leftSetpointSpeed = kAmpLeftSpeed;
-    rightSetpointSpeed = kRightAmpSpeed;
-    setGoalLR(kAmpLeftSpeed, kRightAmpSpeed);
+    this.leftSetpoint = kAmpLeftSpeed;
+    this.rightSetpoint = kRightAmpSpeed;
+
+    this.useControllers(this.leftSetpoint, this.rightSetpoint);
   }
 
   public Command yeetNoteAmp() {
-    return run(this::yeetNoteAmp).until(beam_break::get);
-  }
-
-  @Override
-  public void periodic() {
-    doSendables();
+    // TODO: is this the right end condition?
+    return run(this::yeetNoteAmp).until(beamBreak::get);
   }
 
   private void doSendables() {
@@ -197,16 +181,19 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Right flywheel velocity", getRightVelocity());
   }
 
+  @Override
+  public void periodic() {
+    this.doSendables();
+  }
+
   public void initTuning() {
-    SmartDashboard.putNumber("Left FF", kLeftFF);
-    SmartDashboard.putNumber("Right FF", kRightFF);
+    SmartDashboard.putNumber("shooter kff", SmartDashboard.getNumber("shooter kff", kFF));
   }
 
   public void tune() {
-    double leftFF = SmartDashboard.getNumber("Left FF", kLeftFF);
-    double rightFF = SmartDashboard.getNumber("Right FF", kRightFF);
-    left_controller.setFF(leftFF);
+    double tunedFF = SmartDashboard.getNumber("shooter kff", kFF);
 
-    right_controller.setFF(rightFF);
+    leftController.setFF(tunedFF);
+    rightController.setFF(tunedFF);
   }
 }
