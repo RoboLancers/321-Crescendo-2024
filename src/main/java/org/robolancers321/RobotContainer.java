@@ -35,15 +35,13 @@ public class RobotContainer {
 
   private void configureBindings() {
     this.drivetrain.setDefaultCommand(new TeleopDrive(this.driveController));
-    this.launcher.setDefaultCommand(launcher.tuneSpeeds());
+    //this.launcher.setDefaultCommand(launcher.tuneSpeeds());
 
     new Trigger(this.driveController::getAButton)
         .onTrue(new InstantCommand(this.drivetrain::zeroYaw));
 
-    // new Trigger(() -> this.manipulatorController.getRightY() > 0.8).whileTrue(launcher.yeet());
-    // new Trigger(() -> this.manipulatorController.getRightY() <
-    // -0.8).whileTrue(launcher.pullIn());
-
+    new Trigger(this.manipulatorController::getXButton).onTrue(launcher.yeet());
+    new Trigger(this.manipulatorController::getYButton).whileTrue(launcher.pullIn());
   }
 
   private void configureAutoChooser() {

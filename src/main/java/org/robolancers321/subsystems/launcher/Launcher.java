@@ -5,9 +5,7 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 
 public class Launcher extends SubsystemBase {
   /*
@@ -36,15 +34,15 @@ public class Launcher extends SubsystemBase {
   private static double kIndexerConversionFactor = 1;
   private static double kFlywheelConversionFactor = 1;
 
-  private static double kIndexerFF = 0.0;
-  private static double kFlywheelFF = 0.0;
+  private static double kIndexerFF = 0.0001735;
+  private static double kFlywheelFF = 0.000178;
 
-  private static double kFlywheelTolerance = 50;
+  private static double kFlywheelTolerance = 250;
 
-  private static double kIndexerInRPM = 0;
-  private static double kIndexerOutRPM = 0;
-  private static double kFlywheelInRPM = 0;
-  private static double kFlywheelOutRPM = 0;
+  private static double kIndexerInRPM = -1000;
+  private static double kIndexerOutRPM = 5600;
+  private static double kFlywheelInRPM = -1000;
+  private static double kFlywheelOutRPM = 5600;
 
   /*
    * Implementation
@@ -80,9 +78,7 @@ public class Launcher extends SubsystemBase {
   }
 
   private void configureEncoders() {
-    this.indexerEncoder.setInverted(kInvertIndexer);
-    this.flywheelMotor.setInverted(kInvertFlywheel);
-
+   
     this.indexerEncoder.setVelocityConversionFactor(kIndexerConversionFactor);
     this.flywheelEncoder.setVelocityConversionFactor(kFlywheelConversionFactor);
   }
@@ -120,16 +116,25 @@ public class Launcher extends SubsystemBase {
   }
 
   public Command yeet() {
-    return run(() -> {
+    return new SequentialCommandGroup(
+      new ParallelRaceGroup(
+        new RunCommand(() -> {
           this.setFlywheelSpeedRPM(kFlywheelOutRPM);
-          if (this.isFlywheelAtSpeed()) this.setIndexerSpeedRPM(kIndexerOutRPM);
-        })
-        .raceWith(run(() -> {}).until(this::isFlywheelAtSpeed).andThen(new WaitCommand(0.4)))
-        .finallyDo(
-            () -> {
-              setIndexerSpeedRPM(0);
-              setFlywheelSpeedRPM(0);
-            });
+        }),
+        new WaitCommand(0.4)
+      ),
+      new ParallelRaceGroup(
+        new RunCommand(() -> {
+          this.setFlywheelSpeedRPM(kFlywheelOutRPM);
+          this.setIndexerSpeedRPM(kIndexerOutRPM);
+        }),
+        new WaitCommand(0.4)
+      ),
+      new InstantCommand(() -> {
+        setIndexerSpeedRPM(0);
+        setFlywheelSpeedRPM(0);
+      })
+    );
   }
 
   public Command pullIn() {
@@ -166,7 +171,7 @@ public class Launcher extends SubsystemBase {
     double tunedIndexerFF = SmartDashboard.getNumber("indexer FF", kIndexerFF);
     double tunedFlywheelFF = SmartDashboard.getNumber("flywheel FF", kFlywheelFF);
 
-    double targetIndexerRPM = SmartDashboard.getNumber("target flywheel velocity", 0);
+    double targetIndexerRPM = SmartDashboard.getNumber("target indexer velocity", 0);
     double targetFlywheelRPM = SmartDashboard.getNumber("target flywheel velocity", 0);
 
     this.indexerPIDController.setFF(tunedIndexerFF);
