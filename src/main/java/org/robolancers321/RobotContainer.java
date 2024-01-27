@@ -12,18 +12,25 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.commands.drivetrain.TeleopDrive;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
+import org.robolancers321.subsystems.launcher.Launcher;
 
 public class RobotContainer {
   Drivetrain drivetrain;
 
-  XboxController controller;
+  Launcher launcher;
+
+  XboxController driveController;
+
+  XboxController manipulatorController;
 
   SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
+    this.launcher = Launcher.getInstance();
 
-    this.controller = new XboxController(0);
+    this.driveController = new XboxController(0);
+    this.manipulatorController = new XboxController(1);
 
     this.autoChooser = AutoBuilder.buildAutoChooser();
 
@@ -32,9 +39,15 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    this.drivetrain.setDefaultCommand(new TeleopDrive(this.controller));
+    this.drivetrain.setDefaultCommand(new TeleopDrive(this.driveController));
+    this.launcher.setDefaultCommand(launcher.tuneSpeeds());
 
-    new Trigger(this.controller::getAButton).onTrue(new InstantCommand(this.drivetrain::zeroYaw));
+    new Trigger(this.driveController::getAButton)
+        .onTrue(new InstantCommand(this.drivetrain::zeroYaw));
+    // new Trigger(() -> this.manipulatorController.getRightY() > 0.8).whileTrue(launcher.yeet());
+    // new Trigger(() -> this.manipulatorController.getRightY() <
+    // -0.8).whileTrue(launcher.pullIn());
+
   }
 
   private void configureAutoChooser() {
