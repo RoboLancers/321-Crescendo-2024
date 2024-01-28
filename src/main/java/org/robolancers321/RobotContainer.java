@@ -18,6 +18,8 @@ import org.robolancers321.commands.Mate;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
+import org.robolancers321.subsystems.LED;
+import org.robolancers321.subsystems.LED.LEDPattern;
 
 public class RobotContainer {
   Drivetrain drivetrain;
@@ -32,7 +34,7 @@ public class RobotContainer {
 
   private LED led = LED.getInstance();
   private CommandXboxController controller = new CommandXboxController(0);
-  
+
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
     this.intake = Intake.getInstance();
@@ -51,8 +53,10 @@ public class RobotContainer {
   private void configureBindings() {
 
     LED.register(4, () -> controller.b().getAsBoolean(), LEDPattern.WAVE, Color.kBlue, Color.kRed); 
+    LED.register(4, () -> controller.b().getAsBoolean(), LEDPattern.WAVE, Color.kBlue, Color.kRed);
     LED.register(3, () -> controller.y().getAsBoolean(), LEDPattern.SOLID, Color.kGreen, null);
-    LED.register(2, () -> controller.x().getAsBoolean(), LEDPattern.BREATH, Color.kBlue, Color.kRed); 
+    LED.register(
+        2, () -> controller.x().getAsBoolean(), LEDPattern.BREATH, Color.kBlue, Color.kRed);
     LED.register(1, () -> controller.a().getAsBoolean(), LEDPattern.STROBE, Color.kYellow, null);
     // this.drivetrain.setDefaultCommand(this.drivetrain.tuneModules());
 

@@ -1,18 +1,17 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.function.BooleanSupplier;
-
-import org.robolancers321.util.VirtualSubsystem;
-
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.BooleanSupplier;
+import org.robolancers321.subsystems.LED.LEDState;
+import org.robolancers321.subsystems.LED.Section;
+import org.robolancers321.util.VirtualSubsystem;
 
 /*
  99.9% of this class is written by FRC Team 6328 Mechanical Advantage, huge thanks to them - Vincent Z
@@ -30,7 +29,7 @@ public class LED extends VirtualSubsystem {
     return instance;
   }
 
-  public static final int kLEDPWMPort = 7;
+  public static final int kLEDPWMPort = 9;
   public static final int kLEDStripLength = 25;
 
   public static final double strobeDuration = 0.2;
@@ -42,7 +41,6 @@ public class LED extends VirtualSubsystem {
   public static final double waveDuration = 3.0;
   public static final double stripeDuration = 0.5;
 
-
   private final AddressableLED ledStrip;
   private final AddressableLEDBuffer ledBuffer;
   private static SortedSet<LEDState> ledStateList;
@@ -53,8 +51,6 @@ public class LED extends VirtualSubsystem {
     this.ledStrip = new AddressableLED(kLEDPWMPort);
 
     this.ledBuffer = new AddressableLEDBuffer(kLEDStripLength);
-
-    
 
     ledStrip.setLength(ledBuffer.getLength());
     ledStrip.setData(ledBuffer);
@@ -172,18 +168,28 @@ public class LED extends VirtualSubsystem {
     WAVE,
   }
 
-  public static void register(int priority, BooleanSupplier condition, LEDPattern applyPattern, Color color1, Color color2){
+  public static void register(
+      int priority,
+      BooleanSupplier condition,
+      LEDPattern applyPattern,
+      Color color1,
+      Color color2) {
     ledStateList.add(new LEDState(priority, condition, applyPattern, color1, color2));
   }
 
-  public static class LEDState{
+  public static class LEDState {
     int priority;
     BooleanSupplier condition;
     LEDPattern applyPattern;
     Color color1;
     Color color2;
 
-    public LEDState(int priority, BooleanSupplier condition, LEDPattern applyPattern, Color color1, Color color2){
+    public LEDState(
+        int priority,
+        BooleanSupplier condition,
+        LEDPattern applyPattern,
+        Color color1,
+        Color color2) {
       this.priority = priority;
       this.condition = condition;
       this.applyPattern = applyPattern;
@@ -191,26 +197,26 @@ public class LED extends VirtualSubsystem {
       this.color2 = color2;
     }
 
-    public int getPriority(){
+    public int getPriority() {
       return priority;
     }
 
-    public BooleanSupplier isCondition(){
+    public BooleanSupplier isCondition() {
       return condition;
-    } 
+    }
 
-    public LEDPattern getApplyPattern(){
+    public LEDPattern getApplyPattern() {
       return applyPattern;
     }
 
-    public Color getColor1(){
+    public Color getColor1() {
       return color1;
     }
-    public Color getColor2(){
+
+    public Color getColor2() {
       return color2;
     }
   }
-
 
   @Override
   public void periodic() {
@@ -223,24 +229,23 @@ public class LED extends VirtualSubsystem {
 
     // SmartDashboard.putString("sendableChooser", sendableChooser.getSelected().toString());
 
-     
     // switch(sendableChooser.getSelected()){
     //   case SOLID -> solid(Section.FULL, color);
     //   case STROBE -> strobe(Section.FULL, color, strobeDuration);
-    //   case STRIPES -> stripes(Section.FULL, List.of(Color.kRed, Color.kYellow, Color.kWhite), kLEDStripLength, stripeDuration);
+    //   case STRIPES -> stripes(Section.FULL, List.of(Color.kRed, Color.kYellow, Color.kWhite),
+    // kLEDStripLength, stripeDuration);
     //   case BREATH -> breath(Section.FULL, color, Color.kAliceBlue, breathDuration);
     //   case RAINBOW -> rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
     //   case WAVE -> wave(Section.FULL, color, Color.kRed, waveCycleLength, waveDuration);
     // }
 
-
-    for(LEDState state: ledStateList){
-      if(state.isCondition().getAsBoolean()){
+    for (LEDState state : ledStateList) {
+      if (state.isCondition().getAsBoolean()) {
 
         Color color1 = state.getColor1();
         Color color2 = state.getColor2();
 
-        switch(state.getApplyPattern()){
+        switch (state.getApplyPattern()) {
           case SOLID -> solid(Section.FULL, color1);
           case STROBE -> strobe(Section.FULL, color1, strobeDuration);
           case BREATH -> breath(Section.FULL, color1, color2, breathDuration);
@@ -249,11 +254,12 @@ public class LED extends VirtualSubsystem {
         }
 
         break;
-      };
+      }
+      ;
     }
-    
-    ledStrip.setData(ledBuffer);
 
-    
+    // solid(Section.FULL, Color.kAliceBlue);
+
+    ledStrip.setData(ledBuffer);
   }
 }
