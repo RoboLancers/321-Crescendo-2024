@@ -17,6 +17,11 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import org.robolancers321.util.VirtualSubsystem;
 
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.Color;
+
 /*
  99.9% of this class is written by FRC Team 6328 Mechanical Advantage, huge thanks to them - Vincent Z
  Yeah your led thingy was too good to not steal thank you for making it - Alex T
@@ -353,5 +358,7 @@ public class LED extends VirtualSubsystem {
     fire(ledBuffer, kCooling, kSparking);
 
     ledStrip.setData(ledBuffer);
+
+    
   }
 }
