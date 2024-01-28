@@ -1,17 +1,18 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems;
 
+import java.util.Comparator;
+import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.BooleanSupplier;
+
+import org.robolancers321.util.VirtualSubsystem;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.function.BooleanSupplier;
-import org.robolancers321.subsystems.LED.LEDState;
-import org.robolancers321.subsystems.LED.Section;
-import org.robolancers321.util.VirtualSubsystem;
 
 /*
  99.9% of this class is written by FRC Team 6328 Mechanical Advantage, huge thanks to them - Vincent Z
@@ -29,21 +30,28 @@ public class LED extends VirtualSubsystem {
     return instance;
   }
 
-  public static final int kLEDPWMPort = 9;
-  public static final int kLEDStripLength = 25;
+  private static final int kLEDPWMPort = 9;
+  private static final int kLEDStripLength = 25;
 
-  public static final double strobeDuration = 0.2;
-  public static final double breathDuration = 1.0;
-  public static final double rainbowCycleLength = 25.0;
-  public static final double rainbowDuration = 0.25;
-  public static final double waveExponent = 0.4;
-  public static final double waveCycleLength = 25.0;
-  public static final double waveDuration = 3.0;
-  public static final double stripeDuration = 0.5;
+  private static final double kStrobeDuration = 0.2;
+  private static final double kBreathDuration = 1.0;
+  private static final double kRainbowCycleLength = 25.0;
+  private static final double kRainbowDuration = 0.25;
+  private static final double kWaveExponent = 0.4;
+  private static final double kWaveCycleLength = 25.0;
+  private static final double kWaveDuration = 3.0;
+  private static final double kStripeDuration = 0.5;
+  private Random rng = new Random();
+
 
   private final AddressableLED ledStrip;
   private final AddressableLEDBuffer ledBuffer;
   private static SortedSet<LEDState> ledStateList;
+
+  private Color color1;
+  private Color color2;
+  private LEDPattern pattern;
+  
 
   // private final SendableChooser<LEDPattern> sendableChooser;
 
@@ -93,7 +101,7 @@ public class LED extends VirtualSubsystem {
   }
 
   private void breath(Section section, Color c1, Color c2, double duration, double timestamp) {
-    double x = ((timestamp % breathDuration) / breathDuration) * 2.0 * Math.PI;
+    double x = ((timestamp % kBreathDuration) / kBreathDuration) * 2.0 * Math.PI;
     double ratio = (Math.sin(x) + 1.0) / 2.0;
     double red = (c1.red * (1 - ratio)) + (c2.red * ratio);
     double green = (c1.green * (1 - ratio)) + (c2.green * ratio);
@@ -119,9 +127,9 @@ public class LED extends VirtualSubsystem {
     for (int i = 0; i < section.end(); i++) {
       x += xDiffPerLed;
       if (i >= section.start()) {
-        double ratio = (Math.pow(Math.sin(x), waveExponent) + 1.0) / 2.0;
+        double ratio = (Math.pow(Math.sin(x), kWaveExponent) + 1.0) / 2.0;
         if (Double.isNaN(ratio)) {
-          ratio = (-Math.pow(Math.sin(x + Math.PI), waveExponent) + 1.0) / 2.0;
+          ratio = (-Math.pow(Math.sin(x + Math.PI), kWaveExponent) + 1.0) / 2.0;
         }
         if (Double.isNaN(ratio)) {
           ratio = 0.5;
@@ -134,6 +142,97 @@ public class LED extends VirtualSubsystem {
     }
   }
 
+  private void meteorRain(int red, int green, int blue, int meteorSize, int meteorTrailDecay, boolean meteorRandomDecay) { 
+     for(int i = 0; i < kLEDStripLength+kLEDStripLength; i++) {
+   
+    // fade brightness all LEDs one step
+      for(int j=0; j<kLEDStripLength; j++) {
+        if( (!meteorRandomDecay) || (rng.nextInt(10) > 5) ) {
+          fadeToBlack(j, meteorTrailDecay);        
+        }
+      }
+    
+      // draw meteor
+      for(int j = 0; j < meteorSize; j++) {
+        if( ( i-j < kLEDStripLength) && (i-j>=0) ) {
+          ledBuffer.setRGB(i-j, red, green, blue);
+      }
+
+      //speed delay for generating new meteor 
+      // ledStrip.setData(ledBuffer);
+      // double speedDelay = 0.03;
+      // new WaitCommand(speedDelay);
+
+    }
+ }
+}
+
+public void fadeToBlack(int ledNo, int fadeValue){
+  int r = ledBuffer.getLED8Bit(ledNo).red;
+  int g = ledBuffer.getLED8Bit(ledNo).green;
+  int b = ledBuffer.getLED8Bit(ledNo).blue;
+
+  r=(r<=10)? 0 : (int) r-(r*fadeValue/256);
+  g=(g<=10)? 0 : (int) g-(g*fadeValue/256);
+  b=(b<=10)? 0 : (int) b-(b*fadeValue/256);
+
+  ledBuffer.setRGB(ledNo, r, g, b);
+}
+
+private void fire(int cooling, int sparking){
+
+  int[] heat = new int[kLEDStripLength];
+  int cooldown;
+  
+for( int i = 0; i < kLEDStripLength; i++) {
+    cooldown = rng.nextInt(0, ((cooling * 10) / kLEDStripLength) + 2);
+   
+    if(cooldown>heat[i]) {
+      heat[i]=0;
+    } else {
+      heat[i]=heat[i]-cooldown;
+    }
+  }
+ 
+  // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+  for( int k= kLEDStripLength - 1; k >= 2; k--) {
+    heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+  }
+   
+  // Step 3.  Randomly ignite new 'sparks' near the bottom
+  if( rng.nextInt(255) < sparking ) {
+    int y = rng.nextInt(7);
+    heat[y] = heat[y] + rng.nextInt(160,255);
+  }
+
+  // Step 4.  Convert heat to LED colors
+  for( int j = 0; j < kLEDStripLength; j++) {
+    setPixelHeatColor(j, heat[j] );
+  }
+}
+
+public void setPixelHeatColor(int pixel, int temperature){
+
+// Scale ‘heat’ down from 0-255 to 0-191,
+// which can then be easily divided into three
+// equal ‘thirds’ of 64 units each.
+  int spectrum = Math.round((temperature/255)*191);
+
+// calculate a value that ramps up from zero to 255 in each ‘third’ of the scale.
+  int heatramp = spectrum & 63; // 0..63
+  heatramp += 2; // scale up to 0..252
+ 
+  // figure out which third of the spectrum we're in:
+  if( spectrum > 128) {                     // hottest
+    ledBuffer.setRGB(pixel, 255, 255, heatramp);
+  } else if( spectrum > 64) {             // middle
+    ledBuffer.setRGB(pixel, 255, heatramp, 0);
+  } else {                               // coolest
+    ledBuffer.setRGB(pixel, heatramp, 0, 0);
+  }
+}
+
+
   // private void stripes(Section section, List<Color> colors, int length, double duration) {
   //   int offset = (int) (Timer.getFPGATimestamp() % duration / duration * length * colors.size());
   //   for (int i = section.start(); i < section.end(); i++) {
@@ -143,6 +242,7 @@ public class LED extends VirtualSubsystem {
   //     ledBuffer.setLED(i, colors.get(colorIndex));
   //   }
   // }
+
 
   public static enum Section {
     FULL;
@@ -168,28 +268,18 @@ public class LED extends VirtualSubsystem {
     WAVE,
   }
 
-  public static void register(
-      int priority,
-      BooleanSupplier condition,
-      LEDPattern applyPattern,
-      Color color1,
-      Color color2) {
+  public static void register(int priority, BooleanSupplier condition, LEDPattern applyPattern, Color color1, Color color2){
     ledStateList.add(new LEDState(priority, condition, applyPattern, color1, color2));
   }
 
-  public static class LEDState {
+  public static class LEDState{
     int priority;
     BooleanSupplier condition;
     LEDPattern applyPattern;
     Color color1;
     Color color2;
 
-    public LEDState(
-        int priority,
-        BooleanSupplier condition,
-        LEDPattern applyPattern,
-        Color color1,
-        Color color2) {
+    public LEDState(int priority, BooleanSupplier condition, LEDPattern applyPattern, Color color1, Color color2){
       this.priority = priority;
       this.condition = condition;
       this.applyPattern = applyPattern;
@@ -197,29 +287,32 @@ public class LED extends VirtualSubsystem {
       this.color2 = color2;
     }
 
-    public int getPriority() {
+    public int getPriority(){
       return priority;
     }
 
-    public BooleanSupplier isCondition() {
+    public BooleanSupplier isCondition(){
       return condition;
-    }
+    } 
 
-    public LEDPattern getApplyPattern() {
+    public LEDPattern getApplyPattern(){
       return applyPattern;
     }
 
-    public Color getColor1() {
+    public Color getColor1(){
       return color1;
     }
-
-    public Color getColor2() {
+    
+    public Color getColor2(){
       return color2;
     }
   }
 
+
   @Override
   public void periodic() {
+
+    //test LEDs
 
     // double r = SmartDashboard.getNumber("Red", 0);
     // double g = SmartDashboard.getNumber("Green", 0);
@@ -229,37 +322,38 @@ public class LED extends VirtualSubsystem {
 
     // SmartDashboard.putString("sendableChooser", sendableChooser.getSelected().toString());
 
+     
     // switch(sendableChooser.getSelected()){
     //   case SOLID -> solid(Section.FULL, color);
     //   case STROBE -> strobe(Section.FULL, color, strobeDuration);
-    //   case STRIPES -> stripes(Section.FULL, List.of(Color.kRed, Color.kYellow, Color.kWhite),
-    // kLEDStripLength, stripeDuration);
+    //   case STRIPES -> stripes(Section.FULL, List.of(Color.kRed, Color.kYellow, Color.kWhite), kLEDStripLength, stripeDuration);
     //   case BREATH -> breath(Section.FULL, color, Color.kAliceBlue, breathDuration);
     //   case RAINBOW -> rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
     //   case WAVE -> wave(Section.FULL, color, Color.kRed, waveCycleLength, waveDuration);
     // }
 
-    for (LEDState state : ledStateList) {
-      if (state.isCondition().getAsBoolean()) {
 
-        Color color1 = state.getColor1();
-        Color color2 = state.getColor2();
+    for(LEDState state: ledStateList){
+      if(state.isCondition().getAsBoolean()){
 
-        switch (state.getApplyPattern()) {
-          case SOLID -> solid(Section.FULL, color1);
-          case STROBE -> strobe(Section.FULL, color1, strobeDuration);
-          case BREATH -> breath(Section.FULL, color1, color2, breathDuration);
-          case RAINBOW -> rainbow(Section.FULL, rainbowCycleLength, rainbowDuration);
-          case WAVE -> wave(Section.FULL, color1, color2, waveCycleLength, waveDuration);
-        }
+        color1 = state.getColor1();
+        color2 = state.getColor2();
+        pattern = state.getApplyPattern();
 
         break;
       }
-      ;
     }
 
-    // solid(Section.FULL, Color.kAliceBlue);
+    switch(pattern){
+      case SOLID -> solid(Section.FULL, color1);
+      case STROBE -> strobe(Section.FULL, color1, kStrobeDuration);
+      case BREATH -> breath(Section.FULL, color1, color2, kBreathDuration);
+      case RAINBOW -> rainbow(Section.FULL, kRainbowCycleLength, kRainbowDuration);
+      case WAVE -> wave(Section.FULL, color1, color2, kWaveCycleLength, kWaveDuration);
+    }
 
     ledStrip.setData(ledBuffer);
+
+    
   }
 }
