@@ -4,27 +4,25 @@ package org.robolancers321.subsystems.intake;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
-public class IntakeRetractor extends SubsystemBase {
+public class Retractor extends SubsystemBase {
   /*
    * Singleton
    */
 
-  private static IntakeRetractor instance = null;
+  private static Retractor instance = null;
 
-  public static IntakeRetractor getInstance() {
-    if (instance == null) instance = new IntakeRetractor();
+  public static Retractor getInstance() {
+    if (instance == null) instance = new Retractor();
 
     return instance;
   }
@@ -34,8 +32,6 @@ public class IntakeRetractor extends SubsystemBase {
    */
 
   private static final int kMotorPort = 0;
-  private static final int kLimitSwitchPort = 0;
-  private static final int kBeamBreakPort = 0;
 
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 20;
@@ -43,24 +39,24 @@ public class IntakeRetractor extends SubsystemBase {
   private static final double kP = 0.000;
   private static final double kI = 0.000;
   private static final double kD = 0.000;
+  
   private static final double kS = 0.000;
-  private static final double kV = 0.000;
-  private static final double kA = 0.000;
   private static final double kG = 0.000;
+  private static final double kV = 0.000;
 
   private static final double kMaxVelocityDeg = 0.0;
   private static final double kMaxAccelerationDeg = 0.0;
 
   private static final double kErrorThreshold = 2.0;
 
-  public static enum RetractorSetpoint {
+  public static enum RetractorPosition {
     kRetracted(0),
     kMating(0),
     kIntake(0);
 
     private double angle;
 
-    private RetractorSetpoint(double angle) {
+    private RetractorPosition(double angle) {
       this.angle = angle;
     }
 
@@ -74,31 +70,20 @@ public class IntakeRetractor extends SubsystemBase {
    */
 
   private CANSparkMax motor;
-  private AbsoluteEncoder absoluteEncoder;
-  private RelativeEncoder relativeEncoder;
+  private AbsoluteEncoder encoder;
   private ProfiledPIDController feedbackController;
   private ArmFeedforward feedforwardController;
 
-  private DigitalInput limitSwitch;
-  private DigitalInput beamBreak;
-
-  private RetractorSetpoint setpoint;
-
-  private IntakeRetractor() {
+  private Retractor() {
     this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
-    this.absoluteEncoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
-    this.relativeEncoder = this.motor.getEncoder();
+    this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
     this.feedbackController =
         new ProfiledPIDController(
             kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg));
 
-    this.limitSwitch = new DigitalInput(kLimitSwitchPort);
-    this.beamBreak = new DigitalInput(kBeamBreakPort);
-
     this.configureMotor();
     this.configureEncoder();
     this.configureController();
-    this.configureLimitSwitchResponder();
   }
 
   private void configureMotor() {
@@ -109,67 +94,33 @@ public class IntakeRetractor extends SubsystemBase {
   }
 
   private void configureEncoder() {
-    this.relativeEncoder.setInverted(kInvertMotor);
-    this.absoluteEncoder.setInverted(kInvertMotor);
-    this.relativeEncoder.setPositionConversionFactor(360);
-    this.absoluteEncoder.setPositionConversionFactor(360);
-
-    /*
-     * TODO
-     *
-     * set position conversion rate (store this rate as a constant), set encoder inversion
-     *
-     * this should probably be done for both encoders just in case
-     */
+    this.encoder.setInverted(kInvertMotor);
+    this.encoder.setPositionConversionFactor(360); // TODO: potentially a gear ratio on this
   }
 
   private void configureController() {
-    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
-
     this.feedbackController.setP(kP);
     this.feedbackController.setI(kI);
     this.feedbackController.setD(kD);
-  }
+    this.feedbackController.setTolerance(kErrorThreshold);
 
-  private void configureLimitSwitchResponder() {
-    new Trigger(this::isLimitSwitchTriggered).whileTrue(new RunCommand(this::resetEncoder));
+    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
   }
 
   public double getPosition() {
-    return this.absoluteEncoder.getPosition();
-
-    // if using relative encoder
-    // return this.relativeEncoder.getPosition();
+    return this.encoder.getPosition();
   }
 
-  public boolean isLimitSwitchTriggered() {
-    return !this.limitSwitch.get();
+  public boolean isAtGoal() {
+    return this.feedbackController.atGoal();
   }
 
-  public boolean isBeamBroken() {
-    return !this.beamBreak.get();
+  private void setGoal(double goal){
+    this.feedbackController.setGoal(goal);
   }
 
-  // TODO: this method is totally fine but may be scrapped when we move to a motion profiling
-  // implementation
-  public boolean isAtPosition(double position) {
-    return Math.abs(this.getPosition() - position) < kErrorThreshold;
-  }
-
-  public boolean isAtSetpoint() {
-    return this.isAtPosition(this.setpoint.getAngle());
-  }
-
-  public void resetEncoder(double position) {
-    this.relativeEncoder.setPosition(position);
-  }
-
-  public void resetEncoder() {
-    this.resetEncoder(RetractorSetpoint.kRetracted.getAngle());
-  }
-
-  public void setSetpoint(RetractorSetpoint setpoint) {
-    this.setpoint = setpoint;
+  private void setGoal(RetractorPosition goal){
+    this.setGoal(goal.getAngle());
   }
 
   private void useController() {
@@ -180,13 +131,13 @@ public class IntakeRetractor extends SubsystemBase {
     double feedbackOutput = this.feedbackController.calculate(this.getPosition());
 
     double controllerOutput = feedforwardOutput + feedbackOutput;
-    this.motor.setVoltage(controllerOutput);
+
+    this.motor.set(controllerOutput);
   }
 
   private void doSendables() {
-    SmartDashboard.putNumber("current position", relativeEncoder.getPosition());
-    SmartDashboard.putBoolean("note detected", this.isBeamBroken());
-    SmartDashboard.putBoolean("Retractor at position(deg)", this.isAtSetpoint());
+    SmartDashboard.putNumber("current position (deg)", this.getPosition());
+    SmartDashboard.putBoolean("retractor at goal", this.isAtGoal());
   }
 
   @Override
@@ -195,25 +146,59 @@ public class IntakeRetractor extends SubsystemBase {
     doSendables();
   }
 
-  public void initTuning() {
+  private void initTuning() {
     SmartDashboard.putNumber("retractor kP", SmartDashboard.getNumber("retractor kP", kP));
     SmartDashboard.putNumber("retractor kI", SmartDashboard.getNumber("retractor kI", kI));
     SmartDashboard.putNumber("retractor kD", SmartDashboard.getNumber("retractor kD", kD));
+
     SmartDashboard.putNumber("retractor kS", SmartDashboard.getNumber("retractor kS", kS));
     SmartDashboard.putNumber("retractor kV", SmartDashboard.getNumber("retractor kV", kV));
-    SmartDashboard.putNumber("retractor kA", SmartDashboard.getNumber("retractor kA", kA));
     SmartDashboard.putNumber("retractor kG", SmartDashboard.getNumber("retractor kG", kG));
+
+    SmartDashboard.putNumber("target retractor position", this.getPosition());
   }
 
-  public void tune() {
+  private void tune() {
     double tunedP = SmartDashboard.getNumber("retractor kp", kP);
     double tunedI = SmartDashboard.getNumber("retractor kI", kI);
     double tunedD = SmartDashboard.getNumber("retractor kD", kD);
 
-    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
-
     this.feedbackController.setP(tunedP);
     this.feedbackController.setI(tunedI);
     this.feedbackController.setD(tunedD);
+
+    double tunedS = SmartDashboard.getNumber("retractor kS", kS);
+    double tunedV = SmartDashboard.getNumber("retractor kV", kV);
+    double tunedG = SmartDashboard.getNumber("retractor kG", kG);
+
+    this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
+    
+    double targetRetractorPosition = SmartDashboard.getNumber("target retractor position", this.getPosition());
+    
+    this.setGoal(targetRetractorPosition);
+  }
+
+  private Command moveToPosition(RetractorPosition position){
+    this.setGoal(position);
+
+    return new WaitUntilCommand(this::isAtGoal);
+  }
+
+  public Command moveToRetracted(){
+    return this.moveToPosition(RetractorPosition.kRetracted);
+  }
+
+  public Command moveToMating(){
+    return this.moveToPosition(RetractorPosition.kMating);
+  }
+
+  public Command moveToIntake(){
+    return this.moveToPosition(RetractorPosition.kIntake);
+  }
+
+  public Command tuneControllers(){
+    this.initTuning();
+
+    return run(this::tune);
   }
 }
