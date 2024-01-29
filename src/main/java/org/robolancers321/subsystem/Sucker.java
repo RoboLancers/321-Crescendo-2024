@@ -1,12 +1,11 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystem;
 
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,7 +17,7 @@ public class Sucker extends SubsystemBase {
 
   private static Sucker instance = null;
 
-  public static Sucker getInstance(){
+  public static Sucker getInstance() {
     if (instance == null) instance = new Sucker();
 
     return instance;
@@ -59,7 +58,7 @@ public class Sucker extends SubsystemBase {
     this.configureController();
   }
 
-  private void configureMotor(){
+  private void configureMotor() {
 
     this.motor.setInverted(kInvertMotor);
     this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -68,13 +67,13 @@ public class Sucker extends SubsystemBase {
     // TODO: inversion, current limit, idle mode, voltage compensation
   }
 
-  public void configureEncoder(){
+  public void configureEncoder() {
 
     this.encoder.setVelocityConversionFactor(1);
     // TODO: set velocity conversion factor to 1
   }
 
-  public void configureController(){
+  public void configureController() {
 
     this.controller.setP(kP);
     this.controller.setI(kI);
@@ -83,11 +82,11 @@ public class Sucker extends SubsystemBase {
     // TODO: set kP, kI, kD, kFF on controller
   }
 
-  public double getVelocityRPM(){
+  public double getVelocityRPM() {
     return this.encoder.getVelocity();
   }
 
-  private void doSendables(){
+  private void doSendables() {
     SmartDashboard.putNumber("sucker velocity rpm", this.getVelocityRPM());
   }
 
@@ -95,8 +94,8 @@ public class Sucker extends SubsystemBase {
   public void periodic() {
     this.doSendables();
   }
-  
-  public void initTuning(){
+
+  public void initTuning() {
 
     SmartDashboard.putNumber("kP", SmartDashboard.getNumber("kP", kP));
     SmartDashboard.putNumber("kI", SmartDashboard.getNumber("kI", kI));
@@ -105,7 +104,7 @@ public class Sucker extends SubsystemBase {
     // TODO: put default values for kP, kI, kD, kFF on SmartDashboard
   }
 
-  public void tune(){
+  public void tune() {
 
     double PTuned = SmartDashboard.getNumber("kP", kP);
     double ITuned = SmartDashboard.getNumber("kI", kI);
@@ -120,18 +119,20 @@ public class Sucker extends SubsystemBase {
   }
 
   public Command in() {
-    return run(() -> this.controller.setReference(kInRPM, ControlType.kVelocity)).andThen(() -> this.controller.setReference(0, ControlType.kVelocity));
+    return run(() -> this.controller.setReference(kInRPM, ControlType.kVelocity))
+        .andThen(() -> this.controller.setReference(0, ControlType.kVelocity));
   }
 
   public Command out(double power) {
-    return run(() -> this.controller.setReference(kOutRPM, ControlType.kVelocity)).andThen(() -> this.controller.setReference(0, ControlType.kVelocity));
+    return run(() -> this.controller.setReference(kOutRPM, ControlType.kVelocity))
+        .andThen(() -> this.controller.setReference(0, ControlType.kVelocity));
   }
 
   // public Command off() {
   //   return runOnce(() -> this.controller.setReference(0.0, ControlType.kVelocity));
   // }
 
-  public Command tuneController(){
+  public Command tuneController() {
     initTuning();
 
     return run(this::tune);
