@@ -39,7 +39,7 @@ public class Retractor extends SubsystemBase {
   private static final double kP = 0.000;
   private static final double kI = 0.000;
   private static final double kD = 0.000;
-  
+
   private static final double kS = 0.000;
   private static final double kG = 0.000;
   private static final double kV = 0.000;
@@ -115,11 +115,11 @@ public class Retractor extends SubsystemBase {
     return this.feedbackController.atGoal();
   }
 
-  private void setGoal(double goal){
+  private void setGoal(double goal) {
     this.feedbackController.setGoal(goal);
   }
 
-  private void setGoal(RetractorPosition goal){
+  private void setGoal(RetractorPosition goal) {
     this.setGoal(goal.getAngle());
   }
 
@@ -172,31 +172,32 @@ public class Retractor extends SubsystemBase {
     double tunedG = SmartDashboard.getNumber("retractor kG", kG);
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
-    
-    double targetRetractorPosition = SmartDashboard.getNumber("target retractor position", this.getPosition());
-    
+
+    double targetRetractorPosition =
+        SmartDashboard.getNumber("target retractor position", this.getPosition());
+
     this.setGoal(targetRetractorPosition);
   }
 
-  private Command moveToPosition(RetractorPosition position){
+  private Command moveToPosition(RetractorPosition position) {
     this.setGoal(position);
 
     return new WaitUntilCommand(this::isAtGoal);
   }
 
-  public Command moveToRetracted(){
+  public Command moveToRetracted() {
     return this.moveToPosition(RetractorPosition.kRetracted);
   }
 
-  public Command moveToMating(){
+  public Command moveToMating() {
     return this.moveToPosition(RetractorPosition.kMating);
   }
 
-  public Command moveToIntake(){
+  public Command moveToIntake() {
     return this.moveToPosition(RetractorPosition.kIntake);
   }
 
-  public Command tuneControllers(){
+  public Command tuneControllers() {
     this.initTuning();
 
     return run(this::tune);
