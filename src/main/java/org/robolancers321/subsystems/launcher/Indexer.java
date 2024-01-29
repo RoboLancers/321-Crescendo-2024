@@ -5,10 +5,17 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.ControlType;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class Indexer extends SubsystemBase {
@@ -39,9 +46,9 @@ public class Indexer extends SubsystemBase {
   private static final double kD = 0;
   private static final double kFF = 0;
 
-  private static final double kMaxRPM = 5700;
-  private static final double kIntakeSpeedRPM = 500;
-  private static final double kOuttakeSpeedRPM = -500;
+  private static final double kHandoffRPM = 1500;
+  private static final double kReindexRPM = 500;
+  private static final double kOuttakeRPM = 5000;
 
   /*
    * Implementation
@@ -83,7 +90,7 @@ public class Indexer extends SubsystemBase {
     this.controller.setFF(kFF);
   }
 
-  public double getIntakeVelocityRPM() {
+  public double getRPM() {
     return this.encoder.getVelocity();
   }
 
@@ -91,24 +98,41 @@ public class Indexer extends SubsystemBase {
     return this.beamBreak.get();
   }
 
-  public void dangerouslySetRPM(double rpm) {
-    this.motor.set(rpm / kMaxRPM);
-  }
-
-  public void dangerouslySetSpeed(double speed) {
+  private void dangerouslySetSpeed(double speed) {
     this.motor.set(speed);
   }
 
-  public void intakeJawn() {
-    this.controller.setReference(kIntakeSpeedRPM, ControlType.kVelocity);
+  private void setRPM(double rpm){
+    this.controller.setReference(rpm, ControlType.kVelocity);
   }
 
-  public void outtakeJawn() {
-    this.controller.setReference(kOuttakeSpeedRPM, ControlType.kVelocity);
+  private void doSendables() {
+    SmartDashboard.putNumber("indexer rpm", this.getRPM());
+    SmartDashboard.putBoolean("note detected", this.jawnDetected());
   }
 
-  public void stopSpinningJawn() {
-    this.controller.setReference(0.0, ControlType.kVelocity);
+  @Override
+  public void periodic() {
+    this.doSendables();
+  }
+
+  private void initTuning() {
+    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kp", kP));
+    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer ki", kI));
+    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kd", kD));
+    SmartDashboard.putNumber("indexer kff", SmartDashboard.getNumber("indexer kff", kFF));
+  }
+
+  private void tune() {
+    double tunedP = SmartDashboard.getNumber("indexer kp", kP);
+    double tunedI = SmartDashboard.getNumber("indexer ki", kI);
+    double tunedD = SmartDashboard.getNumber("indexer kd", kD);
+    double tunedFF = SmartDashboard.getNumber("indexer kff", kFF);
+
+    this.controller.setP(tunedP);
+    this.controller.setI(tunedI);
+    this.controller.setD(tunedD);
+    this.controller.setFF(tunedFF);
   }
 
   public Command manualIndex(DoubleSupplier appliedSpeedSupplier) {
@@ -119,38 +143,45 @@ public class Indexer extends SubsystemBase {
     return this.manualIndex(() -> appliedSpeed);
   }
 
-  public Command index() {
-    // TODO: until beam break goes from true to false, also maybe add a time delay
-    // TODO: should this beam break be the same as shooter?
-    return run(this::intakeJawn).until(this::jawnDetected).finallyDo(this::stopSpinningJawn);
+  private Command off(){
+    return runOnce(() -> this.setRPM(0.0));
   }
 
-  private void doSendables() {
-    SmartDashboard.putNumber("Indexer Velocity (rpm)", this.getIntakeVelocityRPM());
-    SmartDashboard.putBoolean("Note Detected", this.jawnDetected());
+  public Command acceptHandoff() {
+    return run(() -> this.setRPM(kHandoffRPM)).until(this::jawnDetected).finallyDo(this::off);
   }
 
-  @Override
-  public void periodic() {
-    this.doSendables();
+  public Command reindex(BooleanSupplier beamBreakStateSupplier){
+    /*
+     * TODO
+     * 
+     * sequential
+     *    while beam is broken, setRPM(-kReindexRPM)
+     *    while beam is not broken, setRPM(kReindexRPM)
+     * finally do set rpm to 0
+     * 
+     * 
+     * this should also have a timeout for safety
+     * 
+     */
+
+    return null;
   }
 
-  public void initTuning() {
-    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kp", kP));
-    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer ki", kI));
-    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kd", kD));
-    SmartDashboard.putNumber("indexer kff", SmartDashboard.getNumber("indexer kff", kFF));
+  public Command outtake(BooleanSupplier beamBreakStateSupplier) {
+    return new ParallelRaceGroup(
+      run(() -> this.setRPM(kOuttakeRPM)),
+      new SequentialCommandGroup(
+        new WaitUntilCommand(() -> beamBreakStateSupplier.getAsBoolean()),
+        new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())
+      ),
+      new WaitCommand(0.4) // TODO: just incase beam break fails, stop after some safe amount of time
+    ).finallyDo(this::off);
   }
 
-  public void tune() {
-    double tunedP = SmartDashboard.getNumber("indexer kp", kP);
-    double tunedI = SmartDashboard.getNumber("indexer ki", kI);
-    double tunedD = SmartDashboard.getNumber("indexer kd", kD);
-    double tunedFF = SmartDashboard.getNumber("indexer kff", kFF);
-
-    this.controller.setP(tunedP);
-    this.controller.setI(tunedI);
-    this.controller.setD(tunedD);
-    this.controller.setFF(tunedFF);
+  public Command tuneController(){
+    this.initTuning();
+    
+    return run(this::tune);
   }
 }

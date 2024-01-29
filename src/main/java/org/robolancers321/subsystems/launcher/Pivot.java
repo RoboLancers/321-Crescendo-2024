@@ -2,7 +2,6 @@
 package org.robolancers321.subsystems.launcher;
 
 import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
-import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
@@ -13,7 +12,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import java.util.function.DoubleSupplier;
-import org.robolancers321.util.InterpolationTable;
 
 public class Pivot extends ProfiledPIDSubsystem {
   /*
@@ -56,25 +54,15 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   private static final double kToleranceDeg = 0.0;
 
-  private static final double kInterpolationThreshold = 0.0;
-
-  private double latestDistance = 0.0;
-  private InterpolationTable.AimCharacteristic latestCharacteristic;
-
   public enum PivotSetpoint {
     kRetracted(0.0),
     kMating(0.0),
-    kSpeaker(0.0),
     kAmp(0.0);
 
-    private final double angle;
+    public final double angle;
 
     PivotSetpoint(double angle) {
       this.angle = angle;
-    }
-
-    public double getAngle() {
-      return this.angle;
     }
   }
 
@@ -118,58 +106,25 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.absoluteEncoder.setVelocityConversionFactor(kRotPerMinToDegPerSec);
   }
 
-  @Override
-  public double getMeasurement() {
-    return getVelocityRad();
-  }
-
   private void configureController() {
     super.m_controller.setTolerance(kToleranceDeg);
+  }
+
+  @Override
+  public double getMeasurement() {
+    return this.getPositionDeg();
   }
 
   public double getPositionDeg() {
     return this.absoluteEncoder.getPosition();
   }
 
-  public double getPositionRad() {
-    return Math.toRadians(this.getPositionDeg());
-  }
-
   public double getVelocityDeg() {
     return this.absoluteEncoder.getVelocity();
   }
 
-  public double getVelocityRad() {
-    return Math.toRadians(this.getVelocityDeg());
-  }
-
   private boolean atGoal() {
     return super.m_controller.atGoal();
-  }
-
-  public void setAngleGoal(double goal) {
-    super.setGoal(new TrapezoidProfile.State(goal, 0.0));
-  }
-
-  public void setAngleGoal(PivotSetpoint goal) {
-    super.setGoal(goal.getAngle());
-  }
-
-  public void setAngleGoal(DoubleSupplier distance) {
-    if (!epsilonEquals(distance.getAsDouble(), latestDistance, kInterpolationThreshold)) {
-      latestCharacteristic = InterpolationTable.interpolate(distance.getAsDouble());
-      latestDistance = distance.getAsDouble();
-    }
-
-    setAngleGoal(latestCharacteristic.getPitchAngle());
-  }
-
-  public Command aimAtSpeaker(DoubleSupplier distance) {
-    return run(() -> setAngleGoal(distance)).until(this::atGoal);
-  }
-
-  public Command positionAmp() {
-    return run(() -> setAngleGoal(PivotSetpoint.kAmp)).until(this::atGoal);
   }
 
   @Override
@@ -181,7 +136,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     double controllerOutput = feedforwardOutput + feedbackOutput;
 
-    this.motor.setVoltage(controllerOutput);
+    this.motor.set(controllerOutput);
   }
 
   public void doSendables() {
@@ -191,36 +146,64 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   @Override
   public void periodic() {
-
     this.doSendables();
   }
 
-  public void initTuning() {
+  private void initTuning() {
+    SmartDashboard.putNumber("pivot kp", SmartDashboard.getNumber("pivot kp", kP));
+    SmartDashboard.putNumber("pivot ki", SmartDashboard.getNumber("pivot ki", kI));
+    SmartDashboard.putNumber("pivot kd", SmartDashboard.getNumber("pivot kd", kD));
+
     SmartDashboard.putNumber("pivot ks", SmartDashboard.getNumber("pivot ks", kS));
     SmartDashboard.putNumber("pivot kg", SmartDashboard.getNumber("pivot kg", kG));
     SmartDashboard.putNumber("pivot kv", SmartDashboard.getNumber("pivot kv", kV));
 
-    SmartDashboard.putNumber("pivot kp", SmartDashboard.getNumber("pivot kp", kP));
-    SmartDashboard.putNumber("pivot ki", SmartDashboard.getNumber("pivot ki", kI));
-    SmartDashboard.putNumber("pivot kd", SmartDashboard.getNumber("pivot kd", kD));
+    SmartDashboard.putNumber("target pivot position", this.getPositionDeg());
   }
 
-  public void tune() {
-    double tunedS = SmartDashboard.getNumber("pivot ks", kS);
-    double tunedG = SmartDashboard.getNumber("pivot kg", kG);
-    double tunedV = SmartDashboard.getNumber("pivot kv", kV);
-
-    // TODO: is there a better way to update this?
-    if (tunedS != this.feedforwardController.ks
-        || tunedG != this.feedforwardController.kg
-        || tunedV != this.feedforwardController.kv) {
-      this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
-    }
-
+  private void tune() {
     double tunedP = SmartDashboard.getNumber("pivot kp", kP);
     double tunedI = SmartDashboard.getNumber("pivot ki", kI);
     double tunedD = SmartDashboard.getNumber("pivot kd", kD);
 
     super.m_controller.setPID(tunedP, tunedI, tunedD);
+
+    double tunedS = SmartDashboard.getNumber("pivot ks", kS);
+    double tunedG = SmartDashboard.getNumber("pivot kg", kG);
+    double tunedV = SmartDashboard.getNumber("pivot kv", kV);
+    
+    this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
+
+    this.setGoal(SmartDashboard.getNumber("target pivot position", this.getPositionDeg()));
+  }
+
+  private Command moveToAngle(DoubleSupplier angleSupplier){
+    return run(() -> this.setGoal(angleSupplier.getAsDouble())).until(this::atGoal);
+  }
+
+  private Command moveToAngle(double angle){
+    return this.moveToAngle(() -> angle);
+  }
+
+  public Command goToRetracted(){
+    return this.moveToAngle(AimTable.kRetractedAimCharacteristic.angle);
+  }
+
+  public Command goToMating(){
+    return this.moveToAngle(AimTable.kMatingAimCharacteristic.angle);
+  }
+
+  public Command aimAtAmp(){
+    return this.moveToAngle(AimTable.kAmpAimCharacteristic.angle);
+  }
+
+  public Command aimAtSpeaker(DoubleSupplier angleSupplier){
+    return this.moveToAngle(angleSupplier);
+  }
+
+  public Command tuneControllers(){
+    this.initTuning();
+
+    return run(this::tune);
   }
 }
