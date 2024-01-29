@@ -59,31 +59,29 @@ public class Sucker extends SubsystemBase {
   }
 
   private void configureMotor() {
-
     this.motor.setInverted(kInvertMotor);
     this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
-    // TODO: inversion, current limit, idle mode, voltage compensation
   }
 
-  public void configureEncoder() {
-
+  private void configureEncoder() {
     this.encoder.setVelocityConversionFactor(1);
-    // TODO: set velocity conversion factor to 1
   }
 
-  public void configureController() {
-
+  private void configureController() {
     this.controller.setP(kP);
     this.controller.setI(kI);
     this.controller.setD(kD);
     this.controller.setFF(kFF);
-    // TODO: set kP, kI, kD, kFF on controller
   }
 
   public double getVelocityRPM() {
     return this.encoder.getVelocity();
+  }
+
+  private void useController(double desiredRPM){
+    this.controller.setReference(desiredRPM, ControlType.kVelocity);
   }
 
   private void doSendables() {
@@ -95,42 +93,40 @@ public class Sucker extends SubsystemBase {
     this.doSendables();
   }
 
-  public void initTuning() {
+  private void initTuning() {
+    SmartDashboard.putNumber("sucker kP", SmartDashboard.getNumber("sucker kP", kP));
+    SmartDashboard.putNumber("sucker kI", SmartDashboard.getNumber("sucker kI", kI));
+    SmartDashboard.putNumber("sucker kD", SmartDashboard.getNumber("sucker kD", kD));
+    SmartDashboard.putNumber("sucker kFF", SmartDashboard.getNumber("sucker kFF", kFF));
 
-    SmartDashboard.putNumber("kP", SmartDashboard.getNumber("kP", kP));
-    SmartDashboard.putNumber("kI", SmartDashboard.getNumber("kI", kI));
-    SmartDashboard.putNumber("kD", SmartDashboard.getNumber("kD", kD));
-    SmartDashboard.putNumber("kFF", SmartDashboard.getNumber("kFF", kFF));
-    // TODO: put default values for kP, kI, kD, kFF on SmartDashboard
+    SmartDashboard.putNumber("target sucker rpm", 0.0);
   }
 
-  public void tune() {
+  private void tune() {
+    double tunedP = SmartDashboard.getNumber("sucker kP", kP);
+    double tunedI = SmartDashboard.getNumber("sucker kI", kI);
+    double tunedD = SmartDashboard.getNumber("sucker kD", kD);
+    double tunedFF = SmartDashboard.getNumber("sucker kFF", kFF);
 
-    double PTuned = SmartDashboard.getNumber("kP", kP);
-    double ITuned = SmartDashboard.getNumber("kI", kI);
-    double DTuned = SmartDashboard.getNumber("kD", kD);
-    double FFTuned = SmartDashboard.getNumber("kFF", kFF);
+    this.controller.setP(tunedP);
+    this.controller.setI(tunedI);
+    this.controller.setD(tunedD);
+    this.controller.setFF(tunedFF);
 
-    this.controller.setP(PTuned);
-    this.controller.setI(ITuned);
-    this.controller.setD(DTuned);
-    this.controller.setFF(FFTuned);
-    // TODO: read the values for kP, kI, kD, kFF from SmartDashboard and update your controller
+    double targetRPM = SmartDashboard.getNumber("target sucker rpm", 0.0);
+
+    this.useController(targetRPM);
   }
 
   public Command in() {
-    return run(() -> this.controller.setReference(kInRPM, ControlType.kVelocity))
-        .andThen(() -> this.controller.setReference(0, ControlType.kVelocity));
+    return run(() -> this.useController(kInRPM))
+        .finallyDo(() -> this.useController(0.0));
   }
 
   public Command out(double power) {
-    return run(() -> this.controller.setReference(kOutRPM, ControlType.kVelocity))
-        .andThen(() -> this.controller.setReference(0, ControlType.kVelocity));
+    return run(() -> this.useController(kOutRPM))
+        .finallyDo(() -> this.useController(0.0));
   }
-
-  // public Command off() {
-  //   return runOnce(() -> this.controller.setReference(0.0, ControlType.kVelocity));
-  // }
 
   public Command tuneController() {
     initTuning();
