@@ -80,7 +80,7 @@ public class Sucker extends SubsystemBase {
     return this.encoder.getVelocity();
   }
 
-  private void useController(double desiredRPM){
+  private void useController(double desiredRPM) {
     this.controller.setReference(desiredRPM, ControlType.kVelocity);
   }
 
@@ -119,13 +119,11 @@ public class Sucker extends SubsystemBase {
   }
 
   public Command in() {
-    return run(() -> this.useController(kInRPM))
-        .finallyDo(() -> this.useController(0.0));
+    return run(() -> this.useController(kInRPM)).finallyDo(() -> this.useController(0.0));
   }
 
   public Command out(double power) {
-    return run(() -> this.useController(kOutRPM))
-        .finallyDo(() -> this.useController(0.0));
+    return run(() -> this.useController(kOutRPM)).finallyDo(() -> this.useController(0.0));
   }
 
   public Command tuneController() {
