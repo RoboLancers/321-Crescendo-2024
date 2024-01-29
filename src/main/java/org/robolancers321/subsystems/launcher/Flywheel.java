@@ -5,7 +5,6 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,7 +23,6 @@ public class Flywheel extends SubsystemBase {
 
   private static final int kTopMotorPort = 0;
   private static final int kBottomMotorPort = 0;
-  private static final int kBeamBreakPort = 0;
 
   private static final int kCurrentLimit = 40;
 
@@ -36,8 +34,6 @@ public class Flywheel extends SubsystemBase {
   private static final double kFF = 0.0;
 
   private final double kErrorTolerance = 0.0;
-  private final double kInterpolationCacheThreshold =
-      0.0; // the distance at which interpolation table recalculates setpoints
 
   /*
    * Implementation
@@ -55,8 +51,6 @@ public class Flywheel extends SubsystemBase {
   private SlewRateLimiter topLimiter;
   private SlewRateLimiter bottomLimiter;
 
-  private DigitalInput beamBreak;
-
   private double goalRPM = 0.0;
 
   private Flywheel() {
@@ -71,8 +65,6 @@ public class Flywheel extends SubsystemBase {
 
     this.topLimiter = new SlewRateLimiter(kRampUpRate);
     this.bottomLimiter = new SlewRateLimiter(kRampUpRate);
-
-    this.beamBreak = new DigitalInput(kBeamBreakPort);
 
     this.configureMotors();
     this.configureEncoders();
@@ -127,11 +119,11 @@ public class Flywheel extends SubsystemBase {
         this.bottomLimiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
   }
 
-  private boolean isTopRevved(){
+  private boolean isTopRevved() {
     return epsilonEquals(this.getTopRPM(), this.goalRPM, kErrorTolerance);
   }
 
-  private boolean isBottomRevved(){
+  private boolean isBottomRevved() {
     return epsilonEquals(this.getBottomRPM(), this.goalRPM, kErrorTolerance);
   }
 
@@ -171,15 +163,17 @@ public class Flywheel extends SubsystemBase {
     this.useControllers();
   }
 
-  public Command dangerouslyYeet(double speed){
-    return run(() -> this.dangerouslySetSpeed(speed)).finallyDo(() -> this.dangerouslySetSpeed(0.0));
+  public Command dangerouslyYeet(double speed) {
+    return run(() -> this.dangerouslySetSpeed(speed))
+        .finallyDo(() -> this.dangerouslySetSpeed(0.0));
   }
 
-  private Command off(){
-    return runOnce(() -> {
-      this.goalRPM = 0.0;
-      this.useControllers();
-    });
+  private Command off() {
+    return runOnce(
+        () -> {
+          this.goalRPM = 0.0;
+          this.useControllers();
+        });
   }
 
   public Command yeetNoteAmp() {
@@ -190,12 +184,13 @@ public class Flywheel extends SubsystemBase {
 
   public Command yeetNoteSpeaker(DoubleSupplier rpmSupplier) {
     return run(() -> {
-      this.goalRPM = rpmSupplier.getAsDouble();
-      this.useControllers();
-    }).finallyDo(this::off);
+          this.goalRPM = rpmSupplier.getAsDouble();
+          this.useControllers();
+        })
+        .finallyDo(this::off);
   }
 
-  public Command tuneController(){
+  public Command tuneController() {
     this.initTuning();
 
     return run(this::tune).finallyDo(this::off);

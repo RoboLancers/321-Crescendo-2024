@@ -5,7 +5,6 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.ControlType;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -102,7 +100,7 @@ public class Indexer extends SubsystemBase {
     this.motor.set(speed);
   }
 
-  private void setRPM(double rpm){
+  private void setRPM(double rpm) {
     this.controller.setReference(rpm, ControlType.kVelocity);
   }
 
@@ -143,26 +141,26 @@ public class Indexer extends SubsystemBase {
     return this.manualIndex(() -> appliedSpeed);
   }
 
-  private Command off(){
+  private Command off() {
     return runOnce(() -> this.setRPM(0.0));
   }
 
-  public Command acceptHandoff() {
-    return run(() -> this.setRPM(kHandoffRPM)).until(this::jawnDetected).finallyDo(this::off);
+  public Command acceptHandoff(BooleanSupplier beamBreakStateSupplier) {
+    return run(() -> this.setRPM(kHandoffRPM)).until(beamBreakStateSupplier).finallyDo(this::off);
   }
 
-  public Command reindex(BooleanSupplier beamBreakStateSupplier){
+  public Command reindex(BooleanSupplier beamBreakStateSupplier) {
     /*
      * TODO
-     * 
+     *
      * sequential
-     *    while beam is broken, setRPM(-kReindexRPM)
-     *    while beam is not broken, setRPM(kReindexRPM)
+     *    while beam is broken, setRPM(kReindexRPM)
+     *    while beam is not broken, setRPM(-kReindexRPM)
      * finally do set rpm to 0
-     * 
-     * 
+     *
+     *
      * this should also have a timeout for safety
-     * 
+     *
      */
 
     return null;
@@ -170,18 +168,19 @@ public class Indexer extends SubsystemBase {
 
   public Command outtake(BooleanSupplier beamBreakStateSupplier) {
     return new ParallelRaceGroup(
-      run(() -> this.setRPM(kOuttakeRPM)),
-      new SequentialCommandGroup(
-        new WaitUntilCommand(() -> beamBreakStateSupplier.getAsBoolean()),
-        new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())
-      ),
-      new WaitCommand(0.4) // TODO: just incase beam break fails, stop after some safe amount of time
-    ).finallyDo(this::off);
+            run(() -> this.setRPM(kOuttakeRPM)),
+            new SequentialCommandGroup(
+                new WaitUntilCommand(() -> beamBreakStateSupplier.getAsBoolean()),
+                new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())),
+            new WaitCommand(
+                0.4) // TODO: just incase beam break fails, stop after some safe amount of time
+            )
+        .finallyDo(this::off);
   }
 
-  public Command tuneController(){
+  public Command tuneController() {
     this.initTuning();
-    
+
     return run(this::tune);
   }
 }

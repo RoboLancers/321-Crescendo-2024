@@ -171,37 +171,37 @@ public class Pivot extends ProfiledPIDSubsystem {
     double tunedS = SmartDashboard.getNumber("pivot ks", kS);
     double tunedG = SmartDashboard.getNumber("pivot kg", kG);
     double tunedV = SmartDashboard.getNumber("pivot kv", kV);
-    
+
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
     this.setGoal(SmartDashboard.getNumber("target pivot position", this.getPositionDeg()));
   }
 
-  private Command moveToAngle(DoubleSupplier angleSupplier){
+  private Command moveToAngle(DoubleSupplier angleSupplier) {
     return run(() -> this.setGoal(angleSupplier.getAsDouble())).until(this::atGoal);
   }
 
-  private Command moveToAngle(double angle){
+  private Command moveToAngle(double angle) {
     return this.moveToAngle(() -> angle);
   }
 
-  public Command goToRetracted(){
+  public Command goToRetracted() {
     return this.moveToAngle(AimTable.kRetractedAimCharacteristic.angle);
   }
 
-  public Command goToMating(){
+  public Command goToMating() {
     return this.moveToAngle(AimTable.kMatingAimCharacteristic.angle);
   }
 
-  public Command aimAtAmp(){
+  public Command aimAtAmp() {
     return this.moveToAngle(AimTable.kAmpAimCharacteristic.angle);
   }
 
-  public Command aimAtSpeaker(DoubleSupplier angleSupplier){
+  public Command aimAtSpeaker(DoubleSupplier angleSupplier) {
     return this.moveToAngle(angleSupplier);
   }
 
-  public Command tuneControllers(){
+  public Command tuneControllers() {
     this.initTuning();
 
     return run(this::tune);
