@@ -149,7 +149,8 @@ public class Indexer extends SubsystemBase {
     return run(() -> this.setRPM(kHandoffRPM)).until(beamBreakStateSupplier).finallyDo(this::off);
   }
 
-  public Command reindex(BooleanSupplier beamBreakStateSupplier) {
+  // It's like cocking a gun, get your mind out of the gutter
+  public Command cock(BooleanSupplier beamBreakStateSupplier) {
     /*
      * TODO
      *
@@ -163,17 +164,23 @@ public class Indexer extends SubsystemBase {
      *
      */
 
-    return null;
+    return new SequentialCommandGroup(
+            new WaitUntilCommand(beamBreakStateSupplier),
+            run(() -> this.setRPM(kReindexRPM)).until(beamBreakStateSupplier),
+            run(() -> this.setRPM(-kReindexRPM))
+                .until(() -> !beamBreakStateSupplier.getAsBoolean()),
+            new WaitCommand(0.2))
+        .finallyDo(this::off);
   }
 
-  public Command outtake(BooleanSupplier beamBreakStateSupplier) {
+  public Command feed(BooleanSupplier beamBreakStateSupplier) {
     return new ParallelRaceGroup(
             run(() -> this.setRPM(kOuttakeRPM)),
             new SequentialCommandGroup(
-                new WaitUntilCommand(() -> beamBreakStateSupplier.getAsBoolean()),
+                new WaitUntilCommand(beamBreakStateSupplier),
                 new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())),
             new WaitCommand(
-                0.4) // TODO: just incase beam break fails, stop after some safe amount of time
+                0.4) // just incase beam break fails, stop after some safe amount of time
             )
         .finallyDo(this::off);
   }
