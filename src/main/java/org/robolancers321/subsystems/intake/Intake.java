@@ -1,39 +1,46 @@
+/* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.intake;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import java.util.function.BooleanSupplier;
 
 public class Intake extends SubsystemBase {
-    /*
-     * Singleton
-     */
+  /*
+   * Singleton
+   */
 
-    private static Intake instance = null;
+  private static Intake instance = null;
 
-    public static Intake getInstance(){
-        if (instance == null) instance = new Intake();
+  public static Intake getInstance() {
+    if (instance == null) instance = new Intake();
 
-        return instance;
-    }
+    return instance;
+  }
 
-    /*
-     * Constants
-     */
+  /*
+   * Constants
+   */
 
-    // TODO: beam break port and any other resources/information that interops with retractor and sucker
+  // TODO: beam break port and any other resources/information that interops with retractor and
+  // sucker
 
-    /*
-     * Implementation
-     */
+  /*
+   * Implementation
+   */
 
-    public Retractor retractor;
-    public Sucker sucker;
-    // TODO: beam break
+  public Retractor retractor;
+  public Sucker sucker;
 
-    private Intake(){
-        this.retractor = Retractor.getInstance();
-        this.sucker = Sucker.getInstance();
-        // TODO: beam break
-    }
+  private Intake() {
+    this.retractor = Retractor.getInstance();
+    this.sucker = Sucker.getInstance();
+  }
 
-    // TODO: any getters, setters, and interop commands
+  public Command goAway(BooleanSupplier beamBreakState) {
+    return new SequentialCommandGroup(
+        new WaitUntilCommand(beamBreakState), retractor.moveToRetracted());
+  }
 }

@@ -10,9 +10,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import org.robolancers321.subsystems.launcher.AimTable.AimCharacteristic;
-
 import java.util.function.DoubleSupplier;
+import org.robolancers321.subsystems.launcher.AimTable.AimCharacteristic;
 
 public class Launcher extends SubsystemBase {
   /*
@@ -74,7 +73,8 @@ public class Launcher extends SubsystemBase {
   }
 
   public Command yeetSpeaker(DoubleSupplier distanceSupplier) {
-    AimCharacteristic aimCharacteristic = aimTable.getLastAimCharacteristic(distanceSupplier.getAsDouble());
+    AimCharacteristic aimCharacteristic =
+        aimTable.getLastAimCharacteristic(distanceSupplier.getAsDouble());
 
     return new SequentialCommandGroup(
         indexer.cock(this::getBeamBreakState),
@@ -82,8 +82,7 @@ public class Launcher extends SubsystemBase {
             flywheel.yeetNoteSpeaker(() -> aimCharacteristic.rpm),
             new SequentialCommandGroup(
                 pivot.aimAtSpeaker(() -> aimCharacteristic.angle),
-                new WaitUntilCommand(
-                    flywheel::isRevved),
+                new WaitUntilCommand(flywheel::isRevved),
                 new WaitCommand(0.1),
                 indexer.feed(this::getBeamBreakState),
                 new WaitCommand(0.2))));

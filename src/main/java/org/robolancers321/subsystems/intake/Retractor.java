@@ -49,14 +49,14 @@ public class Retractor extends SubsystemBase {
 
   private static final double kErrorThreshold = 2.0;
 
-  public static enum RetractorPosition {
+  public enum RetractorPosition {
     kRetracted(0),
     kMating(0),
     kIntake(0);
 
-    private double angle;
+    private final double angle;
 
-    private RetractorPosition(double angle) {
+    RetractorPosition(double angle) {
       this.angle = angle;
     }
 
@@ -69,9 +69,9 @@ public class Retractor extends SubsystemBase {
    * Implementation
    */
 
-  private CANSparkMax motor;
-  private AbsoluteEncoder encoder;
-  private ProfiledPIDController feedbackController;
+  private final CANSparkMax motor;
+  private final AbsoluteEncoder encoder;
+  private final ProfiledPIDController feedbackController;
   private ArmFeedforward feedforwardController;
 
   private Retractor() {

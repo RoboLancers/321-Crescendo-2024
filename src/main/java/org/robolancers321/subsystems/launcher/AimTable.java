@@ -21,7 +21,7 @@ public class AimTable {
 
   private AimCharacteristic lastAimCharacteristic;
 
-  private double lastDistance = 0;
+  private final double lastDistance = 0;
 
   private double kInterpolationCacheThreshold = 0.0;
 
@@ -31,7 +31,7 @@ public class AimTable {
   public static AimCharacteristic kAmpAimCharacteristic = new AimCharacteristic(0.0, 0.0);
 
   // TODO: tune
-  private static LinkedHashMap<Double, AimCharacteristic> table =
+  private static final LinkedHashMap<Double, AimCharacteristic> table =
       new LinkedHashMap<>() {
         {
           put(0.0, new AimCharacteristic(0.0, 0.0));

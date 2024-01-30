@@ -165,8 +165,8 @@ public class Indexer extends SubsystemBase {
      */
 
     return new SequentialCommandGroup(
-            new WaitUntilCommand(beamBreakStateSupplier),
             run(() -> this.setRPM(kReindexRPM)).until(beamBreakStateSupplier),
+            new WaitCommand(0.1),
             run(() -> this.setRPM(-kReindexRPM))
                 .until(() -> !beamBreakStateSupplier.getAsBoolean()),
             new WaitCommand(0.2))

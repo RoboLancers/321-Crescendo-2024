@@ -29,7 +29,7 @@ public class Flywheel extends SubsystemBase {
   private static final boolean kInvertTopMotor = false;
   private static final boolean kInvertBottomMotor = false;
 
-  private static double kRampUpRate = 0.5;
+  private static final double kRampUpRate = 0.5;
 
   private static final double kFF = 0.0;
 
@@ -39,17 +39,17 @@ public class Flywheel extends SubsystemBase {
    * Implementation
    */
 
-  private CANSparkMax topMotor;
-  private CANSparkMax bottomMotor;
+  private final CANSparkMax topMotor;
+  private final CANSparkMax bottomMotor;
 
-  private RelativeEncoder topEncoder;
-  private RelativeEncoder bottomEncoder;
+  private final RelativeEncoder topEncoder;
+  private final RelativeEncoder bottomEncoder;
 
-  private SparkPIDController topController;
-  private SparkPIDController bottomController;
+  private final SparkPIDController topController;
+  private final SparkPIDController bottomController;
 
-  private SlewRateLimiter topLimiter;
-  private SlewRateLimiter bottomLimiter;
+  private final SlewRateLimiter topLimiter;
+  private final SlewRateLimiter bottomLimiter;
 
   private double goalRPM = 0.0;
 

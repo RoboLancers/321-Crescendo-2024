@@ -44,9 +44,9 @@ public class Sucker extends SubsystemBase {
    * Implementation
    */
 
-  private CANSparkMax motor;
-  private RelativeEncoder encoder;
-  private SparkPIDController controller;
+  private final CANSparkMax motor;
+  private final RelativeEncoder encoder;
+  private final SparkPIDController controller;
 
   private Sucker() {
     this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
@@ -122,7 +122,7 @@ public class Sucker extends SubsystemBase {
     return run(() -> this.useController(kInRPM)).finallyDo(() -> this.useController(0.0));
   }
 
-  public Command out(double power) {
+  public Command out() {
     return run(() -> this.useController(kOutRPM)).finallyDo(() -> this.useController(0.0));
   }
 
