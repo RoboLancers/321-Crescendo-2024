@@ -20,7 +20,8 @@ public class AimTable {
   }
 
   // TODO: tune
-  public static final AimCharacteristic kRetractedAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+  public static final AimCharacteristic kRetractedAimCharacteristic =
+      new AimCharacteristic(0.0, 0.0);
   public static final AimCharacteristic kMatingAimCharacteristic = new AimCharacteristic(0.0, 0.0);
   public static final AimCharacteristic kAmpAimCharacteristic = new AimCharacteristic(0.0, 0.0);
 
@@ -41,7 +42,7 @@ public class AimTable {
   }
 
   private static final double kInterpolationCacheThreshold = 0.0;
-  
+
   private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
     List<Double> keys = table.keySet().stream().toList();
     double lowerBound = keys.get(0);
@@ -62,7 +63,7 @@ public class AimTable {
   private double lastDistance;
   private AimCharacteristic lastAimCharacteristic;
 
-  public AimTable(){
+  public AimTable() {
     this.lastDistance = 0.0;
     this.lastAimCharacteristic = new AimCharacteristic(0.0, 0.0);
   }
@@ -74,7 +75,7 @@ public class AimTable {
     }
   }
 
-  public AimCharacteristic getSpeakerAimCharacteristic(){
+  public AimCharacteristic getSpeakerAimCharacteristic() {
     return this.lastAimCharacteristic;
   }
 }

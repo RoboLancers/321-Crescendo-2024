@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import java.util.function.DoubleSupplier;
-import org.robolancers321.subsystems.launcher.AimTable.AimCharacteristic;
 
 public class Launcher extends SubsystemBase {
   /*
@@ -63,7 +62,7 @@ public class Launcher extends SubsystemBase {
     return beamBreakDebouncer.calculate(beamBreak.get());
   }
 
-  public Command acceptHandoff(){
+  public Command acceptHandoff() {
     return this.indexer.acceptHandoff(this::getBeamBreakState);
   }
 
@@ -78,16 +77,16 @@ public class Launcher extends SubsystemBase {
 
   public Command yeetSpeaker(DoubleSupplier distanceSupplier) {
     return new ParallelRaceGroup(
-      new RunCommand(() -> this.aimTable.updateSpeakerAimCharacteristic(distanceSupplier.getAsDouble())),
-      new SequentialCommandGroup(
-        indexer.shiftIntoPosition(this::getBeamBreakState),
-        new ParallelRaceGroup(
-            flywheel.yeetNoteSpeaker(() -> this.aimTable.getSpeakerAimCharacteristic().rpm),
-            new SequentialCommandGroup(
-                pivot.aimAtSpeaker(() -> this.aimTable.getSpeakerAimCharacteristic().angle),
-                new WaitUntilCommand(flywheel::isRevved),
-                indexer.outtake(this::getBeamBreakState),
-                new WaitCommand(0.2))))
-    );
+        new RunCommand(
+            () -> this.aimTable.updateSpeakerAimCharacteristic(distanceSupplier.getAsDouble())),
+        new SequentialCommandGroup(
+            indexer.shiftIntoPosition(this::getBeamBreakState),
+            new ParallelRaceGroup(
+                flywheel.yeetNoteSpeaker(() -> this.aimTable.getSpeakerAimCharacteristic().rpm),
+                new SequentialCommandGroup(
+                    pivot.aimAtSpeaker(() -> this.aimTable.getSpeakerAimCharacteristic().angle),
+                    new WaitUntilCommand(flywheel::isRevved),
+                    indexer.outtake(this::getBeamBreakState),
+                    new WaitCommand(0.2)))));
   }
 }

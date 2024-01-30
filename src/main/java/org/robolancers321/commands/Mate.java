@@ -15,11 +15,11 @@ public class Mate extends SequentialCommandGroup {
   public Mate(DoubleSupplier distanceSupplier) {
     this.intake = Intake.getInstance();
     this.launcher = Launcher.getInstance();
-    
+
     addCommands(
-        new ParallelCommandGroup(this.intake.retractor.moveToMating(), this.launcher.pivot.moveToMating()),
-        new ParallelRaceGroup(this.intake.sucker.out(), this.launcher.acceptHandoff())
-    );
+        new ParallelCommandGroup(
+            this.intake.retractor.moveToMating(), this.launcher.pivot.moveToMating()),
+        new ParallelRaceGroup(this.intake.sucker.out(), this.launcher.acceptHandoff()));
 
     addRequirements(this.intake, this.launcher);
   }

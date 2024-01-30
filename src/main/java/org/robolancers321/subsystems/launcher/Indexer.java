@@ -152,8 +152,8 @@ public class Indexer extends SubsystemBase {
   public Command shiftIntoPosition(BooleanSupplier beamBreakStateSupplier) {
     return new SequentialCommandGroup(
             run(() -> this.setRPM(kReindexRPM)).until(beamBreakStateSupplier),
-            run(() -> this.setRPM(-kReindexRPM)).until(() -> !beamBreakStateSupplier.getAsBoolean())
-          )
+            run(() -> this.setRPM(-kReindexRPM))
+                .until(() -> !beamBreakStateSupplier.getAsBoolean()))
         .finallyDo(this::off);
   }
 
