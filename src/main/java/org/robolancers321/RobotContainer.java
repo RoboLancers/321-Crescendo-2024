@@ -8,12 +8,10 @@ import org.robolancers321.subsystems.launcher.Launcher;
 
 public class RobotContainer {
   Intake intake;
-
   Launcher launcher;
 
   public RobotContainer() {
     this.intake = Intake.getInstance();
-
     this.launcher = Launcher.getInstance();
 
     configureBindings();

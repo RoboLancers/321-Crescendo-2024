@@ -185,11 +185,11 @@ public class Pivot extends ProfiledPIDSubsystem {
     return this.moveToAngle(() -> angle);
   }
 
-  public Command goToRetracted() {
+  public Command moveToRetracted() {
     return this.moveToAngle(AimTable.kRetractedAimCharacteristic.angle);
   }
 
-  public Command goToMating() {
+  public Command moveToMating() {
     return this.moveToAngle(AimTable.kMatingAimCharacteristic.angle);
   }
 

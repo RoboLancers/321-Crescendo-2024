@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -30,10 +31,9 @@ public class Launcher extends SubsystemBase {
    * Constants
    */
 
-  private static final int kBeamBreakChannelPort = 1;
+  private static final int kBeamBreakPort = 0;
 
   private static final double kDebounceTime = 0.05;
-  // TODO: beam break(s)
 
   /*
    * Implementation
@@ -43,24 +43,28 @@ public class Launcher extends SubsystemBase {
   public Indexer indexer;
   public Flywheel flywheel;
 
-  public AimTable aimTable;
+  private DigitalInput beamBreak;
+  private Debouncer beamBreakDebouncer;
 
-  public Debouncer beamBreakDebouncer = new Debouncer(kDebounceTime, Debouncer.DebounceType.kBoth);
-
-  public DigitalInput beamBreak;
-
-  // TODO: beam break(s)
+  private AimTable aimTable;
 
   private Launcher() {
     this.pivot = Pivot.getInstance();
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
+
+    this.beamBreak = new DigitalInput(kBeamBreakPort);
+    this.beamBreakDebouncer = new Debouncer(kDebounceTime, Debouncer.DebounceType.kBoth);
+
     this.aimTable = new AimTable();
-    this.beamBreak = new DigitalInput(kBeamBreakChannelPort);
   }
 
   public boolean getBeamBreakState() {
     return beamBreakDebouncer.calculate(beamBreak.get());
+  }
+
+  public Command acceptHandoff(){
+    return this.indexer.acceptHandoff(this::getBeamBreakState);
   }
 
   public Command yeetAmp() {
@@ -68,23 +72,22 @@ public class Launcher extends SubsystemBase {
         pivot.aimAtAmp(),
         new ParallelCommandGroup(
             flywheel.yeetNoteAmp(),
-            indexer.feed(() -> !getBeamBreakState()),
+            indexer.outtake(this::getBeamBreakState),
             new WaitCommand(0.2)));
   }
 
   public Command yeetSpeaker(DoubleSupplier distanceSupplier) {
-    AimCharacteristic aimCharacteristic =
-        aimTable.getLastAimCharacteristic(distanceSupplier.getAsDouble());
-
-    return new SequentialCommandGroup(
-        indexer.cock(this::getBeamBreakState),
+    return new ParallelRaceGroup(
+      new RunCommand(() -> this.aimTable.updateSpeakerAimCharacteristic(distanceSupplier.getAsDouble())),
+      new SequentialCommandGroup(
+        indexer.shiftIntoPosition(this::getBeamBreakState),
         new ParallelRaceGroup(
-            flywheel.yeetNoteSpeaker(() -> aimCharacteristic.rpm),
+            flywheel.yeetNoteSpeaker(() -> this.aimTable.getSpeakerAimCharacteristic().rpm),
             new SequentialCommandGroup(
-                pivot.aimAtSpeaker(() -> aimCharacteristic.angle),
+                pivot.aimAtSpeaker(() -> this.aimTable.getSpeakerAimCharacteristic().angle),
                 new WaitUntilCommand(flywheel::isRevved),
-                new WaitCommand(0.1),
-                indexer.feed(this::getBeamBreakState),
-                new WaitCommand(0.2))));
+                indexer.outtake(this::getBeamBreakState),
+                new WaitCommand(0.2))))
+    );
   }
 }

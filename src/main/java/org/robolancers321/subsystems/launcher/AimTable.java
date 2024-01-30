@@ -19,16 +19,10 @@ public class AimTable {
     }
   }
 
-  private AimCharacteristic lastAimCharacteristic;
-
-  private final double lastDistance = 0;
-
-  private double kInterpolationCacheThreshold = 0.0;
-
   // TODO: tune
-  public static AimCharacteristic kRetractedAimCharacteristic = new AimCharacteristic(0.0, 0.0);
-  public static AimCharacteristic kMatingAimCharacteristic = new AimCharacteristic(0.0, 0.0);
-  public static AimCharacteristic kAmpAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+  public static final AimCharacteristic kRetractedAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+  public static final AimCharacteristic kMatingAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+  public static final AimCharacteristic kAmpAimCharacteristic = new AimCharacteristic(0.0, 0.0);
 
   // TODO: tune
   private static final LinkedHashMap<Double, AimCharacteristic> table =
@@ -46,7 +40,9 @@ public class AimTable {
     return lowKey + percent * (highValue - lowValue);
   }
 
-  public static AimCharacteristic getSpeakerAimCharacteristic(double distance) {
+  private static final double kInterpolationCacheThreshold = 0.0;
+  
+  private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
     List<Double> keys = table.keySet().stream().toList();
     double lowerBound = keys.get(0);
     double upperBound = keys.get(keys.size() - 1);
@@ -63,12 +59,22 @@ public class AimTable {
         interpolate(lowKey, table.get(lowKey).rpm, highKey, table.get(highKey).rpm, distance));
   }
 
-  public AimCharacteristic getLastAimCharacteristic(double distance) {
-    if (!epsilonEquals(lastDistance, distance, kInterpolationCacheThreshold)) {
-      lastAimCharacteristic = getSpeakerAimCharacteristic(lastDistance);
-      kInterpolationCacheThreshold = lastDistance;
-    }
+  private double lastDistance;
+  private AimCharacteristic lastAimCharacteristic;
 
-    return lastAimCharacteristic;
+  public AimTable(){
+    this.lastDistance = 0.0;
+    this.lastAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+  }
+
+  public void updateSpeakerAimCharacteristic(double distance) {
+    if (!epsilonEquals(this.lastDistance, distance, kInterpolationCacheThreshold)) {
+      this.lastDistance = distance;
+      this.lastAimCharacteristic = calculateSpeakerAimCharacteristic(distance);
+    }
+  }
+
+  public AimCharacteristic getSpeakerAimCharacteristic(){
+    return this.lastAimCharacteristic;
   }
 }
