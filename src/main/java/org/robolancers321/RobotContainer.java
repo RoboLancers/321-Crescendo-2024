@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.commands.drivetrain.TeleopDrive;
+import org.robolancers321.commands.drivetrain.TuneModules;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 
 public class RobotContainer {
@@ -32,19 +33,21 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    this.drivetrain.setDefaultCommand(new TeleopDrive(this.controller));
+    this.drivetrain.setDefaultCommand(new TuneModules());
 
     new Trigger(this.controller::getAButton).onTrue(new InstantCommand(this.drivetrain::zeroYaw));
   }
 
   private void configureAutoChooser() {
-    NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
+    // NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
 
-    this.autoChooser.addOption("Do Nothing", new InstantCommand());
+    // this.autoChooser.addOption("Do Nothing", new InstantCommand());
   }
 
   public Command getAutonomousCommand() {
-    return new PathPlannerAuto("Example Auto");
+    return new InstantCommand();
+
+    // return new PathPlannerAuto("Example Auto");
 
     // return this.autoChooser.getSelected();
   }

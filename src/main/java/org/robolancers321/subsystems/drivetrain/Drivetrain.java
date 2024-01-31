@@ -217,6 +217,20 @@ public class Drivetrain extends SubsystemBase {
     this.updateModules(states);
   }
 
+  public void dangerouslyTurnModules(){
+    this.frontLeft.dangerouslyRunTurn();
+    this.frontRight.dangerouslyRunTurn();
+    this.backLeft.dangerouslyRunTurn();
+    this.backRight.dangerouslyRunTurn();
+  }
+
+  public void dangerouslyDriveModules(){
+    this.frontLeft.dangerouslyRunDrive();
+    this.frontRight.dangerouslyRunDrive();
+    this.backLeft.dangerouslyRunDrive();
+    this.backRight.dangerouslyRunDrive();
+  }
+
   public Command followPath(PathPlannerPath path) {
     return AutoBuilder.followPath(path);
   }

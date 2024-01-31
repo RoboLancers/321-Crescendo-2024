@@ -29,7 +29,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontLeft() {
     if (frontLeft == null)
-      frontLeft = new SwerveModule("Front Left", 4, 3, 15, false, false, false, -0.342529);
+      frontLeft = new SwerveModule("Front Left", 2, 1, 9, false, true, false, -0.453857);
 
     return frontLeft;
   }
@@ -38,7 +38,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontRight() {
     if (frontRight == null)
-      frontRight = new SwerveModule("Front Right", 6, 5, 16, false, false, false, -0.238281);
+      frontRight = new SwerveModule("Front Right", 4, 3, 10, true, true, false, -0.359375);
 
     return frontRight;
   }
@@ -47,7 +47,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackLeft() {
     if (backLeft == null)
-      backLeft = new SwerveModule("Back Left", 2, 1, 14, true, false, false, 0.325928);
+      backLeft = new SwerveModule("Back Left", 8, 7, 12, false, true, false, -0.084473);
 
     return backLeft;
   }
@@ -56,7 +56,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackRight() {
     if (backRight == null)
-      backRight = new SwerveModule("Back Right", 8, 7, 13, true, false, false, -0.016357);
+      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.071045);
 
     return backRight;
   }
@@ -76,7 +76,7 @@ public class SwerveModule {
   private static final double kDriveP = 0.00;
   private static final double kDriveI = 0.00;
   private static final double kDriveD = 0.00;
-  private static final double kDriveFF = 0.266;
+  private static final double kDriveFF = 0.22;
 
   private static final double kTurnP = 0.50;
   private static final double kTurnI = 0.00;
@@ -120,10 +120,11 @@ public class SwerveModule {
     this.driveMotor.setIdleMode(IdleMode.kBrake);
     this.driveMotor.setSmartCurrentLimit(40);
     this.driveMotor.enableVoltageCompensation(12);
-    this.driveMotor.burnFlash();
 
     this.driveEncoder = this.driveMotor.getEncoder();
     this.driveEncoder.setVelocityConversionFactor(kRPMToMPS);
+
+    this.driveMotor.burnFlash();
 
     this.driveController = this.driveMotor.getPIDController();
     this.driveController.setP(kDriveP);
@@ -184,6 +185,16 @@ public class SwerveModule {
   public SwerveModuleState getState() {
     return new SwerveModuleState(
         this.getDriveVelocity(), Rotation2d.fromRadians(this.getTurnAngleRad()));
+  }
+
+  // for determining inversions
+  public void dangerouslyRunTurn(){
+    this.turnMotor.set(0.05);
+  }
+
+  // for determining inversions
+  public void dangerouslyRunDrive(){
+    this.driveMotor.set(0.05);
   }
 
   public void update(SwerveModuleState desiredState) {
