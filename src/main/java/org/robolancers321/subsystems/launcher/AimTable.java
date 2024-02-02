@@ -41,15 +41,22 @@ public class AimTable {
     return lowKey + percent * (highValue - lowValue);
   }
 
-  private static final double kInterpolationCacheThreshold = 0.0;
+    private static final double kInterpolationCacheThreshold = 0.0;
 
-  private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
-    List<Double> keys = table.keySet().stream().toList();
+    private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
+    List<Double> keys = table.keySet().stream().sorted().toList();
     double lowerBound = keys.get(0);
     double upperBound = keys.get(keys.size() - 1);
 
-    if ((distance < lowerBound)) distance = lowerBound;
-    else if (distance > upperBound) distance = upperBound;
+    if ((distance < lowerBound)) {
+      AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
+
+      return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
+    } else if (distance > upperBound) {
+      AimTable.AimCharacteristic upperValue = table.get(upperBound);
+
+      return new AimTable.AimCharacteristic(upperValue.angle, upperValue.rpm);
+    }
 
     NavigableSet<Double> values = new TreeSet<>(keys);
     double lowKey = values.floor(distance);
