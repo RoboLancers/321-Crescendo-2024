@@ -124,13 +124,13 @@ public class SwerveModule {
     this.driveEncoder = this.driveMotor.getEncoder();
     this.driveEncoder.setVelocityConversionFactor(kRPMToMPS);
 
-    this.driveMotor.burnFlash();
-
     this.driveController = this.driveMotor.getPIDController();
     this.driveController.setP(kDriveP);
     this.driveController.setI(kDriveI);
     this.driveController.setD(kDriveD);
     this.driveController.setFF(kDriveFF);
+
+    this.driveMotor.burnFlash();
   }
 
   private void configTurn(
@@ -205,7 +205,7 @@ public class SwerveModule {
 
     this.turnController.setSetpoint(optimized.angle.getRadians());
     this.turnMotor.set(
-        -MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0));
+        MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0));
   }
 
   public void doSendables() {

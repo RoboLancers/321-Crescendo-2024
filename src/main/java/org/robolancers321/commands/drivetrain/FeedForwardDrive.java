@@ -39,12 +39,6 @@ public class FeedForwardDrive extends Command {
     double desiredStrafe = this.strafeSupplier.getAsDouble();
     double desiredOmega = this.omegaSupplier.getAsDouble();
     boolean desiredFieldCentic = this.fieldCentricSupplier.getAsBoolean();
-
-    // TODO: any preprocessing for desired input should be done here
-    desiredThrottle *= 1.2;
-    desiredStrafe *= 1.2;
-    desiredOmega *= -3.0;
-
     this.drivetrain.drive(desiredThrottle, desiredStrafe, desiredOmega, desiredFieldCentic);
   }
 

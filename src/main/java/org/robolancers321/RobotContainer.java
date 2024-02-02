@@ -23,7 +23,6 @@ public class RobotContainer {
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
-
     this.controller = new XboxController(0);
 
     this.autoChooser = AutoBuilder.buildAutoChooser();
@@ -33,7 +32,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    this.drivetrain.setDefaultCommand(new TuneModules());
+    this.drivetrain.setDefaultCommand(new TeleopDrive(this.controller));
 
     new Trigger(this.controller::getAButton).onTrue(new InstantCommand(this.drivetrain::zeroYaw));
   }
