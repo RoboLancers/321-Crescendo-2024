@@ -47,12 +47,19 @@ public class AimTable {
   }
 
   public static AimCharacteristic getSpeakerAimCharacteristic(double distance) {
-    List<Double> keys = table.keySet().stream().toList();
+    List<Double> keys = table.keySet().stream().sorted().toList();
     double lowerBound = keys.get(0);
     double upperBound = keys.get(keys.size() - 1);
 
-    if ((distance < lowerBound)) distance = lowerBound;
-    else if (distance > upperBound) distance = upperBound;
+    if ((distance < lowerBound)) {
+      AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
+
+      return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
+    } else if (distance > upperBound) {
+      AimTable.AimCharacteristic upperValue = table.get(upperBound);
+
+      return new AimTable.AimCharacteristic(upperValue.angle, upperValue.rpm);
+    }
 
     NavigableSet<Double> values = new TreeSet<>(keys);
     double lowKey = values.floor(distance);
