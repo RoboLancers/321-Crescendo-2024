@@ -25,8 +25,8 @@ public class Launcher extends SubsystemBase {
    * Constants
    */
 
-  private static int kIndexerPort = 13;
-  private static int kFlywheelPort = 14;
+  private static int kIndexerPort = 14;
+  private static int kFlywheelPort = 13;
 
   private static boolean kInvertIndexer = false;
   private static boolean kInvertFlywheel = false;

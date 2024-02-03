@@ -29,7 +29,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontLeft() {
     if (frontLeft == null)
-      frontLeft = new SwerveModule("Front Left", 2, 1, 9, false, true, false, -0.265869140625);
+      frontLeft = new SwerveModule("Front Left", 2, 1, 9, false, false, false, -0.265869140625);
 
     return frontLeft;
   }
@@ -38,7 +38,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontRight() {
     if (frontRight == null)
-      frontRight = new SwerveModule("Front Right", 4, 3, 10, true, true, false, 0.291748046875);
+      frontRight = new SwerveModule("Front Right", 4, 3, 10, true, false, false, 0.291748046875);
 
     return frontRight;
   }
@@ -47,7 +47,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackLeft() {
     if (backLeft == null)
-      backLeft = new SwerveModule("Back Left", 8, 7, 12, true, true, false, -0.35986328125);
+      backLeft = new SwerveModule("Back Left", 8, 7, 12, true, false, false, -0.35986328125);
 
     return backLeft;
   }
@@ -56,7 +56,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackRight() {
     if (backRight == null)
-      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.4599609375);
+      backRight = new SwerveModule("Back Right", 5, 6, 11, true, false, false, -0.4599609375);
 
     return backRight;
   }
@@ -120,7 +120,6 @@ public class SwerveModule {
     this.driveMotor.setIdleMode(IdleMode.kBrake);
     this.driveMotor.setSmartCurrentLimit(40);
     this.driveMotor.enableVoltageCompensation(12);
-    this.driveMotor.burnFlash();
 
     this.driveEncoder = this.driveMotor.getEncoder();
     this.driveEncoder.setVelocityConversionFactor(kRPMToMPS);
@@ -130,6 +129,8 @@ public class SwerveModule {
     this.driveController.setI(kDriveI);
     this.driveController.setD(kDriveD);
     this.driveController.setFF(kDriveFF);
+
+    this.driveMotor.burnFlash();
   }
 
   private void configTurn(
@@ -144,6 +145,7 @@ public class SwerveModule {
     this.turnMotor.setIdleMode(IdleMode.kBrake);
     this.turnMotor.setSmartCurrentLimit(40);
     this.turnMotor.enableVoltageCompensation(12);
+    
     this.turnMotor.burnFlash();
 
     this.turnEncoder = new CANcoder(turnEncoderPort);
@@ -194,7 +196,7 @@ public class SwerveModule {
 
     this.turnController.setSetpoint(optimized.angle.getRadians());
     this.turnMotor.set(
-        -MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0));
+        MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0));
   }
 
   public void doSendables() {
