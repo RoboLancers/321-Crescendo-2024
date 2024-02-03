@@ -65,7 +65,7 @@ public class SwerveModule {
   private static final CANcoderConfiguration kCANCoderConfig = new CANcoderConfiguration();
 
   private static final double kWheelRadiusMeters = Units.inchesToMeters(2.0);
-  private static final double kGearRatio = 6.8;
+  private static final double kGearRatio = 6.12;
   private static final double kDrivePositionConversionFactor =
       2 * Math.PI * kWheelRadiusMeters / kGearRatio;
   private static final double kDriveVelocityConversionFactor =
@@ -75,7 +75,7 @@ public class SwerveModule {
   private static final double kDriveP = 0.00;
   private static final double kDriveI = 0.00;
   private static final double kDriveD = 0.00;
-  private static final double kDriveFF = 0.22;
+  private static final double kDriveFF = 0.198;
 
   private static final double kTurnP = 20;
   private static final double kTurnI = 0.00;
@@ -121,6 +121,7 @@ public class SwerveModule {
     this.driveMotor.enableVoltageCompensation(12);
 
     this.driveEncoder = this.driveMotor.getEncoder();
+    this.driveEncoder.setPosition(0.0);
     this.driveEncoder.setPositionConversionFactor(kDrivePositionConversionFactor);
     this.driveEncoder.setVelocityConversionFactor(kDriveVelocityConversionFactor);
 
@@ -219,6 +220,8 @@ public class SwerveModule {
   }
 
   protected void doSendables() {
+    SmartDashboard.putNumber(this.id + " position m", this.getPosition().distanceMeters);
+
     SmartDashboard.putNumber(this.id + " Drive Vel (m/s)", this.getDriveVelocityMPS());
     SmartDashboard.putNumber(this.id + " Turn Angle (deg)", this.getTurnAngleDeg());
 

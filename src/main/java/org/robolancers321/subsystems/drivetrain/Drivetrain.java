@@ -51,7 +51,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kMaxSpeedMetersPerSecond = 4.0;
   private static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
-  private static final PathConstraints kAutoConstraints =
+  public static final PathConstraints kAutoConstraints =
       new PathConstraints(4.0, 2.0, 540 * Math.PI / 180, 720 * Math.PI / 180);
 
   private static final SwerveDriveKinematics kSwerveKinematics =
@@ -64,7 +64,7 @@ public class Drivetrain extends SubsystemBase {
 
   private static double kSecondOrderKinematicsDt = 0.2;
 
-  private static final double kTranslationP = 0.0;
+  private static final double kTranslationP = 2.0;
   private static final double kTranslationI = 0.0;
   private static final double kTranslationD = 0.0;
 
@@ -257,9 +257,9 @@ public class Drivetrain extends SubsystemBase {
 
   public Command teleopDrive(XboxController controller, boolean fieldCentric) {
     return this.feedForwardDrive(
-        () -> 0.5 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
-        () -> -0.5 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
-        () -> -0.5 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
+        () -> 0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
+        () -> -0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
+        () -> -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
         () -> fieldCentric);
   }
 
