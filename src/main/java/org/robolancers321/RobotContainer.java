@@ -2,17 +2,13 @@
 package org.robolancers321;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import org.robolancers321.commands.drivetrain.TeleopDrive;
-import org.robolancers321.commands.drivetrain.TuneModules;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
+import org.robolancers321.subsystems.drivetrain.SwerveModule;
 
 public class RobotContainer {
   Drivetrain drivetrain;
@@ -32,9 +28,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    this.drivetrain.setDefaultCommand(new TeleopDrive(this.controller));
+    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(controller, true));
 
-    new Trigger(this.controller::getAButton).onTrue(new InstantCommand(this.drivetrain::zeroYaw));
+    new Trigger(this.controller::getAButton).onTrue(this.drivetrain.zeroYaw());
   }
 
   private void configureAutoChooser() {
