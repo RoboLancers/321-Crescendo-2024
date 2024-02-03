@@ -257,9 +257,9 @@ public class Drivetrain extends SubsystemBase {
 
   public Command teleopDrive(XboxController controller, boolean fieldCentric) {
     return this.feedForwardDrive(
-        () -> kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
-        () -> -kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
-        () -> kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
+        () -> 0.5 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
+        () -> -0.5 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
+        () -> -0.5 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
         () -> fieldCentric);
   }
 

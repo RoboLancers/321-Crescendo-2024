@@ -44,7 +44,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackRight() {
     if (backRight == null)
-      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.071045);
+      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.122314);
 
     return backRight;
   }
@@ -70,16 +70,16 @@ public class SwerveModule {
       2 * Math.PI * kWheelRadiusMeters / kGearRatio;
   private static final double kDriveVelocityConversionFactor =
       2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
-  private static final double kTurnPositionConversionFactor = 1.0;
+  private static final double kTurnPositionConversionFactor = 7.0 / 150.0;
 
   private static final double kDriveP = 0.00;
   private static final double kDriveI = 0.00;
   private static final double kDriveD = 0.00;
   private static final double kDriveFF = 0.22;
 
-  private static final double kTurnP = 0.50;
+  private static final double kTurnP = 20;
   private static final double kTurnI = 0.00;
-  private static final double kTurnD = 0.005;
+  private static final double kTurnD = 0;
 
   /*
    * Implementation
@@ -209,8 +209,10 @@ public class SwerveModule {
   }
 
   protected void update(SwerveModuleState desiredState) {
-    SwerveModuleState optimized =
-        SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
+    SwerveModuleState optimized = 
+       SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
+
+    SmartDashboard.putNumber(this.id + " ref angle", optimized.angle.getDegrees());
 
     this.driveController.setReference(optimized.speedMetersPerSecond, ControlType.kVelocity);
     this.turnController.setReference(optimized.angle.getRotations(), ControlType.kPosition);
@@ -219,6 +221,8 @@ public class SwerveModule {
   protected void doSendables() {
     SmartDashboard.putNumber(this.id + " Drive Vel (m/s)", this.getDriveVelocityMPS());
     SmartDashboard.putNumber(this.id + " Turn Angle (deg)", this.getTurnAngleDeg());
+
+    SmartDashboard.putNumber(this.id + " abs enc deg", 360 * this.absoluteTurnEncoder.getAbsolutePosition().getValueAsDouble());
   }
 
   protected static void initTuning() {
