@@ -23,7 +23,6 @@ import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
 import org.robolancers321.subsystems.LED;
-import org.robolancers321.subsystems.LED.Section;
 
 public class RobotContainer {
   Drivetrain drivetrain;
@@ -37,7 +36,9 @@ public class RobotContainer {
 
 
   private LED led = LED.getInstance();
-  private CommandXboxController controller = new CommandXboxController(0);
+  LED led = new LED();
+  // AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
+  // private CommandXboxController controller = new CommandXboxController(0);
   LED led = new LED();
   AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
   // private CommandXboxController controller = new CommandXboxController(0);
@@ -110,32 +111,31 @@ public class RobotContainer {
   //   // this.autoChooser.addOption("Do Nothing", new InstantCommand());
   // }
     // example usage
-    LED.registerSignal(5, controller.leftBumper(), LED.rainbow(Section.FULL));
-    LED.registerSignal(4, controller.b(), LED.wave(Section.FULL, Color.kBlue, Color.kRed));
-    LED.registerSignal(3, controller.y(), LED.solid(Section.FULL, Color.kGreen));
-    LED.registerSignal(2, controller.x(), LED.breath(Section.FULL, Color.kBlue, Color.kRed));
-    LED.registerSignal(1, controller.a(), LED.strobe(Section.FULL, Color.kYellow));
+    // LED.registerSignal(4, controller.b(), LED.wave(Section.FULL, Color.kRed, Color.kWhite));
+    // LED.registerSignal(3, controller.y(), LED.wave(Section.FULL, Color.kYellow, Color.kWhite));
+    // LED.registerSignal(2, controller.x(), LED.wave(Section.FULL, Color.kBlue, Color.kWhite));
+    // LED.registerSignal(1, controller.a(), LED.wave(Section.FULL, Color.kGreen, Color.kWhite));
 
-    RobotModeTriggers.teleop()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    // 0 priority & constant true condition effectively acts as a default pattern
-                    LED.registerSignal(
-                        0,
-                        () -> true,
-                        LED.solid(
-                            Section.FULL,
-                            DriverStation.getAlliance().get() == Alliance.Red
-                                ? Color.kRed
-                                : Color.kBlue))));
+    // RobotModeTriggers.teleop()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () ->
+    //                 // 0 priority & constant true condition effectively acts as a default pattern
+    //                 LED.registerSignal(
+    //                     0,
+    //                     () -> true,
+    //                     LED.solid(
+    //                         Section.FULL,
+    //                         DriverStation.getAlliance().get() == Alliance.Red
+    //                             ? Color.kRed
+    //                             : Color.kBlue))));
 
-    LED.registerSignal(
-        6,
-        controller.rightBumper(),
-        buf -> {
-          // iterate through buffer and apply colors as desired
-        });
+    // LED.registerSignal(
+    //     6,
+    //     controller.rightBumper(),
+    //     buf -> {
+    //       // iterate through buffer and apply colors as desired
+    //     });
   }
 
   public Command getAutonomousCommand() {

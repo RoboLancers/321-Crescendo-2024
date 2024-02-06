@@ -348,13 +348,10 @@ public class LED extends VirtualSubsystem {
     //   }
     // }
 
-    // // newPattern.orElse(currPattern).accept(ledBuffer);
-    // if (newPattern.isPresent()) currPattern = newPattern.get();
+    // newPattern.orElse(currPattern).accept(ledBuffer);
+    if (newPattern.isPresent()) currPattern = newPattern.get();
 
-    // currPattern.accept(ledBuffer);
-
-    // meteorRain(ledBuffer, 0.02);
-    fire(ledBuffer, kCooling, kSparking);
+    currPattern.accept(ledBuffer);
 
     ledStrip.setData(ledBuffer);
   }
