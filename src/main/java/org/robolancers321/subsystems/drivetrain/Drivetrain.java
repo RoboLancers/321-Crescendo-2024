@@ -9,6 +9,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import org.robolancers321.Vision;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -81,6 +83,8 @@ public class Drivetrain extends SubsystemBase {
   private SwerveModule backRight;
   private SwerveModule backLeft;
 
+  private Vision vision;
+
   private AHRS gyro;
 
   private SwerveDrivePoseEstimator odometry;
@@ -96,9 +100,16 @@ public class Drivetrain extends SubsystemBase {
     this.gyro = new AHRS(SPI.Port.kMXP);
     this.zeroYaw();
 
+    this.vision = Vision.getInstance();
+
     this.odometry =
         new SwerveDrivePoseEstimator(
-            kSwerveKinematics, this.gyro.getRotation2d(), this.getModulePositions(), new Pose2d());
+            kSwerveKinematics,
+            this.gyro.getRotation2d(),
+            this.getModulePositions(),
+            new Pose2d(),
+            VecBuilder.fill(0.1, 0.1, 0.1),
+            VecBuilder.fill(1, 1, 1));
 
     this.field = new Field2d();
 
@@ -215,7 +226,12 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void periodic() {
+
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
+    var poseEstimate = vision.getEstimatedGlobalPose();
+    var estimatedPose = poseEstimate.estimatedPose;
+    this.odometry.addVisionMeasurement(
+        estimatedPose.toPose2d(), poseEstimate.timestampSeconds, vision.getStdDevs(estimatedPose));
 
     this.field.setRobotPose(this.getPose());
 
@@ -259,7 +275,8 @@ public class Drivetrain extends SubsystemBase {
     return this.feedForwardDrive(
         () -> 0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
         () -> -0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
-        () -> -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
+        () ->
+            -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
         () -> fieldCentric);
   }
 

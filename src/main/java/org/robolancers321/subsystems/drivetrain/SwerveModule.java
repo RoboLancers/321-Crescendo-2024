@@ -210,8 +210,8 @@ public class SwerveModule {
   }
 
   protected void update(SwerveModuleState desiredState) {
-    SwerveModuleState optimized = 
-       SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
+    SwerveModuleState optimized =
+        SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
 
     SmartDashboard.putNumber(this.id + " ref angle", optimized.angle.getDegrees());
 
@@ -225,7 +225,9 @@ public class SwerveModule {
     SmartDashboard.putNumber(this.id + " Drive Vel (m/s)", this.getDriveVelocityMPS());
     SmartDashboard.putNumber(this.id + " Turn Angle (deg)", this.getTurnAngleDeg());
 
-    SmartDashboard.putNumber(this.id + " abs enc deg", 360 * this.absoluteTurnEncoder.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber(
+        this.id + " abs enc deg",
+        360 * this.absoluteTurnEncoder.getAbsolutePosition().getValueAsDouble());
   }
 
   protected static void initTuning() {
