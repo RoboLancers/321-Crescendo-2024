@@ -42,17 +42,15 @@ public class LED extends VirtualSubsystem {
 
   private static final boolean kMeteorRandomDecay = true;
 
-  private static final LED instance = new LED(); // solely for VirtualSubsystem to run periodic()
-
   private static final Random rng = new Random();
 
-  private final AddressableLED ledStrip;
+  public final AddressableLED ledStrip;
   private final AddressableLEDBuffer ledBuffer;
   private static TreeSet<Signal> ledSignals;
 
-  private Consumer<AddressableLEDBuffer> currPattern;
+  private Consumer<AddressableLEDBuffer> currPattern = LED.solid(Section.FULL, Color.kWhite);
 
-  private LED() {
+  public LED() {
     this.ledStrip = new AddressableLED(kLEDPWMPort);
 
     this.ledBuffer = new AddressableLEDBuffer(kLEDStripLength);
@@ -349,7 +347,10 @@ public class LED extends VirtualSubsystem {
       }
     }
 
-    newPattern.orElse(currPattern).accept(ledBuffer);
+    // newPattern.orElse(currPattern).accept(ledBuffer);
+    if (newPattern.isPresent()) currPattern = newPattern.get();
+
+    currPattern.accept(ledBuffer);
 
     ledStrip.setData(ledBuffer);
   }
