@@ -12,6 +12,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -27,6 +28,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.MultiTargetPNPResult;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -44,6 +48,8 @@ public class Drivetrain extends SubsystemBase {
   /*
    * Constants
    */
+
+  private static final String kCameraName = "MainCamera";
 
   private static final double kTrackWidthMeters = Units.inchesToMeters(17.5);
   private static final double kWheelBaseMeters = Units.inchesToMeters(17.5);
@@ -83,6 +89,7 @@ public class Drivetrain extends SubsystemBase {
 
   private AHRS gyro;
 
+  private PhotonCamera camera;
   private SwerveDrivePoseEstimator odometry;
 
   private Field2d field;
@@ -95,6 +102,8 @@ public class Drivetrain extends SubsystemBase {
 
     this.gyro = new AHRS(SPI.Port.kMXP);
     this.zeroYaw();
+
+    this.camera = new PhotonCamera(kCameraName);
 
     this.odometry =
         new SwerveDrivePoseEstimator(
@@ -217,6 +226,35 @@ public class Drivetrain extends SubsystemBase {
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
 
+    PhotonPipelineResult latestResult = this.camera.getLatestResult();
+
+    if (latestResult.hasTargets()) {
+      MultiTargetPNPResult multiTagResult = latestResult.getMultiTagResult();
+
+      if (multiTagResult.estimatedPose.isPresent) {
+        Transform3d multiTagPoseEstimation = multiTagResult.estimatedPose.best;
+
+        SmartDashboard.putNumber("vision dx (m)", multiTagPoseEstimation.getX());
+        SmartDashboard.putNumber("vision dy (m)", multiTagPoseEstimation.getY());
+        SmartDashboard.putNumber("vision dz (m)", multiTagPoseEstimation.getZ());
+
+        SmartDashboard.putNumber("vision rz (m)", multiTagPoseEstimation.getRotation().getX());
+        SmartDashboard.putNumber("vision ry (m)", multiTagPoseEstimation.getRotation().getY());
+        SmartDashboard.putNumber("vision rz (m)", multiTagPoseEstimation.getRotation().getZ());
+
+        // TODO: determine a threshold within which data can be used
+        SmartDashboard.putNumber("vision error pixels", multiTagResult.estimatedPose.bestReprojErr);
+
+        Pose2d fieldPose =
+            new Pose2d(
+                multiTagPoseEstimation.getX(),
+                multiTagPoseEstimation.getY(),
+                Rotation2d.fromRadians(multiTagPoseEstimation.getRotation().getZ()));
+
+        this.odometry.addVisionMeasurement(fieldPose, latestResult.getTimestampSeconds());
+      }
+    }
+
     this.field.setRobotPose(this.getPose());
 
     this.doSendables();
@@ -259,7 +297,8 @@ public class Drivetrain extends SubsystemBase {
     return this.feedForwardDrive(
         () -> 0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
         () -> -0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
-        () -> -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
+        () ->
+            -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
         () -> fieldCentric);
   }
 
