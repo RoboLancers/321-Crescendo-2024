@@ -244,6 +244,8 @@ public class Drivetrain extends SubsystemBase {
 
         // TODO: determine a threshold within which data can be used
         SmartDashboard.putNumber("vision error pixels", multiTagResult.estimatedPose.bestReprojErr);
+        SmartDashboard.putNumber(
+            "vision pose ambiguity", latestResult.getMultiTagResult().estimatedPose.ambiguity);
 
         Pose2d fieldPose =
             new Pose2d(
