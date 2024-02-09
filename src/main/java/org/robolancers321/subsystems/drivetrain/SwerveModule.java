@@ -26,7 +26,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontLeft() {
     if (frontLeft == null)
-      frontLeft = new SwerveModule("Front Left", 2, 1, 9, false, true, false, -0.453857);
+      frontLeft = new SwerveModule("Front Left", 2, 1, 9, false, true, false, -0.457520);
 
     return frontLeft;
   }
@@ -35,7 +35,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontRight() {
     if (frontRight == null)
-      frontRight = new SwerveModule("Front Right", 4, 3, 10, true, true, false, -0.359375);
+      frontRight = new SwerveModule("Front Right", 4, 3, 10, false, true, false, 0.140137);
 
     return frontRight;
   }
@@ -44,7 +44,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackRight() {
     if (backRight == null)
-      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.122314);
+      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.128906);
 
     return backRight;
   }
@@ -53,7 +53,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackLeft() {
     if (backLeft == null)
-      backLeft = new SwerveModule("Back Left", 8, 7, 12, false, true, false, -0.084473);
+      backLeft = new SwerveModule("Back Left", 8, 7, 12, false, true, false, -0.083984);
 
     return backLeft;
   }
