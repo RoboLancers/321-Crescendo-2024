@@ -199,9 +199,9 @@ public class LED extends VirtualSubsystem {
     }
   }
 
-  public static Consumer<AddressableLEDBuffer> meteorRain(Section section, Color8Bit color) {
-    return buf -> meteorRain(buf, section, color);
-  }
+  // public static Consumer<AddressableLEDBuffer> meteorRain(double dt) {
+  //   return buf -> meteorRain(buf, dt);
+  // }
 
   public static Consumer<AddressableLEDBuffer> meteorRain(double dt) {
     return buf -> meteorRain(buf, dt);
@@ -337,6 +337,7 @@ public class LED extends VirtualSubsystem {
     }
   }
 
+
   @Override
   public void periodic() {
     // Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
@@ -348,10 +349,13 @@ public class LED extends VirtualSubsystem {
     //   }
     // }
 
-    // newPattern.orElse(currPattern).accept(ledBuffer);
-    if (newPattern.isPresent()) currPattern = newPattern.get();
+    // // newPattern.orElse(currPattern).accept(ledBuffer);
+    // if (newPattern.isPresent()) currPattern = newPattern.get();
 
-    currPattern.accept(ledBuffer);
+    // currPattern.accept(ledBuffer);
+
+    meteorRain(ledBuffer, 0.02);
+    // breath(ledBuffer, Section.FULL, Color.kRed, Color.kBlue);
 
     ledStrip.setData(ledBuffer);
   }

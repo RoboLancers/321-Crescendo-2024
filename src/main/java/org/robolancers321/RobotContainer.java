@@ -22,7 +22,12 @@ import org.robolancers321.commands.Mate;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
+import java.util.function.BooleanSupplier;
+
 import org.robolancers321.subsystems.LED;
+import org.robolancers321.subsystems.LED.Section;
 
 public class RobotContainer {
   Drivetrain drivetrain;
@@ -37,11 +42,9 @@ public class RobotContainer {
 
   private LED led = LED.getInstance();
   LED led = new LED();
-  // AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
-  // private CommandXboxController controller = new CommandXboxController(0);
-  LED led = new LED();
   AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
   // private CommandXboxController controller = new CommandXboxController(0);
+ //
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
@@ -111,7 +114,7 @@ public class RobotContainer {
   //   // this.autoChooser.addOption("Do Nothing", new InstantCommand());
   // }
     // example usage
-    // LED.registerSignal(4, controller.b(), LED.wave(Section.FULL, Color.kRed, Color.kWhite));
+    // LED.registerSignal(4, () -> true, LED.breath(Section.FULL, Color.kAliceBlue, Color.kAzure));
     // LED.registerSignal(3, controller.y(), LED.wave(Section.FULL, Color.kYellow, Color.kWhite));
     // LED.registerSignal(2, controller.x(), LED.wave(Section.FULL, Color.kBlue, Color.kWhite));
     // LED.registerSignal(1, controller.a(), LED.wave(Section.FULL, Color.kGreen, Color.kWhite));
