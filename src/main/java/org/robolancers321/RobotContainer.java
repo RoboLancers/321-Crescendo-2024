@@ -14,20 +14,10 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import org.robolancers321.commands.Mate;
-import org.robolancers321.subsystems.drivetrain.Drivetrain;
-import org.robolancers321.subsystems.intake.Intake;
-import org.robolancers321.subsystems.launcher.Launcher;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import java.util.function.BooleanSupplier;
 
-import org.robolancers321.subsystems.LED;
-import org.robolancers321.subsystems.LED.Section;
+
 
 public class RobotContainer {
   Drivetrain drivetrain;
