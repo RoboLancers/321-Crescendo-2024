@@ -12,6 +12,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -212,6 +214,40 @@ public class Drivetrain extends SubsystemBase {
     this.updateModules(states);
   }
 
+  private void fuseVision(){
+    PhotonPipelineResult latestResult = this.camera.getLatestResult();
+
+    if (!latestResult.hasTargets()) return;
+
+    Pose2d fieldRelativeEstimatedPose;
+
+    MultiTargetPNPResult multiTagResult = latestResult.getMultiTagResult();
+
+    if(multiTagResult.estimatedPose.isPresent){
+      Transform3d bestMultiTagEstimatedPose = multiTagResult.estimatedPose.best;
+
+      // TODO: apply camera offset
+      fieldRelativeEstimatedPose = new Pose2d(
+                bestMultiTagEstimatedPose.getX(),
+                bestMultiTagEstimatedPose.getY(),
+                Rotation2d.fromRadians(bestMultiTagEstimatedPose.getRotation().getZ()));
+    } else {
+      Transform3d bestCameraToTarget3D = latestResult.getBestTarget().getBestCameraToTarget();
+
+      // TODO: check components
+      Transform2d bestCameraToTarget = new Transform2d(
+        bestCameraToTarget3D.getX(),
+        bestCameraToTarget3D.getY(),
+        Rotation2d.fromRadians(bestCameraToTarget3D.getRotation().getZ())
+      );
+
+      // TODO: apply tag field location and camera offset
+      fieldRelativeEstimatedPose = PhotonUtils.estimateFieldToRobot(bestCameraToTarget, new Pose2d(), new Transform2d());
+    }
+
+    this.odometry.addVisionMeasurement(fieldRelativeEstimatedPose, latestResult.getTimestampSeconds());
+  }
+
   private void doSendables() {
     SmartDashboard.putNumber("Drive Heading", this.getYawDeg());
 
@@ -225,37 +261,8 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-
-    PhotonPipelineResult latestResult = this.camera.getLatestResult();
-
-    if (latestResult.hasTargets()) {
-      MultiTargetPNPResult multiTagResult = latestResult.getMultiTagResult();
-
-      if (multiTagResult.estimatedPose.isPresent) {
-        Transform3d multiTagPoseEstimation = multiTagResult.estimatedPose.best;
-
-        SmartDashboard.putNumber("vision dx (m)", multiTagPoseEstimation.getX());
-        SmartDashboard.putNumber("vision dy (m)", multiTagPoseEstimation.getY());
-        SmartDashboard.putNumber("vision dz (m)", multiTagPoseEstimation.getZ());
-
-        SmartDashboard.putNumber("vision rz (m)", multiTagPoseEstimation.getRotation().getX());
-        SmartDashboard.putNumber("vision ry (m)", multiTagPoseEstimation.getRotation().getY());
-        SmartDashboard.putNumber("vision rz (m)", multiTagPoseEstimation.getRotation().getZ());
-
-        // TODO: determine a threshold within which data can be used
-        SmartDashboard.putNumber("vision error pixels", multiTagResult.estimatedPose.bestReprojErr);
-        SmartDashboard.putNumber(
-            "vision pose ambiguity", latestResult.getMultiTagResult().estimatedPose.ambiguity);
-
-        Pose2d fieldPose =
-            new Pose2d(
-                multiTagPoseEstimation.getX(),
-                multiTagPoseEstimation.getY(),
-                Rotation2d.fromRadians(multiTagPoseEstimation.getRotation().getZ()));
-
-        this.odometry.addVisionMeasurement(fieldPose, latestResult.getTimestampSeconds());
-      }
-    }
+    
+    this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 
