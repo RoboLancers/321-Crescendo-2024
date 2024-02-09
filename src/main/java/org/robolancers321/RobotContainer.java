@@ -2,15 +2,9 @@
 package org.robolancers321;
 
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
-import java.util.function.BooleanSupplier;
-
 import org.robolancers321.subsystems.LED;
-import org.robolancers321.subsystems.LED.Section;
 
 public class RobotContainer {
   LED led = new LED();

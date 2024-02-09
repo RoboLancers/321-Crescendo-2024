@@ -6,13 +6,9 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.TreeSet;
@@ -44,7 +40,7 @@ public class LED extends VirtualSubsystem {
   static double fadeProbability = 0.15;
   static int wavefrontSeparation = 12;
   static int wavefrontLength = 1;
-  static int wavefrontPosition = -1;
+  static double wavefrontPosition = -1;
   static rgb[] buf = new rgb[kLEDStripLength];
   static rgb meteorColor = new rgb(255, 0, 0);
 
@@ -202,73 +198,70 @@ public class LED extends VirtualSubsystem {
     }
   }
 
-  // public static Consumer<AddressableLEDBuffer> meteorRain(double dt) {
-  //   return buf -> meteorRain(buf, dt);
-  // }
+  public static Consumer<AddressableLEDBuffer> meteorRain(double dt) {
+    return buf -> meteorRain(buf, dt);
+  }
 
   private static void meteorRain(AddressableLEDBuffer buffer, double dt) {
-    for(int i = 0; i< kLEDStripLength ; i++){
-      if (rng.nextDouble() < fadeProbability){
-          fadeToBlack(buffer, i, dt);
+    for (int i = 0; i < kLEDStripLength; i++) {
+      if (rng.nextDouble() < fadeProbability) {
+        fadeToBlack(buffer, i, dt);
       }
+    }
 
-      wavefrontPosition += wavefrontSpeed * dt;
+    wavefrontPosition += wavefrontSpeed * dt;
 
-      if (wavefrontPosition - wavefrontLength >= kLEDStripLength) {
-        wavefrontPosition -= wavefrontSeparation;
-      }
+    if (wavefrontPosition - wavefrontLength >= kLEDStripLength) {
+      wavefrontPosition -= wavefrontSeparation;
+    }
 
-      double nthWavefrontPosition =  wavefrontPosition;
+    double nthWavefrontPosition = wavefrontPosition;
 
-      while(nthWavefrontPosition >= 0){
-        for(int k = 0; k<wavefrontLength; k++){
-            if((int)Math.round(nthWavefrontPosition - k) >= 0) {
-              buf[(int)Math.round(nthWavefrontPosition - k)] = meteorColor;
-            }
-
+    while (nthWavefrontPosition >= 0) {
+      for (int k = 0; k < wavefrontLength; k++) {
+        if ((int) Math.round(nthWavefrontPosition - k) >= 0
+            && (int) Math.round(nthWavefrontPosition - k) < kLEDStripLength) {
+          buf[(int) Math.round(nthWavefrontPosition - k)] = meteorColor;
         }
-        nthWavefrontPosition -= wavefrontSeparation;
       }
+      nthWavefrontPosition -= wavefrontSeparation;
+    }
 
+    for (int i = 0; i < kLEDStripLength; i++) {
       buffer.setRGB(i, buf[i].getRed(), buf[i].getGreen(), buf[i].getBlue());
-
     }
   }
 
-    
-
-  private static void fadeToBlack (AddressableLEDBuffer buffer, int ledNo, double dt) {
+  private static void fadeToBlack(AddressableLEDBuffer buffer, int ledNo, double dt) {
     int r = (int) Math.max(buf[ledNo].getRed() - fadeSpeed * dt, 0);
     int g = (int) Math.max(buf[ledNo].getGreen() - fadeSpeed * dt, 0);
     int b = (int) Math.max(buf[ledNo].getBlue() - fadeSpeed * dt, 0);
 
-    buf[ledNo] = new rgb(r,g,b);
+    buf[ledNo] = new rgb(r, g, b);
   }
 
-  private static class rgb{
+  private static class rgb {
     int r;
     int g;
     int b;
 
-    rgb(int r, int g, int b){
+    rgb(int r, int g, int b) {
       this.r = r;
       this.g = g;
       this.b = b;
     }
 
-    public int getRed(){
+    public int getRed() {
       return r;
     }
 
-    public int getGreen(){
+    public int getGreen() {
       return g;
     }
 
-    public int getBlue(){
+    public int getBlue() {
       return b;
     }
-
-    
   }
 
   public static Consumer<AddressableLEDBuffer> fire() {
@@ -367,25 +360,21 @@ public class LED extends VirtualSubsystem {
     }
   }
 
-
   @Override
   public void periodic() {
-    // Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
+    Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
 
-    // for (var signal : ledSignals) {
-    //   if (signal.condition.getAsBoolean()) {
-    //     newPattern = Optional.of(signal.pattern);
-    //     break;
-    //   }
-    // }
+    for (var signal : ledSignals) {
+      if (signal.condition.getAsBoolean()) {
+        newPattern = Optional.of(signal.pattern);
+        break;
+      }
+    }
 
-    // // newPattern.orElse(currPattern).accept(ledBuffer);
-    // if (newPattern.isPresent()) currPattern = newPattern.get();
+    // newPattern.orElse(currPattern).accept(ledBuffer);
+    if (newPattern.isPresent()) currPattern = newPattern.get();
 
-    // currPattern.accept(ledBuffer);
-
-    meteorRain(ledBuffer, 0.02);
-    // breath(ledBuffer, Section.FULL, Color.kRed, Color.kBlue);
+    currPattern.accept(ledBuffer);
 
     ledStrip.setData(ledBuffer);
   }
