@@ -1,6 +1,7 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
+import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 
 import org.robolancers321.subsystems.LED;
 import org.robolancers321.subsystems.LED.LEDPattern;
@@ -34,6 +35,9 @@ public class RobotContainer {
 
   private LED led = LED.getInstance();
   private CommandXboxController controller = new CommandXboxController(0);
+  LED led = new LED();
+  AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
+  // private CommandXboxController controller = new CommandXboxController(0);
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
