@@ -339,19 +339,22 @@ public class LED extends VirtualSubsystem {
 
   @Override
   public void periodic() {
-    Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
+    // Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
 
-    for (var signal : ledSignals) {
-      if (signal.condition.getAsBoolean()) {
-        newPattern = Optional.of(signal.pattern);
-        break;
-      }
-    }
+    // for (var signal : ledSignals) {
+    //   if (signal.condition.getAsBoolean()) {
+    //     newPattern = Optional.of(signal.pattern);
+    //     break;
+    //   }
+    // }
 
-    // newPattern.orElse(currPattern).accept(ledBuffer);
-    if (newPattern.isPresent()) currPattern = newPattern.get();
+    // // newPattern.orElse(currPattern).accept(ledBuffer);
+    // if (newPattern.isPresent()) currPattern = newPattern.get();
 
-    currPattern.accept(ledBuffer);
+    // currPattern.accept(ledBuffer);
+
+    // meteorRain(ledBuffer, 0.02);
+    fire(ledBuffer, kCooling, kSparking);
 
     ledStrip.setData(ledBuffer);
   }
