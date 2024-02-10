@@ -8,11 +8,13 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -27,12 +29,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
-import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -52,6 +55,13 @@ public class Drivetrain extends SubsystemBase {
    */
 
   private static final String kCameraName = "MainCamera";
+
+  private static final AprilTagFieldLayout kAprilTagFieldLayout =
+      AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+
+  // TODO: find this transform
+  private static final Transform3d kRobotToCameraTransform =
+      new Transform3d(0, 0, 0, new Rotation3d());
 
   private static final double kTrackWidthMeters = Units.inchesToMeters(17.5);
   private static final double kWheelBaseMeters = Units.inchesToMeters(17.5);
@@ -92,6 +102,8 @@ public class Drivetrain extends SubsystemBase {
   private AHRS gyro;
 
   private PhotonCamera camera;
+  private PhotonPoseEstimator visionEstimator;
+
   private SwerveDrivePoseEstimator odometry;
 
   private Field2d field;
@@ -106,6 +118,13 @@ public class Drivetrain extends SubsystemBase {
     this.zeroYaw();
 
     this.camera = new PhotonCamera(kCameraName);
+
+    this.visionEstimator =
+        new PhotonPoseEstimator(
+            kAprilTagFieldLayout,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            camera,
+            kRobotToCameraTransform);
 
     this.odometry =
         new SwerveDrivePoseEstimator(
@@ -214,38 +233,51 @@ public class Drivetrain extends SubsystemBase {
     this.updateModules(states);
   }
 
-  private void fuseVision(){
-    PhotonPipelineResult latestResult = this.camera.getLatestResult();
+  private void fuseVision() {
+    // PhotonPipelineResult latestResult = this.camera.getLatestResult();
 
-    if (!latestResult.hasTargets()) return;
+    // if (!latestResult.hasTargets()) return;
 
-    Pose2d fieldRelativeEstimatedPose;
+    // Pose2d fieldRelativeEstimatedPose;
 
-    MultiTargetPNPResult multiTagResult = latestResult.getMultiTagResult();
+    // MultiTargetPNPResult multiTagResult = latestResult.getMultiTagResult();
 
-    if(multiTagResult.estimatedPose.isPresent){
-      Transform3d bestMultiTagEstimatedPose = multiTagResult.estimatedPose.best;
+    // if (multiTagResult.estimatedPose.isPresent) {
+    //   Transform3d bestMultiTagEstimatedPose = multiTagResult.estimatedPose.best;
 
-      // TODO: apply camera offset
-      fieldRelativeEstimatedPose = new Pose2d(
-                bestMultiTagEstimatedPose.getX(),
-                bestMultiTagEstimatedPose.getY(),
-                Rotation2d.fromRadians(bestMultiTagEstimatedPose.getRotation().getZ()));
-    } else {
-      Transform3d bestCameraToTarget3D = latestResult.getBestTarget().getBestCameraToTarget();
+    //   // TODO: apply camera offset
+    //   fieldRelativeEstimatedPose =
+    //       new Pose2d(
+    //           bestMultiTagEstimatedPose.getX(),
+    //           bestMultiTagEstimatedPose.getY(),
+    //           Rotation2d.fromRadians(bestMultiTagEstimatedPose.getRotation().getZ()));
+    // } else {
+    //   Transform3d bestCameraToTarget3D = latestResult.getBestTarget().getBestCameraToTarget();
 
-      // TODO: check components
-      Transform2d bestCameraToTarget = new Transform2d(
-        bestCameraToTarget3D.getX(),
-        bestCameraToTarget3D.getY(),
-        Rotation2d.fromRadians(bestCameraToTarget3D.getRotation().getZ())
-      );
+    //   // TODO: check components
+    //   Transform2d bestCameraToTarget =
+    //       new Transform2d(
+    //           bestCameraToTarget3D.getX(),
+    //           bestCameraToTarget3D.getY(),
+    //           Rotation2d.fromRadians(bestCameraToTarget3D.getRotation().getZ()));
 
-      // TODO: apply tag field location and camera offset
-      fieldRelativeEstimatedPose = PhotonUtils.estimateFieldToRobot(bestCameraToTarget, new Pose2d(), new Transform2d());
-    }
+    //   Optional<Pose3d> fieldRelativeTargetPose =
+    //       kAprilTagFieldLayout.getTagPose(latestResult.getBestTarget().getFiducialId());
 
-    this.odometry.addVisionMeasurement(fieldRelativeEstimatedPose, latestResult.getTimestampSeconds());
+    //   if (fieldRelativeTargetPose.isEmpty()) return;
+
+    //   // TODO: apply tag field location and camera offset
+    //   fieldRelativeEstimatedPose =
+    //       PhotonUtils.estimateFieldToRobot(
+    //           bestCameraToTarget, fieldRelativeTargetPose.get().toPose2d(), new Transform2d());
+    // }
+
+    Optional<EstimatedRobotPose> visionEstimate = visionEstimator.update();
+
+    if (visionEstimate.isEmpty()) return;
+
+    this.odometry.addVisionMeasurement(
+        visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
   }
 
   private void doSendables() {
@@ -261,7 +293,7 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-    
+
     this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
