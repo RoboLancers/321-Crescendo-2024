@@ -27,15 +27,15 @@ public class Sucker extends SubsystemBase {
    * Constants
    */
 
-  private static final int kMotorPort = 0;
+  private static final int kMotorPort = 13;
 
-  private static final boolean kInvertMotor = false;
+  private static final boolean kInvertMotor = true;
   private static final int kCurrentLimit = 20;
 
   private static final double kP = 0.0;
   private static final double kI = 0.0;
   private static final double kD = 0.0;
-  private static final double kFF = 0.01;
+  private static final double kFF = 0.000103;
 
   private static final double kInRPM = -2000;
   private static final double kOutRPM = 1000;
