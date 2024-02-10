@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import org.robolancers321.subsystems.LED.Section;
 import org.robolancers321.util.VirtualSubsystem;
 
 /*
@@ -36,19 +39,21 @@ public class LED extends VirtualSubsystem {
   private static final double kWaveDuration = 3.0;
   private static final double kStripeDuration = 0.5;
 
-  static int wavefrontSpeed = 100;
-  static int fadeSpeed = 2000;
-  static double fadeProbability = 0.15;
-  static int wavefrontSeparation = 12;
-  static int wavefrontLength = 1;
-  static int wavefrontPosition = 0;
-  static Color8Bit meteorColor = new Color8Bit(255, 0, 0);
+  static int kWavefrontSpeed = 10;
+  static int kFadeSpeed = 2000;
+  static double kFadeProbability = 0.15;
+  static int kWavefrontSeparation = 12;
+  static int kWavefrontLength = 1;
+  static double kWavefrontPosition = -1;
+  static rgb kMeteorColor = new rgb(255, 0, 0);
+  static rgb[] meteorBuf = new rgb[kLEDStripLength];
 
-  private static final int kCooling = 50;
-  private static final int kSparking = 120;
+  private static final int kCooling = 30; // 20 - 100
+  private static final int kSparking = 50; // 0-255
+  private static final double kSpeedDelay = 1; // s
+  private static final int kSparks = 3;
+  private static final int kSparkHeight = 4;
   static int[] heat = new int[kLEDStripLength];
-
-  private static final boolean kMeteorRandomDecay = true;
 
   private static final Random rng = new Random();
 
@@ -73,6 +78,7 @@ public class LED extends VirtualSubsystem {
                 .reversed()); // sorted in descending order of priority
 
     Arrays.fill(heat, 0);
+    Arrays.fill(meteorBuf, new rgb(0, 0, 0));
   }
 
   public record Signal(
@@ -205,44 +211,80 @@ public class LED extends VirtualSubsystem {
 
   private static void meteorRain(AddressableLEDBuffer buffer, double dt) {
     for (int i = 0; i < kLEDStripLength; i++) {
-      if (rng.nextDouble() < fadeProbability) {
+      if (rng.nextDouble() < kFadeProbability) {
         fadeToBlack(buffer, i, dt);
       }
     }
 
-    wavefrontPosition += wavefrontSpeed * dt;
+    kWavefrontPosition += kWavefrontSpeed * dt;
 
-    if (wavefrontPosition - wavefrontLength >= kLEDStripLength) {
-      wavefrontPosition -= wavefrontSeparation;
+    if (kWavefrontPosition - kWavefrontLength >= kLEDStripLength) {
+      kWavefrontPosition -= kWavefrontSeparation;
     }
 
-    double nthWavefrontPosition = wavefrontPosition;
+    double nthWavefrontPosition = kWavefrontPosition;
+
     while (nthWavefrontPosition >= 0) {
-      for (int k = 0; k < wavefrontLength; k++) {
+      for (int k = 0; k < kWavefrontLength; k++) {
         if ((int) Math.round(nthWavefrontPosition - k) >= 0
             && (int) Math.round(nthWavefrontPosition - k) < kLEDStripLength) {
-          buffer.setLED((int) Math.round(nthWavefrontPosition - k), meteorColor);
+          meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = kMeteorColor;
         }
       }
-      nthWavefrontPosition -= wavefrontSeparation;
+      nthWavefrontPosition -= kWavefrontSeparation;
+    }
+
+    for (int i = 0; i < kLEDStripLength; i++) {
+      buffer.setRGB(i, meteorBuf[i].getRed(), meteorBuf[i].getGreen(), meteorBuf[i].getBlue());
     }
   }
 
   private static void fadeToBlack(AddressableLEDBuffer buffer, int ledNo, double dt) {
     Color8Bit color = buffer.getLED8Bit(ledNo);
-    int r = (int) Math.max(color.red - fadeSpeed * dt, 0);
-    int g = (int) Math.max(color.green - fadeSpeed * dt, 0);
-    int b = (int) Math.max(color.blue - fadeSpeed * dt, 0);
+    int r = (int) Math.max(color.red - kFadeSpeed * dt, 0);
+    int g = (int) Math.max(color.green - kFadeSpeed * dt, 0);
+    int b = (int) Math.max(color.blue - kFadeSpeed * dt, 0);
 
-    buffer.setRGB(ledNo, r, g, b);
+    meteorBuf[ledNo] = new rgb(r, g, b);
+  }
+
+  private static class rgb {
+    int r;
+    int g;
+    int b;
+
+    rgb(int r, int g, int b) {
+      this.r = r;
+      this.g = g;
+      this.b = b;
+    }
+
+    public int getRed() {
+      return r;
+    }
+
+    public int getGreen() {
+      return g;
+    }
+
+    public int getBlue() {
+      return b;
+    }
   }
 
   public static Consumer<AddressableLEDBuffer> fire() {
-    return buf -> fire(buf, kCooling, kSparking);
+    return buf -> fire(buf, kCooling, kSparking, kSpeedDelay, kSparks, kSparkHeight);
   }
 
-  private static void fire(AddressableLEDBuffer buffer, int cooling, int sparking) {
+  private static void fire(
+      AddressableLEDBuffer buffer,
+      int cooling,
+      int sparking,
+      double speedDelay,
+      int sparks,
+      int sparkHeight) {
 
+    // cool each index a little
     for (int i = 0; i < kLEDStripLength; i++) {
       heat[i] =
           MathUtil.clamp(heat[i] - rng.nextInt(0, ((cooling * 10) / kLEDStripLength) + 2), 0, 255);
@@ -255,41 +297,31 @@ public class LED extends VirtualSubsystem {
                   + heat[(i + 1) % kLEDStripLength] * 3
                   + heat[(i + 2) % kLEDStripLength] * 2
                   + heat[(i + 3) % kLEDStripLength] * 1)
-              / 8 ;
+              / 8;
 
     // Randomly ignite new sparks down in the flame kernel
-    for (int i = 0; i < 3; i++)
-    {
-        if (rng.nextInt(255) < sparking)
-        {
-            int y = kLEDStripLength - 1 - rng.nextInt(3);
-            heat[y] = MathUtil.clamp(heat[y] + rng.nextInt(160, 255), 0, 255); // This randomly rolls over sometimes of course, and that's essential to the effect
-        }
+    for (int i = 0; i < sparks; i++) {
+      if (rng.nextInt(255) < sparking) {
+        int y = kLEDStripLength - 1 - rng.nextInt(sparkHeight);
+        heat[y] = MathUtil.clamp(heat[y] + rng.nextInt(160, 255), 0, 255);
+      }
     }
 
-    for( int j = 0; j < kLEDStripLength; j++) {
-      // System.out.println(heat[j]);
+    // set led colors
+    for (int j = 0; j < kLEDStripLength; j++) {
       setPixelHeatColor(buffer, j, heat[j]);
     }
 
-    // System.out.print("-------------------------------------");
-
-    // while(Timer.getFPGATimestamp() > 5){}
+    // slow down fire activity
+    new RunCommand(() -> new WaitCommand(speedDelay));
   }
 
   private static void setPixelHeatColor(AddressableLEDBuffer buffer, int pixel, int temperature) {
-
-    // Scale ‘heat’ down from 0-255 to 0-191,
-    // which can then be easily divided into three
-    // equal ‘thirds’ of 64 units each.
-
-    if (temperature > 240){ // white
+    if (temperature > 170) { // hottest: white
       buffer.setRGB(pixel, 255, 255, temperature);
-    } 
-    else if (temperature > 85) { // orange
-      buffer.setRGB(pixel, 255, temperature, 0);
-    } 
-    else { // red
+    } else if (temperature > 85) { // middle: orange & yellow
+      buffer.setRGB(pixel, 255, (int) (temperature * 1.3), 0);
+    } else { // lowest: red
       buffer.setRGB(pixel, temperature * 3, 0, 0);
     }
   }
@@ -335,22 +367,22 @@ public class LED extends VirtualSubsystem {
 
   @Override
   public void periodic() {
-    // Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
+    Optional<Consumer<AddressableLEDBuffer>> newPattern = Optional.empty();
 
-    // for (var signal : ledSignals) {
-    //   if (signal.condition.getAsBoolean()) {
-    //     newPattern = Optional.of(signal.pattern);
-    //     break;
-    //   }
-    // }
+    for (var signal : ledSignals) {
+      if (signal.condition.getAsBoolean()) {
+        newPattern = Optional.of(signal.pattern);
+        break;
+      }
+    }
 
-    // // newPattern.orElse(currPattern).accept(ledBuffer);
-    // if (newPattern.isPresent()) currPattern = newPattern.get();
+    // newPattern.orElse(currPattern).accept(ledBuffer);
+    if (newPattern.isPresent()) currPattern = newPattern.get();
 
-    // currPattern.accept(ledBuffer);
+    currPattern.accept(ledBuffer);
 
     // meteorRain(ledBuffer, 0.02);
-    fire(ledBuffer, kCooling, kSparking);
+    // fire(ledBuffer, kCooling, kSparking, kSpeedDelay, kSparks, kSparkHeight);
 
     ledStrip.setData(ledBuffer);
   }
