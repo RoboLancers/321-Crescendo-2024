@@ -77,7 +77,7 @@ public class SwerveModule {
   private static final double kDriveD = 0.00;
   private static final double kDriveFF = 0.198;
 
-  private static final double kTurnP = 20;
+  private static final double kTurnP = 10; // 20
   private static final double kTurnI = 0.00;
   private static final double kTurnD = 0;
 

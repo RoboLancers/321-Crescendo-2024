@@ -7,6 +7,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -61,7 +62,7 @@ public class Drivetrain extends SubsystemBase {
 
   // TODO: find this transform
   private static final Transform3d kRobotToCameraTransform =
-      new Transform3d(0, 0, 0, new Rotation3d());
+      new Transform3d(0, 0, 0, new Rotation3d(0, Math.PI, 0));
 
   private static final double kTrackWidthMeters = Units.inchesToMeters(17.5);
   private static final double kWheelBaseMeters = Units.inchesToMeters(17.5);
@@ -70,7 +71,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
   public static final PathConstraints kAutoConstraints =
-      new PathConstraints(4.0, 2.0, 540 * Math.PI / 180, 720 * Math.PI / 180);
+      new PathConstraints(4.0, 1.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
   private static final SwerveDriveKinematics kSwerveKinematics =
       new SwerveDriveKinematics(
@@ -86,7 +87,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kTranslationI = 0.0;
   private static final double kTranslationD = 0.0;
 
-  private static final double kRotationP = 0.0;
+  private static final double kRotationP = 1.769;
   private static final double kRotationI = 0.0;
   private static final double kRotationD = 0.0;
 
@@ -153,6 +154,13 @@ public class Drivetrain extends SubsystemBase {
           return false;
         },
         this);
+
+    PathPlannerLogging.setLogActivePathCallback(
+        poses -> this.field.getObject("pathplanner path poses").setPoses(poses));
+    PathPlannerLogging.setLogTargetPoseCallback(
+        targ -> this.field.getObject("pathplanner targ pose").setPose(targ));
+    PathPlannerLogging.setLogCurrentPoseCallback(
+        curr -> this.field.getObject("pathplanner curr pose").setPose(curr));
   }
 
   public Pose2d getPose() {
@@ -160,7 +168,10 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void resetPose(Pose2d pose) {
-    this.odometry.resetPosition(this.gyro.getRotation2d(), this.getModulePositions(), pose);
+    this.odometry.resetPosition(
+        Rotation2d.fromDegrees(this.gyro.getAngle()), // .plus(Rotation2d.fromDegrees(180)),
+        this.getModulePositions(),
+        pose);
   }
 
   private SwerveModuleState[] getModuleStates() {
@@ -310,7 +321,7 @@ public class Drivetrain extends SubsystemBase {
     return runOnce(
         () -> {
           this.gyro.zeroYaw();
-          this.gyro.setAngleAdjustment(90.0); // TODO: change this depending on navx orientation
+          this.gyro.setAngleAdjustment(0.0); // TODO: change this depending on navx orientation
         });
   }
 
