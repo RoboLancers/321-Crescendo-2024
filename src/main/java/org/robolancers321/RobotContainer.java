@@ -2,6 +2,7 @@
 package org.robolancers321;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -44,32 +45,11 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    // works
-
-    // this.drivetrain.resetPose(this.drivetrain.getPose());
-
-    // var targ = new Pose2d(1, 5.3, Rotation2d.fromDegrees(0));
+    // return new PathPlannerAuto("tuning");
 
     var curr = drivetrain.getPose();
 
-    // var ctrl1 = curr.plus(new Transform2d(-0.2, 0, Rotation2d.fromDegrees(0)));
-
-    // var ctrl2 = curr.plus(new Transform2d(-0.8, 0, Rotation2d.fromDegrees(0)));
-
-    // var end = curr.plus(new Transform2d(-1.0, 0, Rotation2d.fromDegrees(0)));
-
-    // List<Translation2d> waypoints = PathPlannerPath.bezierFromPoses(curr, ctrl1, ctrl2, end);
-
     var path =
-        // new PathPlannerPath(
-        //     PathPlannerPath.bezierFromPoses(
-        //         curr,
-        //         curr.plus(new Transform2d(0.2, 0, Rotation2d.fromDegrees(0))),
-        //         curr.plus(new Transform2d(0.8, 0, Rotation2d.fromDegrees(0))),
-        //         curr.plus(new Transform2d(1, 0, Rotation2d.fromDegrees(0)))),
-        //     Drivetrain.kAutoConstraints,
-        //     new GoalEndState(0, Rotation2d.fromDegrees(90)));
-
         new PathPlannerPath(
             PathPlannerPath.bezierFromPoses(
                 curr,
@@ -78,25 +58,8 @@ public class RobotContainer {
             Drivetrain.kAutoConstraints,
             new GoalEndState(0, Rotation2d.fromDegrees(0)));
 
-    // PathPlannerPath.fromPathPoints(
-    //     List.<PathPoint>of(
-    //         new PathPoint(new Translation2d(curr.getX(), curr.getY())),
-    //         new PathPoint(new Translation2d(1, 5.3))),
-    //     Drivetrain.kAutoConstraints,
-    //     new GoalEndState(0, Rotation2d.fromDegrees(0)));
-
-    // var path =
-    //     new PathPlannerPath(
-    //         waypoints, Drivetrain.kAutoConstraints, new GoalEndState(0, new Rotation2d()));
-
     path.preventFlipping = true;
 
     return AutoBuilder.followPath(path);
-
-    // works
-    // return AutoBuilder.followPath(PathPlannerPath.fromPathFile("Example Path"));
-
-    // works
-    // return new PathPlannerAuto("Example Auto");
   }
 }

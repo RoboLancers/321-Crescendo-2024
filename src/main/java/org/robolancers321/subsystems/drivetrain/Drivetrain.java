@@ -87,7 +87,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kTranslationI = 0.0;
   private static final double kTranslationD = 0.0;
 
-  private static final double kRotationP = 1.769;
+  private static final double kRotationP = 4.0;
   private static final double kRotationI = 0.0;
   private static final double kRotationD = 0.0;
 
@@ -245,44 +245,6 @@ public class Drivetrain extends SubsystemBase {
   }
 
   private void fuseVision() {
-    // PhotonPipelineResult latestResult = this.camera.getLatestResult();
-
-    // if (!latestResult.hasTargets()) return;
-
-    // Pose2d fieldRelativeEstimatedPose;
-
-    // MultiTargetPNPResult multiTagResult = latestResult.getMultiTagResult();
-
-    // if (multiTagResult.estimatedPose.isPresent) {
-    //   Transform3d bestMultiTagEstimatedPose = multiTagResult.estimatedPose.best;
-
-    //   // TODO: apply camera offset
-    //   fieldRelativeEstimatedPose =
-    //       new Pose2d(
-    //           bestMultiTagEstimatedPose.getX(),
-    //           bestMultiTagEstimatedPose.getY(),
-    //           Rotation2d.fromRadians(bestMultiTagEstimatedPose.getRotation().getZ()));
-    // } else {
-    //   Transform3d bestCameraToTarget3D = latestResult.getBestTarget().getBestCameraToTarget();
-
-    //   // TODO: check components
-    //   Transform2d bestCameraToTarget =
-    //       new Transform2d(
-    //           bestCameraToTarget3D.getX(),
-    //           bestCameraToTarget3D.getY(),
-    //           Rotation2d.fromRadians(bestCameraToTarget3D.getRotation().getZ()));
-
-    //   Optional<Pose3d> fieldRelativeTargetPose =
-    //       kAprilTagFieldLayout.getTagPose(latestResult.getBestTarget().getFiducialId());
-
-    //   if (fieldRelativeTargetPose.isEmpty()) return;
-
-    //   // TODO: apply tag field location and camera offset
-    //   fieldRelativeEstimatedPose =
-    //       PhotonUtils.estimateFieldToRobot(
-    //           bestCameraToTarget, fieldRelativeTargetPose.get().toPose2d(), new Transform2d());
-    // }
-
     Optional<EstimatedRobotPose> visionEstimate = visionEstimator.update();
 
     if (visionEstimate.isEmpty()) return;
@@ -347,10 +309,10 @@ public class Drivetrain extends SubsystemBase {
 
   public Command teleopDrive(XboxController controller, boolean fieldCentric) {
     return this.feedForwardDrive(
-        () -> 0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.2),
-        () -> -0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.2),
+        () -> 0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.05),
+        () -> -0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.05),
         () ->
-            -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.2),
+            -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.05),
         () -> fieldCentric);
   }
 
