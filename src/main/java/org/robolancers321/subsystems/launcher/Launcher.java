@@ -30,7 +30,7 @@ public class Launcher extends SubsystemBase {
    * Constants
    */
 
-  private static final int kBeamBreakPort = 0;
+  // private static final int kBeamBreakPort = 0; // TODO
 
   private static final double kDebounceTime = 0.05;
 
@@ -42,7 +42,7 @@ public class Launcher extends SubsystemBase {
   public Indexer indexer;
   public Flywheel flywheel;
 
-  private DigitalInput beamBreak;
+  // private DigitalInput beamBreak; // TODO
   private Debouncer beamBreakDebouncer;
 
   private AimTable aimTable;
@@ -52,14 +52,15 @@ public class Launcher extends SubsystemBase {
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
 
-    this.beamBreak = new DigitalInput(kBeamBreakPort);
+    // this.beamBreak = new DigitalInput(kBeamBreakPort); // TODO
     this.beamBreakDebouncer = new Debouncer(kDebounceTime, Debouncer.DebounceType.kBoth);
 
     this.aimTable = new AimTable();
   }
 
   public boolean getBeamBreakState() {
-    return beamBreakDebouncer.calculate(beamBreak.get());
+    return true;
+    // return beamBreakDebouncer.calculate(beamBreak.get()); // TODO
   }
 
   public Command acceptHandoff() {

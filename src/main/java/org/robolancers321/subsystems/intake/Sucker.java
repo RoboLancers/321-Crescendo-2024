@@ -27,7 +27,7 @@ public class Sucker extends SubsystemBase {
    * Constants
    */
 
-  private static final int kMotorPort = 0;
+  private static final int kMotorPort = 14;
 
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 20;
@@ -56,6 +56,7 @@ public class Sucker extends SubsystemBase {
     this.configureMotor();
     this.configureEncoder();
     this.configureController();
+    this.motor.burnFlash();
   }
 
   private void configureMotor() {

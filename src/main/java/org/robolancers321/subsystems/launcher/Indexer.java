@@ -33,8 +33,8 @@ public class Indexer extends SubsystemBase {
    * Constants
    */
 
-  private static final int kMotorPort = 0;
-  private static final int kBeamBreakPort = 0;
+  private static final int kMotorPort = 16;
+  // private static final int kBeamBreakPort = 0; // TODO
 
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 20;
@@ -52,22 +52,23 @@ public class Indexer extends SubsystemBase {
    * Implementation
    */
 
-  private final CANSparkMax motor;
+  private final CANSparkFlex motor;
   private final SparkPIDController controller;
   private final RelativeEncoder encoder;
 
-  private final DigitalInput beamBreak;
+  // private final DigitalInput beamBreak; // TODO
 
   private Indexer() {
-    this.motor = new CANSparkMax(kMotorPort, kBrushless);
+    this.motor = new CANSparkFlex(kMotorPort, kBrushless);
     this.encoder = this.motor.getEncoder();
     this.controller = this.motor.getPIDController();
 
-    this.beamBreak = new DigitalInput(kBeamBreakPort);
+    // this.beamBreak = new DigitalInput(kBeamBreakPort); // TODO
 
     this.configureMotor();
     this.configureEncoder();
     this.configureController();
+    this.motor.burnFlash();
   }
 
   private void configureMotor() {
@@ -93,7 +94,8 @@ public class Indexer extends SubsystemBase {
   }
 
   public boolean jawnDetected() {
-    return this.beamBreak.get();
+    return true;
+    // return this.beamBreak.get(); // TODO
   }
 
   private void dangerouslySetSpeed(double speed) {

@@ -7,12 +7,14 @@ import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
 
 public class RobotContainer {
-  Intake intake;
+  // Intake intake;
   Launcher launcher;
 
   public RobotContainer() {
-    this.intake = Intake.getInstance();
+    // this.intake = Intake.getInstance();
     this.launcher = Launcher.getInstance();
+
+    this.launcher.pivot.setDefaultCommand(this.launcher.pivot.tuneControllers());
 
     configureBindings();
   }

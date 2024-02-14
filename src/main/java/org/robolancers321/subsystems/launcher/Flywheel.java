@@ -4,6 +4,8 @@ package org.robolancers321.subsystems.launcher;
 import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
+import com.revrobotics.CANSparkBase.ControlType;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,13 +23,10 @@ public class Flywheel extends SubsystemBase {
 
   /* Constants */
 
-  private static final int kTopMotorPort = 0;
-  private static final int kBottomMotorPort = 0;
+  private static final int kMotorPort = 17;
 
+  private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 40;
-
-  private static final boolean kInvertTopMotor = false;
-  private static final boolean kInvertBottomMotor = false;
 
   private static final double kRampUpRate = 0.5;
 
@@ -39,106 +38,70 @@ public class Flywheel extends SubsystemBase {
    * Implementation
    */
 
-  private final CANSparkMax topMotor;
-  private final CANSparkMax bottomMotor;
+  private final CANSparkFlex motor;
+  private final RelativeEncoder encoder;
+  private final SparkPIDController controller;
 
-  private final RelativeEncoder topEncoder;
-  private final RelativeEncoder bottomEncoder;
-
-  private final SparkPIDController topController;
-  private final SparkPIDController bottomController;
-
-  private final SlewRateLimiter topLimiter;
-  private final SlewRateLimiter bottomLimiter;
+  private final SlewRateLimiter limiter;
 
   private double goalRPM = 0.0;
 
   private Flywheel() {
-    this.topMotor = new CANSparkMax(kTopMotorPort, CANSparkLowLevel.MotorType.kBrushless);
-    this.bottomMotor = new CANSparkMax(kBottomMotorPort, CANSparkLowLevel.MotorType.kBrushless);
+    this.motor = new CANSparkFlex(kMotorPort, CANSparkLowLevel.MotorType.kBrushless);
 
-    this.topEncoder = this.topMotor.getEncoder();
-    this.bottomEncoder = this.bottomMotor.getEncoder();
+    this.encoder = this.motor.getEncoder();
 
-    this.topController = this.topMotor.getPIDController();
-    this.bottomController = this.bottomMotor.getPIDController();
+    this.controller = this.motor.getPIDController();
 
-    this.topLimiter = new SlewRateLimiter(kRampUpRate);
-    this.bottomLimiter = new SlewRateLimiter(kRampUpRate);
+    this.limiter = new SlewRateLimiter(kRampUpRate);
 
-    this.configureMotors();
-    this.configureEncoders();
-    this.configureControllers();
+    this.configureMotor();
+    this.configureEncoder();
+    this.configureController();
+    this.motor.burnFlash();
   }
 
-  private void configureMotors() {
-    this.topMotor.setInverted(kInvertTopMotor);
-    this.topMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    this.topMotor.setSmartCurrentLimit(kCurrentLimit);
-    this.topMotor.enableVoltageCompensation(12);
-    this.topMotor.burnFlash();
-
-    this.bottomMotor.setInverted(kInvertBottomMotor);
-    this.bottomMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    this.bottomMotor.setSmartCurrentLimit(kCurrentLimit);
-    this.bottomMotor.enableVoltageCompensation(12);
-    this.bottomMotor.burnFlash();
+  private void configureMotor() {
+    this.motor.setInverted(kInvertMotor);
+    this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    this.motor.setSmartCurrentLimit(kCurrentLimit);
+    this.motor.enableVoltageCompensation(12);
   }
 
-  private void configureEncoders() {
-    this.topEncoder.setVelocityConversionFactor(1.0);
-    this.bottomEncoder.setVelocityConversionFactor(1.0);
+  private void configureEncoder() {
+    this.encoder.setVelocityConversionFactor(1.0);
   }
 
-  private void configureControllers() {
-    this.topController.setP(0.0);
-    this.topController.setI(0.0);
-    this.topController.setD(0.0);
-    this.topController.setFF(kFF);
-
-    this.bottomController.setP(0.0);
-    this.bottomController.setI(0.0);
-    this.bottomController.setD(0.0);
-    this.bottomController.setFF(kFF);
+  private void configureController() {
+    this.controller.setP(0.0);
+    this.controller.setI(0.0);
+    this.controller.setD(0.0);
+    this.controller.setFF(kFF);
   }
 
-  private double getTopRPM() {
+  private double getRPM() {
     // TODO: filter here?
-    return this.topEncoder.getVelocity();
+    return this.encoder.getVelocity();
   }
 
-  private double getBottomRPM() {
-    // TODO: filter here?
-    return this.bottomEncoder.getVelocity();
-  }
+  private void useController() {
+    this.controller.setReference(this.goalRPM, ControlType.kVelocity);
 
-  private void useControllers() {
-    this.topController.setReference(
-        this.topLimiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
-    this.bottomController.setReference(
-        this.bottomLimiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
-  }
-
-  private boolean isTopRevved() {
-    return epsilonEquals(this.getTopRPM(), this.goalRPM, kErrorTolerance);
-  }
-
-  private boolean isBottomRevved() {
-    return epsilonEquals(this.getBottomRPM(), this.goalRPM, kErrorTolerance);
+    // For tuning, no limiter
+    // this.controller.setReference(
+    //     this.limiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
   }
 
   public boolean isRevved() {
-    return this.isTopRevved() && this.isBottomRevved();
+    return epsilonEquals(this.getRPM(), this.goalRPM, kErrorTolerance);
   }
 
   private void dangerouslySetSpeed(double speed) {
-    this.topMotor.set(speed);
-    this.bottomMotor.set(speed);
+    this.motor.set(speed);
   }
 
   private void doSendables() {
-    SmartDashboard.putNumber("top flywheel rpm", this.getTopRPM());
-    SmartDashboard.putNumber("bottom flywheel rpm", this.getBottomRPM());
+    SmartDashboard.putNumber("flywheel rpm", this.getRPM());
   }
 
   @Override
@@ -155,12 +118,11 @@ public class Flywheel extends SubsystemBase {
   private void tune() {
     double tunedFF = SmartDashboard.getNumber("shooter kff", kFF);
 
-    this.topController.setFF(tunedFF);
-    this.bottomController.setFF(tunedFF);
+    this.controller.setFF(tunedFF);
 
     this.goalRPM = SmartDashboard.getNumber("target shooter rpm", 0.0);
 
-    this.useControllers();
+    this.useController();
   }
 
   public Command dangerouslyYeet(double speed) {
@@ -172,20 +134,20 @@ public class Flywheel extends SubsystemBase {
     return runOnce(
         () -> {
           this.goalRPM = 0.0;
-          this.useControllers();
+          this.useController();
         });
   }
 
   public Command yeetNoteAmp() {
     this.goalRPM = AimTable.kAmpAimCharacteristic.rpm;
 
-    return run(this::useControllers).finallyDo(this::off);
+    return run(this::useController).finallyDo(this::off);
   }
 
   public Command yeetNoteSpeaker(DoubleSupplier rpmSupplier) {
     return run(() -> {
           this.goalRPM = rpmSupplier.getAsDouble();
-          this.useControllers();
+          this.useController();
         })
         .finallyDo(this::off);
   }

@@ -31,9 +31,9 @@ public class Retractor extends SubsystemBase {
    * Constants
    */
 
-  private static final int kMotorPort = 0;
+  private static final int kMotorPort = 13;
 
-  private static final boolean kInvertMotor = false;
+  private static final boolean kInvertMotor = true;
   private static final int kCurrentLimit = 20;
 
   private static final double kP = 0.000;
@@ -84,6 +84,7 @@ public class Retractor extends SubsystemBase {
     this.configureMotor();
     this.configureEncoder();
     this.configureController();
+    this.motor.burnFlash();
   }
 
   private void configureMotor() {

@@ -30,17 +30,16 @@ public class Pivot extends ProfiledPIDSubsystem {
    * Constants
    */
 
-  private static final int kMotorPort = 0;
+  private static final int kMotorPort = 15;
 
   private static final boolean kInvertMotor = false;
-  private static final boolean kInvertEncoder = false;
   private static final int kCurrentLimit = 40;
 
   private static final double kGearRatio = 360.0;
   private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
-  private static final float kMinAngle = 0.0f;
-  private static final float kMaxAngle = 270.0f;
+  private static final float kMinAngle = -30.0f;
+  private static final float kMaxAngle = 90.0f;
 
   private static final double kS = 0.0;
   private static final double kG = 0.0;
@@ -86,6 +85,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.configureMotor();
     this.configureEncoder();
     this.configureController();
+    this.motor.burnFlash();
   }
 
   private void configureMotor() {
@@ -101,7 +101,6 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   private void configureEncoder() {
-    this.absoluteEncoder.setInverted(kInvertEncoder);
     this.absoluteEncoder.setPositionConversionFactor(kGearRatio);
     this.absoluteEncoder.setVelocityConversionFactor(kRotPerMinToDegPerSec);
   }
@@ -130,7 +129,7 @@ public class Pivot extends ProfiledPIDSubsystem {
   @Override
   protected void useOutput(double output, TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
-        this.feedforwardController.calculate(setpoint.position, setpoint.velocity);
+        this.feedforwardController.calculate(setpoint.position * Math.PI / 180, setpoint.velocity * Math.PI / 180);
 
     double feedbackOutput = super.m_controller.calculate(this.getPositionDeg());
 
