@@ -37,6 +37,9 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.proto.Photon;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -55,7 +58,8 @@ public class Drivetrain extends SubsystemBase {
    * Constants
    */
 
-  private static final String kCameraName = "MainCamera";
+  private static final String kMainCameraName = "MainCamera";
+  private static final String kNoteCameraName = "NoteCamera";
 
   private static final AprilTagFieldLayout kAprilTagFieldLayout =
       AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
@@ -63,6 +67,9 @@ public class Drivetrain extends SubsystemBase {
   // TODO: find this transform
   private static final Transform3d kRobotToCameraTransform =
       new Transform3d(0, 0, 0, new Rotation3d(0, Math.PI, 0));
+  
+  private static final double kNoteCameraMountHeight = Units.inchesToMeters(11.0); // rough estimate of camera height while mounted on crate
+  private static final double kNoteCameraMountPitch = 0.0; // degrees w/r to the horizontal, above horizontal is positive
 
   private static final double kTrackWidthMeters = Units.inchesToMeters(17.5);
   private static final double kWheelBaseMeters = Units.inchesToMeters(17.5);
@@ -102,10 +109,12 @@ public class Drivetrain extends SubsystemBase {
 
   private AHRS gyro;
 
-  private PhotonCamera camera;
+  private PhotonCamera mainCamera;
   private PhotonPoseEstimator visionEstimator;
 
   private SwerveDrivePoseEstimator odometry;
+
+  private PhotonCamera noteCamera;
 
   private Field2d field;
 
@@ -118,18 +127,20 @@ public class Drivetrain extends SubsystemBase {
     this.gyro = new AHRS(SPI.Port.kMXP);
     this.zeroYaw();
 
-    this.camera = new PhotonCamera(kCameraName);
+    this.mainCamera = new PhotonCamera(kMainCameraName);
 
     this.visionEstimator =
         new PhotonPoseEstimator(
             kAprilTagFieldLayout,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            camera,
+            mainCamera,
             kRobotToCameraTransform);
 
     this.odometry =
         new SwerveDrivePoseEstimator(
             kSwerveKinematics, this.gyro.getRotation2d(), this.getModulePositions(), new Pose2d());
+
+    this.noteCamera = new PhotonCamera(kNoteCameraName);
 
     this.field = new Field2d();
 
@@ -253,6 +264,20 @@ public class Drivetrain extends SubsystemBase {
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
   }
 
+  private Translation2d getRelativeNoteLocation(){
+    PhotonPipelineResult latestResult = this.noteCamera.getLatestResult();
+
+    if (!latestResult.hasTargets()) return new Translation2d();
+
+    PhotonTrackedTarget bestTarget = latestResult.getBestTarget();
+
+    // TODO: plus or minus mount pitch?
+    double dz = kNoteCameraMountHeight / Math.tan((-bestTarget.getPitch() + kNoteCameraMountPitch) * Math.PI / 180.0);
+    double dx = dz * Math.tan(bestTarget.getYaw() * Math.PI / 180.0);
+
+    return new Translation2d(dx, dz);
+  }
+
   private void doSendables() {
     SmartDashboard.putNumber("Drive Heading", this.getYawDeg());
 
@@ -261,6 +286,11 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Odometry Pos X (m)", odometryPose.getX());
     SmartDashboard.putNumber("Odometry Pos Y (m)", odometryPose.getY());
     SmartDashboard.putNumber("Odometry Angle (deg)", odometryPose.getRotation().getDegrees());
+
+    Translation2d note = this.getRelativeNoteLocation();
+
+    SmartDashboard.putNumber("note x pffset", note.getX());
+    SmartDashboard.putNumber("note z offset", note.getY());
   }
 
   @Override
