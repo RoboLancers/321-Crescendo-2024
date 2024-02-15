@@ -9,10 +9,13 @@ import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
 
 public class Mate extends SequentialCommandGroup {
-  private final Intake intake;
-  private final Launcher launcher;
+  private Intake intake;
+  private Launcher launcher;
 
   public Mate(DoubleSupplier distanceSupplier) {
+    // TODO
+    /*
+
     this.intake = Intake.getInstance();
     this.launcher = Launcher.getInstance();
 
@@ -22,5 +25,7 @@ public class Mate extends SequentialCommandGroup {
         new ParallelRaceGroup(this.intake.sucker.out(), this.launcher.acceptHandoff()));
 
     addRequirements(this.intake, this.launcher);
+
+    */
   }
 }

@@ -39,9 +39,6 @@ public class Indexer extends SubsystemBase {
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 20;
 
-  private static final double kP = 0;
-  private static final double kI = 0;
-  private static final double kD = 0;
   private static final double kFF = 0;
 
   private static final double kHandoffRPM = 1500;
@@ -79,13 +76,13 @@ public class Indexer extends SubsystemBase {
   }
 
   private void configureEncoder() {
-    this.encoder.setInverted(kInvertMotor);
+    this.encoder.setVelocityConversionFactor(1.0);
   }
 
   private void configureController() {
-    this.controller.setP(kP);
-    this.controller.setI(kI);
-    this.controller.setD(kD);
+    this.controller.setP(0.0);
+    this.controller.setI(0.0);
+    this.controller.setD(0.0);
     this.controller.setFF(kFF);
   }
 
@@ -108,7 +105,7 @@ public class Indexer extends SubsystemBase {
 
   private void doSendables() {
     SmartDashboard.putNumber("indexer rpm", this.getRPM());
-    SmartDashboard.putBoolean("note detected", this.jawnDetected());
+    SmartDashboard.putBoolean("indexer detected note", this.jawnDetected());
   }
 
   @Override
@@ -117,22 +114,18 @@ public class Indexer extends SubsystemBase {
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kp", kP));
-    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer ki", kI));
-    SmartDashboard.putNumber("indexer kp", SmartDashboard.getNumber("indexer kd", kD));
     SmartDashboard.putNumber("indexer kff", SmartDashboard.getNumber("indexer kff", kFF));
+    SmartDashboard.putNumber("indexer target rpm", 0.0);
   }
 
   private void tune() {
-    double tunedP = SmartDashboard.getNumber("indexer kp", kP);
-    double tunedI = SmartDashboard.getNumber("indexer ki", kI);
-    double tunedD = SmartDashboard.getNumber("indexer kd", kD);
     double tunedFF = SmartDashboard.getNumber("indexer kff", kFF);
 
-    this.controller.setP(tunedP);
-    this.controller.setI(tunedI);
-    this.controller.setD(tunedD);
     this.controller.setFF(tunedFF);
+
+    double targetRPM = SmartDashboard.getNumber("indexer target rpm", 0.0);
+
+    this.setRPM(targetRPM);
   }
 
   public Command manualIndex(DoubleSupplier appliedSpeedSupplier) {

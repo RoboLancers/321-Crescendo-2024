@@ -32,10 +32,7 @@ public class Sucker extends SubsystemBase {
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 20;
 
-  private static final double kP = 0.0;
-  private static final double kI = 0.0;
-  private static final double kD = 0.0;
-  private static final double kFF = 0.01;
+  private static final double kFF = 0.00;
 
   private static final double kInRPM = -2000;
   private static final double kOutRPM = 1000;
@@ -67,13 +64,13 @@ public class Sucker extends SubsystemBase {
   }
 
   private void configureEncoder() {
-    this.encoder.setVelocityConversionFactor(1);
+    this.encoder.setVelocityConversionFactor(1.0);
   }
 
   private void configureController() {
-    this.controller.setP(kP);
-    this.controller.setI(kI);
-    this.controller.setD(kD);
+    this.controller.setP(0.0);
+    this.controller.setI(0.0);
+    this.controller.setD(0.0);
     this.controller.setFF(kFF);
   }
 
@@ -86,7 +83,7 @@ public class Sucker extends SubsystemBase {
   }
 
   private void doSendables() {
-    SmartDashboard.putNumber("sucker velocity rpm", this.getVelocityRPM());
+    SmartDashboard.putNumber("sucker rpm", this.getVelocityRPM());
   }
 
   @Override
@@ -95,26 +92,16 @@ public class Sucker extends SubsystemBase {
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("sucker kP", SmartDashboard.getNumber("sucker kP", kP));
-    SmartDashboard.putNumber("sucker kI", SmartDashboard.getNumber("sucker kI", kI));
-    SmartDashboard.putNumber("sucker kD", SmartDashboard.getNumber("sucker kD", kD));
-    SmartDashboard.putNumber("sucker kFF", SmartDashboard.getNumber("sucker kFF", kFF));
-
-    SmartDashboard.putNumber("target sucker rpm", 0.0);
+    SmartDashboard.putNumber("sucker kff", SmartDashboard.getNumber("sucker kff", kFF));
+    SmartDashboard.putNumber("sucker target rpm", 0.0);
   }
 
   private void tune() {
-    double tunedP = SmartDashboard.getNumber("sucker kP", kP);
-    double tunedI = SmartDashboard.getNumber("sucker kI", kI);
-    double tunedD = SmartDashboard.getNumber("sucker kD", kD);
-    double tunedFF = SmartDashboard.getNumber("sucker kFF", kFF);
+    double tunedFF = SmartDashboard.getNumber("sucker kff", kFF);
 
-    this.controller.setP(tunedP);
-    this.controller.setI(tunedI);
-    this.controller.setD(tunedD);
     this.controller.setFF(tunedFF);
 
-    double targetRPM = SmartDashboard.getNumber("target sucker rpm", 0.0);
+    double targetRPM = SmartDashboard.getNumber("sucker target rpm", 0.0);
 
     this.useController(targetRPM);
   }

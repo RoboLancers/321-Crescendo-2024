@@ -12,8 +12,6 @@ import java.util.*;
 
 
 public class AimTableTest {
-
-
     private static final LinkedHashMap<Double, AimTable.AimCharacteristic> table =
             new LinkedHashMap<>() {
                 {

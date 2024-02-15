@@ -56,8 +56,8 @@ public class Retractor extends SubsystemBase {
 
     private final double angle;
 
-    RetractorPosition(double angle) {
-      this.angle = angle;
+    RetractorPosition(double angleDeg) {
+      this.angle = angleDeg;
     }
 
     public double getAngle() {
@@ -72,7 +72,7 @@ public class Retractor extends SubsystemBase {
   private final CANSparkMax motor;
   private final AbsoluteEncoder encoder;
   private final ProfiledPIDController feedbackController;
-  private ArmFeedforward feedforwardController;
+  private ArmFeedforward feedforwardController; // TODO: make this final when not tuning
 
   private Retractor() {
     this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
@@ -95,7 +95,6 @@ public class Retractor extends SubsystemBase {
   }
 
   private void configureEncoder() {
-    this.encoder.setInverted(kInvertMotor);
     this.encoder.setPositionConversionFactor(360); // TODO: potentially a gear ratio on this
   }
 
@@ -116,66 +115,73 @@ public class Retractor extends SubsystemBase {
     return this.feedbackController.atGoal();
   }
 
-  private void setGoal(double goal) {
-    this.feedbackController.setGoal(goal);
+  private void setGoal(double goalDeg) {
+    this.feedbackController.setGoal(goalDeg * Math.PI / 180.0);
   }
 
   private void setGoal(RetractorPosition goal) {
     this.setGoal(goal.getAngle());
   }
 
-  private void useController() {
+  private void useControllers() {
     State setpointState = this.feedbackController.getSetpoint();
 
     double feedforwardOutput =
         this.feedforwardController.calculate(setpointState.position, setpointState.velocity);
+
+    SmartDashboard.putNumber("retractor ff output", feedforwardOutput);
+
     double feedbackOutput = this.feedbackController.calculate(this.getPosition());
 
+    SmartDashboard.putNumber("retractor fb output", feedbackOutput);
+
     double controllerOutput = feedforwardOutput + feedbackOutput;
+
+    SmartDashboard.putNumber("retractor controller output", controllerOutput);
 
     this.motor.set(controllerOutput);
   }
 
   private void doSendables() {
-    SmartDashboard.putNumber("current position (deg)", this.getPosition());
     SmartDashboard.putBoolean("retractor at goal", this.isAtGoal());
+    SmartDashboard.putNumber("retractor position (deg)", this.getPosition());
   }
 
   @Override
   public void periodic() {
-    useController();
+    useControllers();
     doSendables();
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("retractor kP", SmartDashboard.getNumber("retractor kP", kP));
-    SmartDashboard.putNumber("retractor kI", SmartDashboard.getNumber("retractor kI", kI));
-    SmartDashboard.putNumber("retractor kD", SmartDashboard.getNumber("retractor kD", kD));
+    SmartDashboard.putNumber("retractor kp", SmartDashboard.getNumber("retractor kp", kP));
+    SmartDashboard.putNumber("retractor ki", SmartDashboard.getNumber("retractor ki", kI));
+    SmartDashboard.putNumber("retractor kd", SmartDashboard.getNumber("retractor kd", kD));
 
-    SmartDashboard.putNumber("retractor kS", SmartDashboard.getNumber("retractor kS", kS));
-    SmartDashboard.putNumber("retractor kV", SmartDashboard.getNumber("retractor kV", kV));
-    SmartDashboard.putNumber("retractor kG", SmartDashboard.getNumber("retractor kG", kG));
+    SmartDashboard.putNumber("retractor ks", SmartDashboard.getNumber("retractor ks", kS));
+    SmartDashboard.putNumber("retractor kv", SmartDashboard.getNumber("retractor kv", kV));
+    SmartDashboard.putNumber("retractor kg", SmartDashboard.getNumber("retractor kg", kG));
 
-    SmartDashboard.putNumber("target retractor position", this.getPosition());
+    SmartDashboard.putNumber("retractor target position (deg)", this.getPosition());
   }
 
   private void tune() {
     double tunedP = SmartDashboard.getNumber("retractor kp", kP);
-    double tunedI = SmartDashboard.getNumber("retractor kI", kI);
-    double tunedD = SmartDashboard.getNumber("retractor kD", kD);
+    double tunedI = SmartDashboard.getNumber("retractor ki", kI);
+    double tunedD = SmartDashboard.getNumber("retractor kd", kD);
 
     this.feedbackController.setP(tunedP);
     this.feedbackController.setI(tunedI);
     this.feedbackController.setD(tunedD);
 
-    double tunedS = SmartDashboard.getNumber("retractor kS", kS);
-    double tunedV = SmartDashboard.getNumber("retractor kV", kV);
-    double tunedG = SmartDashboard.getNumber("retractor kG", kG);
+    double tunedS = SmartDashboard.getNumber("retractor ks", kS);
+    double tunedV = SmartDashboard.getNumber("retractor kv", kV);
+    double tunedG = SmartDashboard.getNumber("retractor kg", kG);
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
     double targetRetractorPosition =
-        SmartDashboard.getNumber("target retractor position", this.getPosition());
+        SmartDashboard.getNumber("retractor target position (deg)", this.getPosition());
 
     this.setGoal(targetRetractorPosition);
   }

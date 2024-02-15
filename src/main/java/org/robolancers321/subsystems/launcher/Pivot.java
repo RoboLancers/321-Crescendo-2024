@@ -38,14 +38,14 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final double kGearRatio = 360.0;
   private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
-  private static final float kMinAngle = -30.0f;
-  private static final float kMaxAngle = 90.0f;
+  private static final float kMinAngle = -5.0f;
+  private static final float kMaxAngle = 85.0f;
 
   private static final double kS = 0.0;
   private static final double kG = 0.0;
   private static final double kV = 0.0;
 
-  private static final double kP = 0.0;
+  private static final double kP = 0.11;
   private static final double kI = 0.0;
   private static final double kD = 0.0;
   private static final double kMaxVelocityDeg = 0.0;
@@ -71,7 +71,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   private final CANSparkMax motor;
   private final AbsoluteEncoder absoluteEncoder;
-  private ArmFeedforward feedforwardController;
+  private ArmFeedforward feedforwardController; // TODO: make this final when not tuning
 
   private Pivot() {
     super(
@@ -86,6 +86,8 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.configureEncoder();
     this.configureController();
     this.motor.burnFlash();
+
+    this.m_enabled = true;
   }
 
   private void configureMotor() {
@@ -107,6 +109,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   private void configureController() {
     super.m_controller.setTolerance(kToleranceDeg);
+    super.m_controller.enableContinuousInput(0.0, 360.0);
   }
 
   @Override
@@ -129,22 +132,30 @@ public class Pivot extends ProfiledPIDSubsystem {
   @Override
   protected void useOutput(double output, TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
-        this.feedforwardController.calculate(setpoint.position * Math.PI / 180, setpoint.velocity * Math.PI / 180);
+        this.feedforwardController.calculate(setpoint.position, setpoint.velocity);
+
+    SmartDashboard.putNumber("pivot ff output", feedforwardOutput);
 
     double feedbackOutput = super.m_controller.calculate(this.getPositionDeg());
 
+    SmartDashboard.putNumber("pivot fb output", feedbackOutput);
+
     double controllerOutput = feedforwardOutput + feedbackOutput;
+
+    SmartDashboard.putNumber("pivot controller output", controllerOutput);
 
     this.motor.set(controllerOutput);
   }
 
   public void doSendables() {
-    SmartDashboard.putBoolean("Pivot At Goal", this.atGoal());
-    SmartDashboard.putNumber("Pivot Position (deg)", this.getPositionDeg());
+    SmartDashboard.putBoolean("pivot at goal", this.atGoal());
+    SmartDashboard.putNumber("pivot position (deg)", this.getPositionDeg());
   }
 
   @Override
   public void periodic() {
+    super.periodic();
+
     this.doSendables();
   }
 
@@ -157,7 +168,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("pivot kg", SmartDashboard.getNumber("pivot kg", kG));
     SmartDashboard.putNumber("pivot kv", SmartDashboard.getNumber("pivot kv", kV));
 
-    SmartDashboard.putNumber("target pivot position", this.getPositionDeg());
+    SmartDashboard.putNumber("pivot target position (deg)", this.getPositionDeg());
   }
 
   private void tune() {
@@ -173,15 +184,15 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
-    this.setGoal(SmartDashboard.getNumber("target pivot position", this.getPositionDeg()));
+    this.setGoal(SmartDashboard.getNumber("pivot target position (deg)", this.getPositionDeg()) * Math.PI / 180.0);
   }
 
-  private Command moveToAngle(DoubleSupplier angleSupplier) {
-    return run(() -> this.setGoal(angleSupplier.getAsDouble())).until(this::atGoal);
+  private Command moveToAngle(DoubleSupplier angleDegSupplier) {
+    return run(() -> this.setGoal(angleDegSupplier.getAsDouble() * Math.PI / 180.0)).until(this::atGoal);
   }
 
-  private Command moveToAngle(double angle) {
-    return this.moveToAngle(() -> angle);
+  private Command moveToAngle(double angleDeg) {
+    return this.moveToAngle(() -> angleDeg);
   }
 
   public Command moveToRetracted() {
@@ -196,8 +207,8 @@ public class Pivot extends ProfiledPIDSubsystem {
     return this.moveToAngle(AimTable.kAmpAimCharacteristic.angle);
   }
 
-  public Command aimAtSpeaker(DoubleSupplier angleSupplier) {
-    return this.moveToAngle(angleSupplier);
+  public Command aimAtSpeaker(DoubleSupplier angleDegSupplier) {
+    return this.moveToAngle(angleDegSupplier);
   }
 
   public Command tuneControllers() {

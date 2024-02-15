@@ -30,33 +30,54 @@ public class Launcher extends SubsystemBase {
    * Constants
    */
 
-  // private static final int kBeamBreakPort = 0; // TODO
+  // TODO
+  // private static final int kBeamBreakPort = 0;
 
-  private static final double kDebounceTime = 0.05;
+  // TODO
+  // private static final double kDebounceTime = 0.05;
 
   /*
    * Implementation
    */
 
-  public Pivot pivot;
-  public Indexer indexer;
-  public Flywheel flywheel;
+  public final Pivot pivot;
+  public final Indexer indexer;
+  public final Flywheel flywheel;
 
-  // private DigitalInput beamBreak; // TODO
-  private Debouncer beamBreakDebouncer;
+  // TODO
+  // private final DigitalInput beamBreak;
 
-  private AimTable aimTable;
+  // TODO
+  // private final Debouncer beamBreakDebouncer;
+
+  // TODO
+  // private final AimTable aimTable;
 
   private Launcher() {
     this.pivot = Pivot.getInstance();
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
 
-    // this.beamBreak = new DigitalInput(kBeamBreakPort); // TODO
-    this.beamBreakDebouncer = new Debouncer(kDebounceTime, Debouncer.DebounceType.kBoth);
+    // TODO
+    // this.beamBreak = new DigitalInput(kBeamBreakPort);
 
-    this.aimTable = new AimTable();
+    // TODO
+    // this.beamBreakDebouncer = new Debouncer(kDebounceTime, Debouncer.DebounceType.kBoth);
+
+    // TODO
+    // this.aimTable = new AimTable();
   }
+
+  public Command tuneMechanisms(){
+    return new ParallelCommandGroup(
+      this.pivot.tuneControllers(),
+      this.indexer.tuneController(),
+      this.flywheel.tuneController()
+    );
+  }
+
+  // TODO
+  /*
 
   public boolean getBeamBreakState() {
     return true;
@@ -90,4 +111,6 @@ public class Launcher extends SubsystemBase {
                     indexer.outtake(this::getBeamBreakState),
                     new WaitCommand(0.2)))));
   }
+
+  */
 }

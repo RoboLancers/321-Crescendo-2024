@@ -28,11 +28,12 @@ public class Flywheel extends SubsystemBase {
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 40;
 
-  private static final double kRampUpRate = 0.5;
+  // TODO
+  // private static final double kRampUpRate = 0.5;
 
-  private static final double kFF = 0.0;
+  private static final double kFF = 0.000152;
 
-  private final double kErrorTolerance = 0.0;
+  private static final double kErrorTolerance = 0.0;
 
   /*
    * Implementation
@@ -42,7 +43,8 @@ public class Flywheel extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SparkPIDController controller;
 
-  private final SlewRateLimiter limiter;
+  // TODO
+  // private final SlewRateLimiter limiter;
 
   private double goalRPM = 0.0;
 
@@ -53,7 +55,8 @@ public class Flywheel extends SubsystemBase {
 
     this.controller = this.motor.getPIDController();
 
-    this.limiter = new SlewRateLimiter(kRampUpRate);
+    // TODO
+    // this.limiter = new SlewRateLimiter(kRampUpRate);
 
     this.configureMotor();
     this.configureEncoder();
@@ -87,7 +90,7 @@ public class Flywheel extends SubsystemBase {
   private void useController() {
     this.controller.setReference(this.goalRPM, ControlType.kVelocity);
 
-    // For tuning, no limiter
+    // TODO
     // this.controller.setReference(
     //     this.limiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
   }
@@ -110,17 +113,16 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("shooter kff", SmartDashboard.getNumber("shooter kff", kFF));
-
-    SmartDashboard.putNumber("target shooter rpm", 0.0);
+    SmartDashboard.putNumber("flywheel kff", SmartDashboard.getNumber("flywheel kff", kFF));
+    SmartDashboard.putNumber("flywheel target rpm", 0.0);
   }
 
   private void tune() {
-    double tunedFF = SmartDashboard.getNumber("shooter kff", kFF);
+    double tunedFF = SmartDashboard.getNumber("flywheel kff", kFF);
 
     this.controller.setFF(tunedFF);
 
-    this.goalRPM = SmartDashboard.getNumber("target shooter rpm", 0.0);
+    this.goalRPM = SmartDashboard.getNumber("flywheel target rpm", 0.0);
 
     this.useController();
   }

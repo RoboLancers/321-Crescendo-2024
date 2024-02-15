@@ -20,14 +20,14 @@ public class Intake extends SubsystemBase {
    * Constants
    */
 
-  // TODO: beam break
+  // TODO: implement beam break
 
   /*
    * Implementation
    */
 
-  public Retractor retractor;
-  public Sucker sucker;
+  public final Retractor retractor;
+  public final Sucker sucker;
 
   private Intake() {
     this.retractor = Retractor.getInstance();
