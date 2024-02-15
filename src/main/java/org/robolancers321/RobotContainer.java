@@ -18,7 +18,7 @@ public class RobotContainer {
 
     this.launcher = Launcher.getInstance();
     
-    this.launcher.setDefaultCommand(this.launcher.tuneMechanisms());
+    this.launcher.pivot.setDefaultCommand(this.launcher.pivot.tuneControllers());
 
     configureBindings();
   }

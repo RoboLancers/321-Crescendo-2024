@@ -5,6 +5,8 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -39,17 +41,17 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
   private static final float kMinAngle = -5.0f;
-  private static final float kMaxAngle = 85.0f;
+  private static final float kMaxAngle = 90.0f;
 
   private static final double kS = 0.0;
   private static final double kG = 0.0;
   private static final double kV = 0.0;
 
-  private static final double kP = 0.11;
+  private static final double kP = 0.04;
   private static final double kI = 0.0;
-  private static final double kD = 0.0;
-  private static final double kMaxVelocityDeg = 0.0;
-  private static final double kMaxAccelerationDeg = 0.0;
+  private static final double kD = 0.02;
+  private static final double kMaxVelocityDeg = 140;
+  private static final double kMaxAccelerationDeg = 140;
 
   private static final double kToleranceDeg = 0.0;
 
@@ -132,7 +134,12 @@ public class Pivot extends ProfiledPIDSubsystem {
   @Override
   protected void useOutput(double output, TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
-        this.feedforwardController.calculate(setpoint.position, setpoint.velocity);
+        this.feedforwardController.calculate(setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+
+    SmartDashboard.putNumber("pivot position setpoint mp (deg)", setpoint.position);
+    SmartDashboard.putNumber("pivot velocity setpoint mp (deg)", setpoint.velocity);
+
+    SmartDashboard.putNumber("pivot position setpoint error (deg)", setpoint.position - this.getPositionDeg());
 
     SmartDashboard.putNumber("pivot ff output", feedforwardOutput);
 
@@ -184,11 +191,11 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
-    this.setGoal(SmartDashboard.getNumber("pivot target position (deg)", this.getPositionDeg()) * Math.PI / 180.0);
+    this.setGoal(MathUtil.clamp(SmartDashboard.getNumber("pivot target position (deg)", this.getPositionDeg()), kMinAngle, kMaxAngle));
   }
 
   private Command moveToAngle(DoubleSupplier angleDegSupplier) {
-    return run(() -> this.setGoal(angleDegSupplier.getAsDouble() * Math.PI / 180.0)).until(this::atGoal);
+    return run(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))).until(this::atGoal);
   }
 
   private Command moveToAngle(double angleDeg) {

@@ -41,8 +41,8 @@ public class Launcher extends SubsystemBase {
    */
 
   public final Pivot pivot;
-  public final Indexer indexer;
-  public final Flywheel flywheel;
+  // public final Indexer indexer;
+  // public final Flywheel flywheel;
 
   // TODO
   // private final DigitalInput beamBreak;
@@ -55,8 +55,8 @@ public class Launcher extends SubsystemBase {
 
   private Launcher() {
     this.pivot = Pivot.getInstance();
-    this.indexer = Indexer.getInstance();
-    this.flywheel = Flywheel.getInstance();
+    // this.indexer = Indexer.getInstance();
+    // this.flywheel = Flywheel.getInstance();
 
     // TODO
     // this.beamBreak = new DigitalInput(kBeamBreakPort);
@@ -66,14 +66,6 @@ public class Launcher extends SubsystemBase {
 
     // TODO
     // this.aimTable = new AimTable();
-  }
-
-  public Command tuneMechanisms(){
-    return new ParallelCommandGroup(
-      this.pivot.tuneControllers(),
-      this.indexer.tuneController(),
-      this.flywheel.tuneController()
-    );
   }
 
   // TODO
