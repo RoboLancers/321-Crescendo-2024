@@ -41,7 +41,7 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
   private static final float kMinAngle = -5.0f;
-  private static final float kMaxAngle = 90.0f;
+  private static final float kMaxAngle = 85.0f;
 
   private static final double kS = 0.0;
   private static final double kG = 0.0;
@@ -50,10 +50,10 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final double kP = 0.04;
   private static final double kI = 0.0;
   private static final double kD = 0.02;
-  private static final double kMaxVelocityDeg = 140;
-  private static final double kMaxAccelerationDeg = 140;
+  private static final double kMaxVelocityDeg = 240;
+  private static final double kMaxAccelerationDeg = 360;
 
-  private static final double kToleranceDeg = 0.0;
+  private static final double kToleranceDeg = 0.5;
 
   public enum PivotSetpoint {
     kRetracted(0.0),
@@ -73,7 +73,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   private final CANSparkMax motor;
   private final AbsoluteEncoder absoluteEncoder;
-  private ArmFeedforward feedforwardController; // TODO: make this final when not tuning
+  private ArmFeedforward feedforwardController;
 
   private Pivot() {
     super(
@@ -88,8 +88,6 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.configureEncoder();
     this.configureController();
     this.motor.burnFlash();
-
-    this.m_enabled = true;
   }
 
   private void configureMotor() {
@@ -110,8 +108,11 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   private void configureController() {
-    super.m_controller.setTolerance(kToleranceDeg);
     super.m_controller.enableContinuousInput(0.0, 360.0);
+    super.m_controller.setTolerance(kToleranceDeg);
+    super.m_controller.setGoal(this.getPositionDeg());
+
+    this.m_enabled = true;
   }
 
   @Override
@@ -138,8 +139,6 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     SmartDashboard.putNumber("pivot position setpoint mp (deg)", setpoint.position);
     SmartDashboard.putNumber("pivot velocity setpoint mp (deg)", setpoint.velocity);
-
-    SmartDashboard.putNumber("pivot position setpoint error (deg)", setpoint.position - this.getPositionDeg());
 
     SmartDashboard.putNumber("pivot ff output", feedforwardOutput);
 
