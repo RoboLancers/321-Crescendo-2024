@@ -80,6 +80,7 @@ public class Launcher extends SubsystemBase {
     return this.indexer.acceptHandoff(this::getBeamBreakState);
   }
 
+  // TODO: race?
   public Command yeetAmp() {
     return new SequentialCommandGroup(
         pivot.aimAtAmp(),

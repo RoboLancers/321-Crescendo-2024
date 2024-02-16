@@ -1,20 +1,23 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.intake;
 
+import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
+
 import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
-public class Retractor extends SubsystemBase {
+public class Retractor extends ProfiledPIDSubsystem {
   /*
    * Singleton
    */
@@ -33,8 +36,14 @@ public class Retractor extends SubsystemBase {
 
   private static final int kMotorPort = 13;
 
-  private static final boolean kInvertMotor = true;
-  private static final int kCurrentLimit = 20;
+  private static final boolean kInvertMotor = false;
+  private static final int kCurrentLimit = 30;
+  
+  private static final double kGearRatio = 360.0;
+  private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
+
+  private static final float kMinAngle = 0.0f;
+  private static final float kMaxAngle = 180.0f;
 
   private static final double kP = 0.000;
   private static final double kI = 0.000;
@@ -44,24 +53,20 @@ public class Retractor extends SubsystemBase {
   private static final double kG = 0.000;
   private static final double kV = 0.000;
 
-  private static final double kMaxVelocityDeg = 0.0;
-  private static final double kMaxAccelerationDeg = 0.0;
+  private static final double kMaxVelocityDeg = 30.0;
+  private static final double kMaxAccelerationDeg = 45.0;
 
-  private static final double kErrorThreshold = 2.0;
+  private static final double kToleranceDeg = 0.5;
 
-  public enum RetractorPosition {
+  private enum RetractorSetpoint {
     kRetracted(0),
     kMating(0),
     kIntake(0);
 
-    private final double angle;
+    public final double angle;
 
-    RetractorPosition(double angleDeg) {
+    private RetractorSetpoint(double angleDeg) {
       this.angle = angleDeg;
-    }
-
-    public double getAngle() {
-      return this.angle;
     }
   }
 
@@ -71,15 +76,16 @@ public class Retractor extends SubsystemBase {
 
   private final CANSparkMax motor;
   private final AbsoluteEncoder encoder;
-  private final ProfiledPIDController feedbackController;
-  private ArmFeedforward feedforwardController; // TODO: make this final when not tuning
+  private ArmFeedforward feedforwardController;
 
   private Retractor() {
-    this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
-    this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
-    this.feedbackController =
+    super(
         new ProfiledPIDController(
-            kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg));
+            kP, kI, kD, new TrapezoidProfile.Constraints(kMaxVelocityDeg, kMaxAccelerationDeg)));
+
+    this.motor = new CANSparkMax(kMotorPort, kBrushless);
+    this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
+    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
 
     this.configureMotor();
     this.configureEncoder();
@@ -89,49 +95,57 @@ public class Retractor extends SubsystemBase {
 
   private void configureMotor() {
     this.motor.setInverted(kInvertMotor);
-    this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
+
+    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
+    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
+    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
+    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
   }
 
   private void configureEncoder() {
-    this.encoder.setPositionConversionFactor(360); // TODO: potentially a gear ratio on this
+    this.encoder.setPositionConversionFactor(kGearRatio);
+    this.encoder.setVelocityConversionFactor(kRotPerMinToDegPerSec);
   }
 
   private void configureController() {
-    this.feedbackController.setP(kP);
-    this.feedbackController.setI(kI);
-    this.feedbackController.setD(kD);
-    this.feedbackController.setTolerance(kErrorThreshold);
+    super.m_controller.enableContinuousInput(0.0, 360.0);
+    super.m_controller.setTolerance(kToleranceDeg);
+    super.m_controller.setGoal(this.getPositionDeg());
 
-    this.feedforwardController = new ArmFeedforward(kS, kG, kV);
+    this.m_enabled = true;
+  }
+  
+  @Override
+  public double getMeasurement() {
+    return this.getPositionDeg();
   }
 
-  public double getPosition() {
+  public double getPositionDeg() {
     return this.encoder.getPosition();
   }
 
-  public boolean isAtGoal() {
-    return this.feedbackController.atGoal();
+  public double getVelocityDeg() {
+    return this.encoder.getVelocity();
   }
 
-  private void setGoal(double goalDeg) {
-    this.feedbackController.setGoal(goalDeg * Math.PI / 180.0);
+  private boolean atGoal() {
+    return super.m_controller.atGoal();
   }
 
-  private void setGoal(RetractorPosition goal) {
-    this.setGoal(goal.getAngle());
-  }
-
-  private void useControllers() {
-    State setpointState = this.feedbackController.getSetpoint();
-
+  @Override
+  protected void useOutput(double output, TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
-        this.feedforwardController.calculate(setpointState.position, setpointState.velocity);
+        this.feedforwardController.calculate(setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+
+    SmartDashboard.putNumber("retractor position setpoint mp (deg)", setpoint.position);
+    SmartDashboard.putNumber("retractor velocity setpoint mp (deg)", setpoint.velocity);
 
     SmartDashboard.putNumber("retractor ff output", feedforwardOutput);
 
-    double feedbackOutput = this.feedbackController.calculate(this.getPosition());
+    double feedbackOutput = super.m_controller.calculate(this.getPositionDeg());
 
     SmartDashboard.putNumber("retractor fb output", feedbackOutput);
 
@@ -143,14 +157,15 @@ public class Retractor extends SubsystemBase {
   }
 
   private void doSendables() {
-    SmartDashboard.putBoolean("retractor at goal", this.isAtGoal());
-    SmartDashboard.putNumber("retractor position (deg)", this.getPosition());
+    SmartDashboard.putBoolean("retractor at goal", this.atGoal());
+    SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
   }
-
+  
   @Override
   public void periodic() {
-    useControllers();
-    doSendables();
+    super.periodic();
+
+    this.doSendables();
   }
 
   private void initTuning() {
@@ -162,7 +177,10 @@ public class Retractor extends SubsystemBase {
     SmartDashboard.putNumber("retractor kv", SmartDashboard.getNumber("retractor kv", kV));
     SmartDashboard.putNumber("retractor kg", SmartDashboard.getNumber("retractor kg", kG));
 
-    SmartDashboard.putNumber("retractor target position (deg)", this.getPosition());
+    SmartDashboard.putNumber("retractor max vel (deg)", SmartDashboard.getNumber("retractor max vel (deg)", kMaxVelocityDeg));
+    SmartDashboard.putNumber("retractor max acc (deg)", SmartDashboard.getNumber("retractor max acc (deg)", kMaxAccelerationDeg));
+
+    SmartDashboard.putNumber("retractor target position (deg)", this.getPositionDeg());
   }
 
   private void tune() {
@@ -170,9 +188,7 @@ public class Retractor extends SubsystemBase {
     double tunedI = SmartDashboard.getNumber("retractor ki", kI);
     double tunedD = SmartDashboard.getNumber("retractor kd", kD);
 
-    this.feedbackController.setP(tunedP);
-    this.feedbackController.setI(tunedI);
-    this.feedbackController.setD(tunedD);
+    super.m_controller.setPID(tunedP, tunedI, tunedD);
 
     double tunedS = SmartDashboard.getNumber("retractor ks", kS);
     double tunedV = SmartDashboard.getNumber("retractor kv", kV);
@@ -180,28 +196,28 @@ public class Retractor extends SubsystemBase {
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
-    double targetRetractorPosition =
-        SmartDashboard.getNumber("retractor target position (deg)", this.getPosition());
+    double tunedMaxVel = SmartDashboard.getNumber("retractor max vel (deg)", kMaxVelocityDeg);
+    double tunedMaxAcc = SmartDashboard.getNumber("retractor max acc (deg)", kMaxAccelerationDeg);
 
-    this.setGoal(targetRetractorPosition);
+    this.m_controller.setConstraints(new Constraints(tunedMaxVel, tunedMaxAcc));
+
+    this.setGoal(MathUtil.clamp(SmartDashboard.getNumber("retractor target position (deg)", this.getPositionDeg()), kMinAngle, kMaxAngle));
   }
-
-  private Command moveToPosition(RetractorPosition position) {
-    this.setGoal(position);
-
-    return new WaitUntilCommand(this::isAtGoal);
+  
+  private Command moveToAngle(double angleDeg) {
+    return run(() -> this.setGoal(MathUtil.clamp(angleDeg, kMinAngle, kMaxAngle))).until(this::atGoal);
   }
 
   public Command moveToRetracted() {
-    return this.moveToPosition(RetractorPosition.kRetracted);
+    return this.moveToAngle(RetractorSetpoint.kRetracted.angle);
   }
 
   public Command moveToMating() {
-    return this.moveToPosition(RetractorPosition.kMating);
+    return this.moveToAngle(RetractorSetpoint.kMating.angle);
   }
 
   public Command moveToIntake() {
-    return this.moveToPosition(RetractorPosition.kIntake);
+    return this.moveToAngle(RetractorSetpoint.kIntake.angle);
   }
 
   public Command tuneControllers() {

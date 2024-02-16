@@ -20,12 +20,6 @@ public class AimTable {
   }
 
   // TODO: tune
-  public static final AimCharacteristic kRetractedAimCharacteristic =
-      new AimCharacteristic(0.0, 0.0);
-  public static final AimCharacteristic kMatingAimCharacteristic = new AimCharacteristic(0.0, 0.0);
-  public static final AimCharacteristic kAmpAimCharacteristic = new AimCharacteristic(0.0, 0.0);
-
-  // TODO: tune
   private static final LinkedHashMap<Double, AimCharacteristic> table =
       new LinkedHashMap<>() {
         {
@@ -41,18 +35,20 @@ public class AimTable {
     return lowKey + percent * (highValue - lowValue);
   }
 
-    private static final double kInterpolationCacheThreshold = 0.0;
+  private static final double kInterpolationCacheThreshold = 0.0;
 
-    private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
+  private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
     List<Double> keys = table.keySet().stream().sorted().toList();
     double lowerBound = keys.get(0);
     double upperBound = keys.get(keys.size() - 1);
 
-    if ((distance < lowerBound)) {
+    if (distance < lowerBound){
       AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
 
       return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
-    } else if (distance > upperBound) {
+    }
+    
+    if (distance > upperBound) {
       AimTable.AimCharacteristic upperValue = table.get(upperBound);
 
       return new AimTable.AimCharacteristic(upperValue.angle, upperValue.rpm);

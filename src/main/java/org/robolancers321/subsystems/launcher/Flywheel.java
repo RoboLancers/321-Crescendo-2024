@@ -33,7 +33,17 @@ public class Flywheel extends SubsystemBase {
 
   private static final double kFF = 0.000152;
 
-  private static final double kErrorTolerance = 0.0;
+  private static final double kToleranceRPM = 40.0;
+
+  private enum FlywheelSetpoint {
+    kAmp(0.0);
+
+    public final double rpm;
+
+    private FlywheelSetpoint(double rpm){
+      this.rpm = rpm;
+    }
+  }
 
   /*
    * Implementation
@@ -96,7 +106,7 @@ public class Flywheel extends SubsystemBase {
   }
 
   public boolean isRevved() {
-    return epsilonEquals(this.getRPM(), this.goalRPM, kErrorTolerance);
+    return epsilonEquals(this.getRPM(), this.goalRPM, kToleranceRPM);
   }
 
   private void dangerouslySetSpeed(double speed) {
@@ -141,7 +151,7 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command yeetNoteAmp() {
-    this.goalRPM = AimTable.kAmpAimCharacteristic.rpm;
+    this.goalRPM = FlywheelSetpoint.kAmp.rpm;
 
     return run(this::useController).finallyDo(this::off);
   }

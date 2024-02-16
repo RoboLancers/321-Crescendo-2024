@@ -27,10 +27,14 @@ public class Intake extends SubsystemBase {
    */
 
   public final Retractor retractor;
-  public final Sucker sucker;
+
+  // TODO
+  // public final Sucker sucker;
 
   private Intake() {
     this.retractor = Retractor.getInstance();
-    this.sucker = Sucker.getInstance();
+
+    // TODO
+    // this.sucker = Sucker.getInstance();
   }
 }
