@@ -4,6 +4,7 @@ package org.robolancers321.subsystems.launcher;
 import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.MathUtil;
@@ -36,13 +37,13 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final int kMotorPort = 15;
 
   private static final boolean kInvertMotor = false;
+  private static final boolean kInvertEncoder = false;
   private static final int kCurrentLimit = 40;
 
   private static final double kGearRatio = 360.0;
-  private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
-  private static final float kMinAngle = -5.0f;
-  private static final float kMaxAngle = 85.0f;
+  private static final float kMinAngle = 0.0f;
+  private static final float kMaxAngle = 90.0f;
 
   private static final double kP = 0.04;
   private static final double kI = 0.0;
@@ -55,7 +56,7 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final double kMaxVelocityDeg = 240;
   private static final double kMaxAccelerationDeg = 360;
 
-  private static final double kToleranceDeg = 0.5;
+  private static final double kToleranceDeg = 2.5;
 
   private enum PivotSetpoint {
     kRetracted(0.0),
@@ -98,15 +99,22 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
 
-    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
-    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
-    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
-    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
+    // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
+    // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
+    // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
+    // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
+
+    this.motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    this.motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
   }
 
   private void configureEncoder() {
+    // this.motor.getEncoder().setPositionConversionFactor(kGearRatio);
+    // this.motor.getEncoder().setPosition(this.getPositionDeg());
+
+    this.encoder.setInverted(kInvertEncoder);
     this.encoder.setPositionConversionFactor(kGearRatio);
-    this.encoder.setVelocityConversionFactor(kRotPerMinToDegPerSec);
+    this.encoder.setVelocityConversionFactor(kGearRatio);
   }
 
   private void configureController() {
@@ -121,9 +129,9 @@ public class Pivot extends ProfiledPIDSubsystem {
   public double getMeasurement() {
     return this.getPositionDeg();
   }
-
+  
   public double getPositionDeg() {
-    return this.encoder.getPosition();
+    return this.encoder.getPosition() > 180 ? this.encoder.getPosition() - 360.0 : this.encoder.getPosition();
   }
 
   public double getVelocityDeg() {

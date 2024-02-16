@@ -5,6 +5,7 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
@@ -37,26 +38,27 @@ public class Retractor extends ProfiledPIDSubsystem {
   private static final int kMotorPort = 13;
 
   private static final boolean kInvertMotor = true;
-  private static final int kCurrentLimit = 30;
+  private static final boolean kInvertEncoder = true;
+
+  private static final int kCurrentLimit = 40;
   
   private static final double kGearRatio = 360.0;
-  private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
-  private static final float kMinAngle = -15.0f;
-  private static final float kMaxAngle = 168.0f;
+  private static final float kMinAngle = -20.0f;
+  private static final float kMaxAngle = 160.0f;
 
-  private static final double kP = 0.000;
+  private static final double kP = 0.0065;
   private static final double kI = 0.000;
-  private static final double kD = 0.000;
+  private static final double kD = 0.0001;
 
   private static final double kS = 0.000;
-  private static final double kG = 0.0441;
+  private static final double kG = 0.0155;
   private static final double kV = 0.000;
 
-  private static final double kMaxVelocityDeg = 30.0;
-  private static final double kMaxAccelerationDeg = 45.0;
+  private static final double kMaxVelocityDeg = 90.0;
+  private static final double kMaxAccelerationDeg = 60.0;
 
-  private static final double kToleranceDeg = 0.5;
+  private static final double kToleranceDeg = 2.5;
 
   private enum RetractorSetpoint {
     kRetracted(0),
@@ -99,19 +101,26 @@ public class Retractor extends ProfiledPIDSubsystem {
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
 
-    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
-    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
-    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
-    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
+    // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
+    // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
+    // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
+    // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
+    
+    this.motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    this.motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
   }
 
   private void configureEncoder() {
+    // this.motor.getEncoder().setPositionConversionFactor(kGearRatio);
+    // this.motor.getEncoder().setPosition(this.getPositionDeg());
+
+    this.encoder.setInverted(kInvertEncoder);
     this.encoder.setPositionConversionFactor(kGearRatio);
-    this.encoder.setVelocityConversionFactor(kRotPerMinToDegPerSec);
+    this.encoder.setVelocityConversionFactor(kGearRatio);
   }
 
   private void configureController() {
-    super.m_controller.enableContinuousInput(0.0, 360.0);
+    super.m_controller.enableContinuousInput(-180.0, 180.0);
     super.m_controller.setTolerance(kToleranceDeg);
     super.m_controller.setGoal(this.getPositionDeg());
 
@@ -124,7 +133,7 @@ public class Retractor extends ProfiledPIDSubsystem {
   }
 
   public double getPositionDeg() {
-    return this.encoder.getPosition();
+    return this.encoder.getPosition() > 180 ? this.encoder.getPosition() - 360.0 : this.encoder.getPosition();
   }
 
   public double getVelocityDeg() {
@@ -159,6 +168,7 @@ public class Retractor extends ProfiledPIDSubsystem {
   private void doSendables() {
     SmartDashboard.putBoolean("retractor at goal", this.atGoal());
     SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
+    SmartDashboard.putNumber("retractor velocity (deg)", this.getVelocityDeg());
   }
   
   @Override

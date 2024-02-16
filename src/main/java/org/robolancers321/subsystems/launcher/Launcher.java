@@ -42,7 +42,7 @@ public class Launcher extends SubsystemBase {
 
   public final Pivot pivot;
   // public final Indexer indexer;
-  // public final Flywheel flywheel;
+  public final Flywheel flywheel;
 
   // TODO
   // private final DigitalInput beamBreak;
@@ -56,7 +56,7 @@ public class Launcher extends SubsystemBase {
   private Launcher() {
     this.pivot = Pivot.getInstance();
     // this.indexer = Indexer.getInstance();
-    // this.flywheel = Flywheel.getInstance();
+    this.flywheel = Flywheel.getInstance();
 
     // TODO
     // this.beamBreak = new DigitalInput(kBeamBreakPort);
