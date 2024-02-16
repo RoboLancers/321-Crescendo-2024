@@ -9,9 +9,9 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.robolancers321.Constants.ClimberConstants;
 
@@ -43,6 +43,8 @@ public class Climber extends SubsystemBase {
 
   private final DigitalInput leftLimitSwitch;
   private final DigitalInput rightLimitSwitch;
+
+  private final PowerDistribution solenoids;
 
   private Climber() {
     this.leftClimberMotor =
@@ -193,27 +195,32 @@ public class Climber extends SubsystemBase {
   public Command leftUp(double setpoint) {
     setLeftClimberSetpoint(setpoint);
 
-    return run(() -> setLeftPower(leftClimberPID.calculate(getLeftClimberPosition())))
-        .until(leftClimberPID::atSetpoint);
+    return unlockClimb()
+        .andThen(
+            run(() -> setLeftPower(leftClimberPID.calculate(getLeftClimberPosition())))
+                .until(leftClimberPID::atSetpoint));
   }
 
   public Command rightUp(double setpoint) {
     setRightClimberSetpoint(setpoint);
 
-    return run(() -> setRightPower(rightClimberPID.calculate(getRightClimberPosition())))
-        .until(rightClimberPID::atSetpoint);
+    return unlockClimb()
+        .andThen(
+            run(() -> setRightPower(rightClimberPID.calculate(getRightClimberPosition())))
+                .until(rightClimberPID::atSetpoint));
   }
 
   public Command bothUp(double setpoint) {
     setLeftClimberSetpoint(setpoint);
     setRightClimberSetpoint(setpoint);
 
-    return run(() -> {
-          setLeftPower(leftClimberPID.calculate(getLeftClimberPosition()));
-          setRightPower(rightClimberPID.calculate(getRightClimberPosition()));
-        })
-        .until(() -> leftClimberPID.atSetpoint() && rightClimberPID.atSetpoint())
-        .withInterruptBehavior(InterruptionBehavior.kCancelSelf);
+    return unlockClimb()
+        .andThen(
+            run(() -> {
+                  setLeftPower(leftClimberPID.calculate(getLeftClimberPosition()));
+                  setRightPower(rightClimberPID.calculate(getRightClimberPosition()));
+                })
+                .until(() -> leftClimberPID.atSetpoint() && rightClimberPID.atSetpoint()));
   }
 
   public Command zeroLeft() {
