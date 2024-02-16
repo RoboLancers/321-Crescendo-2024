@@ -36,21 +36,21 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   private static final int kMotorPort = 13;
 
-  private static final boolean kInvertMotor = false;
+  private static final boolean kInvertMotor = true;
   private static final int kCurrentLimit = 30;
   
   private static final double kGearRatio = 360.0;
   private static final double kRotPerMinToDegPerSec = kGearRatio / 60.0;
 
-  private static final float kMinAngle = 0.0f;
-  private static final float kMaxAngle = 180.0f;
+  private static final float kMinAngle = -15.0f;
+  private static final float kMaxAngle = 168.0f;
 
   private static final double kP = 0.000;
   private static final double kI = 0.000;
   private static final double kD = 0.000;
 
   private static final double kS = 0.000;
-  private static final double kG = 0.000;
+  private static final double kG = 0.0441;
   private static final double kV = 0.000;
 
   private static final double kMaxVelocityDeg = 30.0;
