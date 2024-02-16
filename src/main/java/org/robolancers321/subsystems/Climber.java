@@ -45,9 +45,9 @@ public class Climber extends SubsystemBase {
   private static final double kMetersPerRot = 1;
   private static final double kRPMToMPS = kMetersPerRot / 60.0;
 
-  private static final TunableConstant kP = new TunableConstant("Climber/kP", 0);
-  private static final TunableConstant kI = new TunableConstant("Climber/kI", 0);
-  private static final TunableConstant kD = new TunableConstant("Climber/kD", 0);
+  private static final TunableConstant kP = new TunableConstant("kP", 0);
+  private static final TunableConstant kI = new TunableConstant("kI", 0);
+  private static final TunableConstant kD = new TunableConstant("kD", 0);
 
   private static final double kErrorTolerance = 0.1;
 
@@ -172,19 +172,17 @@ public class Climber extends SubsystemBase {
     // TODO: log position, velocity, limit switch, controller output
     // tried new naming convention from 6328 Mechanical Advantage
 
-    SmartDashboard.putNumber("Climber/Left/Position", getLeftClimberPosition());
-    SmartDashboard.putNumber("Climber/Left/Velocity", getLeftClimberVelocity());
-    SmartDashboard.putBoolean("Climber/Left/LimitSwitch", leftLimitSwitch.get());
-    SmartDashboard.putNumber("Climber/Left/MotorOutput", leftClimberMotor.getAppliedOutput());
+    SmartDashboard.putNumber("climberLeft Position", getLeftClimberPosition());
+    SmartDashboard.putBoolean("climberLeft LimitSwitch", leftLimitSwitch.get());
+    SmartDashboard.putNumber("climberLeft MotorOutput", leftClimberMotor.getAppliedOutput());
     SmartDashboard.putNumber(
-        "Climber/Left/PIDOutput", leftClimberPID.calculate(getLeftClimberPosition()));
+        "climberLeft PIDOutput", leftClimberPID.calculate(getLeftClimberPosition()));
 
-    SmartDashboard.putNumber("Climber/Right/Position", getRightClimberPosition());
-    SmartDashboard.putNumber("Climber/Right/Velocity", getRightClimberVelocity());
-    SmartDashboard.putBoolean("Climber/Right/LimitSwitch", rightLimitSwitch.get());
-    SmartDashboard.putNumber("Climber/Right/MotorOutput", rightClimberMotor.getAppliedOutput());
+    SmartDashboard.putNumber("climberRight Position", getRightClimberPosition());
+    SmartDashboard.putBoolean("climberRight LimitSwitch", rightLimitSwitch.get());
+    SmartDashboard.putNumber("climberRight MotorOutput", rightClimberMotor.getAppliedOutput());
     SmartDashboard.putNumber(
-        "Climber/Right/PIDOutput", rightClimberPID.calculate(getRightClimberPosition()));
+        "climberRight PIDOutput", rightClimberPID.calculate(getRightClimberPosition()));
   }
 
   private void tuneClimbers() {
@@ -195,6 +193,7 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     doSendables();
+    // tuneClimbers();
   }
 
   public Command leftUp(double setpoint) {
