@@ -2,11 +2,21 @@
   "HALProvider": {
     "Addressable LEDs": {
       "0": {
-        "columns": 22,
+        "columns": 25,
         "serpentine": true
       },
       "window": {
         "visible": true
+      }
+    },
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    },
+    "Timing": {
+      "window": {
+        "visible": false
       }
     }
   },
@@ -16,7 +26,7 @@
       "/SmartDashboard/SendableChooser[0]": "String Chooser"
     }
   },
-  "NetworkTables Info": {
-    "visible": true
+  "NetworkTables View": {
+    "visible": false
   }
 }

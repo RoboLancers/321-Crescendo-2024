@@ -18,7 +18,6 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import org.robolancers321.subsystems.LED.Section;
 import org.robolancers321.util.VirtualSubsystem;
 
 /*
@@ -29,7 +28,7 @@ import org.robolancers321.util.VirtualSubsystem;
 public class LED extends VirtualSubsystem {
 
   public static final int kLEDPWMPort = 0;
-  public static final int kLEDStripLength = 50;
+  public static final int kLEDStripLength = 25;
 
   private static final double kStrobeDuration = 0.2;
   private static final double kBreathDuration = 1.0;
@@ -40,14 +39,22 @@ public class LED extends VirtualSubsystem {
   private static final double kWaveDuration = 3.0;
   private static final double kStripeDuration = 0.5;
 
-  static int kWavefrontSpeed = 10;
-  static int kFadeSpeed = 2000;
-  static double kFadeProbability = 0.15;
-  static int kWavefrontSeparation = 12;
-  static int kWavefrontLength = 1;
-  static double kWavefrontPosition = -1;
-  static rgb kMeteorColor = new rgb(255, 0, 0);
-  static rgb[] meteorBuf = new rgb[kLEDStripLength];
+  // static int kWavefrontSpeed = 10;
+  // static int kFadeSpeed = 2000;
+  // static double kFadeProbability = 0.15;
+  // static int kWavefrontSeparation = 12;
+  // static int kWavefrontLength = 1;
+  // static double kWavefrontPosition = -1;
+  // static rgb kMeteorColor = new rgb(255, 0, 0);
+  // static rgb[] meteorBuf = new rgb[kLEDStripLength];
+
+  private static final int kFadeSpeed = 320;
+  private static final double kFadeProbability = 0.8;
+  private static final int kWavefrontSpeed = 5;
+  private static final int kWavefrontLength = 3;
+  private static final int kWavefrontSeparation = 20;
+  private static final Color8Bit kMeteorColor = new Color8Bit(255, 0, 0);
+  private static int wavefrontPosition = -1;
 
   private static final int kCooling = 30; // 20 - 100
   private static final int kSparking = 50; // 0-255
@@ -62,7 +69,7 @@ public class LED extends VirtualSubsystem {
   private final AddressableLEDBuffer ledBuffer;
   private static TreeSet<Signal> ledSignals;
 
-  private Consumer<AddressableLEDBuffer> currPattern = LED.solid(Section.FULL, Color.kWhite);
+  private Consumer<AddressableLEDBuffer> currPattern = LED.meteorRain(0.20);
 
   public LED() {
     this.ledStrip = new AddressableLED(kLEDPWMPort);
@@ -79,7 +86,7 @@ public class LED extends VirtualSubsystem {
                 .reversed()); // sorted in descending order of priority
 
     Arrays.fill(heat, 0);
-    Arrays.fill(meteorBuf, new rgb(0, 0, 0));
+    // Arrays.fill(meteorBuf, new rgb(0, 0, 0));
   }
 
   public record Signal(
@@ -212,66 +219,97 @@ public class LED extends VirtualSubsystem {
 
   private static void meteorRain(AddressableLEDBuffer buffer, double dt) {
     for (int i = 0; i < kLEDStripLength; i++) {
-      if (rng.nextDouble() < kFadeProbability) {
-        fadeToBlack(buffer, i, dt);
-      }
+      if (Math.random() < kFadeProbability) fadeToBlack(buffer, i, dt);
     }
 
-    kWavefrontPosition += kWavefrontSpeed * dt;
+    wavefrontPosition += kWavefrontSpeed * dt;
 
-    if (kWavefrontPosition - kWavefrontLength >= kLEDStripLength) {
-      kWavefrontPosition -= kWavefrontSeparation;
-    }
+    if (wavefrontPosition - kWavefrontLength >= kLEDStripLength)
+      wavefrontPosition -= kWavefrontSeparation;
 
-    double nthWavefrontPosition = kWavefrontPosition;
+    var nthWavefrontPosition = wavefrontPosition;
 
     while (nthWavefrontPosition >= 0) {
-      for (int k = 0; k < kWavefrontLength; k++) {
-        if ((int) Math.round(nthWavefrontPosition - k) >= 0
-            && (int) Math.round(nthWavefrontPosition - k) < kLEDStripLength) {
-          meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = kMeteorColor;
-        }
+      for (int i = 0; i < kWavefrontLength; i++) {
+        if (nthWavefrontPosition - i >= 0 && nthWavefrontPosition - i < kLEDStripLength)
+          buffer.setLED(nthWavefrontPosition - i, kMeteorColor);
       }
       nthWavefrontPosition -= kWavefrontSeparation;
     }
-
-    for (int i = 0; i < kLEDStripLength; i++) {
-      buffer.setRGB(i, meteorBuf[i].getRed(), meteorBuf[i].getGreen(), meteorBuf[i].getBlue());
-    }
   }
 
-  private static void fadeToBlack(AddressableLEDBuffer buffer, int ledNo, double dt) {
-    Color8Bit color = buffer.getLED8Bit(ledNo);
-    int r = (int) Math.max(color.red - kFadeSpeed * dt, 0);
-    int g = (int) Math.max(color.green - kFadeSpeed * dt, 0);
-    int b = (int) Math.max(color.blue - kFadeSpeed * dt, 0);
+  private static void fadeToBlack(AddressableLEDBuffer buffer, int index, double dt) {
+    final Color8Bit currColor = buffer.getLED8Bit(index);
+    final var decrement = kFadeSpeed * dt;
+    final var r = (int) Math.max(currColor.red - decrement, 0);
+    final var g = (int) Math.max(currColor.green - decrement, 0);
+    final var b = (int) Math.max(currColor.blue - decrement, 0);
 
-    meteorBuf[ledNo] = new rgb(r, g, b);
+    buffer.setRGB(index, r, g, b);
   }
 
-  private static class rgb {
-    int r;
-    int g;
-    int b;
+  // private static void meteorRain(AddressableLEDBuffer buffer, double dt) {
+  //   for (int i = 0; i < kLEDStripLength; i++) {
+  //     if (rng.nextDouble() < kFadeProbability) {
+  //       fadeToBlack(buffer, i, dt);
+  //     }
+  //   }
 
-    rgb(int r, int g, int b) {
-      this.r = r;
-      this.g = g;
-      this.b = b;
-    }
+  //   kWavefrontPosition += kWavefrontSpeed * dt;
 
-    public int getRed() {
-      return r;
-    }
+  //   if (kWavefrontPosition - kWavefrontLength >= kLEDStripLength) {
+  //     kWavefrontPosition -= kWavefrontSeparation;
+  //   }
 
-    public int getGreen() {
-      return g;
-    }
+  //   double nthWavefrontPosition = kWavefrontPosition;
 
-    public int getBlue() {
-      return b;
-    }
-  }
+  //   while (nthWavefrontPosition >= 0) {
+  //     for (int k = 0; k < kWavefrontLength; k++) {
+  //       if ((int) Math.round(nthWavefrontPosition - k) >= 0
+  //           && (int) Math.round(nthWavefrontPosition - k) < kLEDStripLength) {
+  //         meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = kMeteorColor;
+  //       }
+  //     }
+  //     nthWavefrontPosition -= kWavefrontSeparation;
+  //   }
+
+  //   for (int i = 0; i < kLEDStripLength; i++) {
+  //     buffer.setRGB(i, meteorBuf[i].getRed(), meteorBuf[i].getGreen(), meteorBuf[i].getBlue());
+  //   }
+  // }
+
+  // private static void fadeToBlack(AddressableLEDBuffer buffer, int ledNo, double dt) {
+  //   Color8Bit color = buffer.getLED8Bit(ledNo);
+  //   int r = (int) Math.max(color.red - kFadeSpeed * dt, 0);
+  //   int g = (int) Math.max(color.green - kFadeSpeed * dt, 0);
+  //   int b = (int) Math.max(color.blue - kFadeSpeed * dt, 0);
+
+  //   meteorBuf[ledNo] = new rgb(r, g, b);
+  // }
+
+  // private static class rgb {
+  //   int r;
+  //   int g;
+  //   int b;
+
+  //   rgb(int r, int g, int b) {
+  //     this.r = r;
+  //     this.g = g;
+  //     this.b = b;
+  //   }
+
+  //   public int getRed() {
+  //     return r;
+  //   }
+
+  //   public int getGreen() {
+  //     return g;
+  //   }
+
+  //   public int getBlue() {
+  //     return b;
+  //   }
+  // }
 
   public static Consumer<AddressableLEDBuffer> fire() {
     return buf -> fire(buf, kCooling, kSparking, kSpeedDelay, kSparks, kSparkHeight);
@@ -377,7 +415,7 @@ public class LED extends VirtualSubsystem {
       }
     }
 
-    // newPattern.orElse(currPattern).accept(ledBuffer);
+    // newPattern.ifPresent(patt -> currPattern = patt);
     if (newPattern.isPresent()) currPattern = newPattern.get();
 
     currPattern.accept(ledBuffer);
