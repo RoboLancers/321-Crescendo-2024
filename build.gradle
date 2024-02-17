@@ -52,6 +52,7 @@ def includeDesktopSupport = false
 dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
+    implementation 'org.jetbrains:annotations:24.0.0'
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -68,6 +69,7 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.8.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -104,13 +106,15 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**','**/BuildConstants.java'
+            exclude '**/build/**', '**/build-*/**','src/main/java/org/robolancers321/BuildConstants.java'
         }
+
         toggleOffOn()
         googleJavaFormat().reflowLongStrings()
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
+
 
         licenseHeader '/* (C) Robolancers 2024 */'
     }
@@ -156,12 +160,12 @@ spotless {
     }
 }
 
-project.compileJava.dependsOn(createVersionFile)
-gversion {
-    srcDir       = "src/main/java/"
-    classPackage = "org.robolancers321"
-    className    = "BuildConstants"
-    dateFormat   = "yyyy-MM-dd HH:mm:ss z"
-    timeZone     = "America/New_York" // Use preferred time zone
-    indent       = "  "
-}
+// project.compileJava.dependsOn(createVersionFile)
+// // gversion {
+// //     srcDir       = "src/main/java/"
+// //     classPackage = "org.robolancers321"
+// //     className    = "BuildConstants"
+// //     dateFormat   = "yyyy-MM-dd HH:mm:ss z"
+// //     timeZone     = "America/New_York" // Use preferred time zone
+// //     indent       = "  "
+// // }
