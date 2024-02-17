@@ -42,12 +42,12 @@ public class AimTable {
     double lowerBound = keys.get(0);
     double upperBound = keys.get(keys.size() - 1);
 
-    if (distance < lowerBound){
+    if (distance < lowerBound) {
       AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
 
       return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
     }
-    
+
     if (distance > upperBound) {
       AimTable.AimCharacteristic upperValue = table.get(upperBound);
 

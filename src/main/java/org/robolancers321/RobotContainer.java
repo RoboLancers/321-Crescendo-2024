@@ -2,11 +2,6 @@
 package org.robolancers321;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -45,13 +40,17 @@ public class RobotContainer {
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.zeroYaw());
 
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8).onTrue(this.intake.retractor.moveToIntake());
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .onTrue(this.intake.retractor.moveToIntake());
 
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8).onFalse(this.intake.retractor.moveToRetracted());
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .onFalse(this.intake.retractor.moveToRetracted());
 
-    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.8).onTrue(this.launcher.pivot.aimAtAmp());
+    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.8)
+        .onTrue(this.launcher.pivot.aimAtAmp());
 
-    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.8).onFalse(this.launcher.pivot.moveToRetracted());
+    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.8)
+        .onFalse(this.launcher.pivot.moveToRetracted());
   }
 
   private void configureAutoChooser() {

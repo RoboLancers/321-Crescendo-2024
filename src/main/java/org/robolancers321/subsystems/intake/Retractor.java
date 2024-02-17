@@ -8,7 +8,6 @@ import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -41,7 +40,7 @@ public class Retractor extends ProfiledPIDSubsystem {
   private static final boolean kInvertEncoder = true;
 
   private static final int kCurrentLimit = 40;
-  
+
   private static final double kGearRatio = 360.0;
 
   private static final float kMinAngle = -20.0f;
@@ -105,7 +104,7 @@ public class Retractor extends ProfiledPIDSubsystem {
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
     // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
     // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
-    
+
     this.motor.enableSoftLimit(SoftLimitDirection.kForward, false);
     this.motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
   }
@@ -126,14 +125,16 @@ public class Retractor extends ProfiledPIDSubsystem {
 
     this.m_enabled = true;
   }
-  
+
   @Override
   public double getMeasurement() {
     return this.getPositionDeg();
   }
 
   public double getPositionDeg() {
-    return this.encoder.getPosition() > 180 ? this.encoder.getPosition() - 360.0 : this.encoder.getPosition();
+    return this.encoder.getPosition() > 180
+        ? this.encoder.getPosition() - 360.0
+        : this.encoder.getPosition();
   }
 
   public double getVelocityDeg() {
@@ -147,7 +148,8 @@ public class Retractor extends ProfiledPIDSubsystem {
   @Override
   protected void useOutput(double output, TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
-        this.feedforwardController.calculate(setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+        this.feedforwardController.calculate(
+            setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
 
     SmartDashboard.putNumber("retractor position setpoint mp (deg)", setpoint.position);
     SmartDashboard.putNumber("retractor velocity setpoint mp (deg)", setpoint.velocity);
@@ -170,7 +172,7 @@ public class Retractor extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
     SmartDashboard.putNumber("retractor velocity (deg)", this.getVelocityDeg());
   }
-  
+
   @Override
   public void periodic() {
     super.periodic();
@@ -187,8 +189,12 @@ public class Retractor extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("retractor kv", SmartDashboard.getNumber("retractor kv", kV));
     SmartDashboard.putNumber("retractor kg", SmartDashboard.getNumber("retractor kg", kG));
 
-    SmartDashboard.putNumber("retractor max vel (deg)", SmartDashboard.getNumber("retractor max vel (deg)", kMaxVelocityDeg));
-    SmartDashboard.putNumber("retractor max acc (deg)", SmartDashboard.getNumber("retractor max acc (deg)", kMaxAccelerationDeg));
+    SmartDashboard.putNumber(
+        "retractor max vel (deg)",
+        SmartDashboard.getNumber("retractor max vel (deg)", kMaxVelocityDeg));
+    SmartDashboard.putNumber(
+        "retractor max acc (deg)",
+        SmartDashboard.getNumber("retractor max acc (deg)", kMaxAccelerationDeg));
 
     SmartDashboard.putNumber("retractor target position (deg)", this.getPositionDeg());
   }
@@ -211,11 +217,16 @@ public class Retractor extends ProfiledPIDSubsystem {
 
     this.m_controller.setConstraints(new Constraints(tunedMaxVel, tunedMaxAcc));
 
-    this.setGoal(MathUtil.clamp(SmartDashboard.getNumber("retractor target position (deg)", this.getPositionDeg()), kMinAngle, kMaxAngle));
+    this.setGoal(
+        MathUtil.clamp(
+            SmartDashboard.getNumber("retractor target position (deg)", this.getPositionDeg()),
+            kMinAngle,
+            kMaxAngle));
   }
-  
+
   private Command moveToAngle(double angleDeg) {
-    return run(() -> this.setGoal(MathUtil.clamp(angleDeg, kMinAngle, kMaxAngle))).until(this::atGoal);
+    return run(() -> this.setGoal(MathUtil.clamp(angleDeg, kMinAngle, kMaxAngle)))
+        .until(this::atGoal);
   }
 
   public Command moveToRetracted() {

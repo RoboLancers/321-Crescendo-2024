@@ -6,7 +6,6 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -129,9 +128,11 @@ public class Pivot extends ProfiledPIDSubsystem {
   public double getMeasurement() {
     return this.getPositionDeg();
   }
-  
+
   public double getPositionDeg() {
-    return this.encoder.getPosition() > 180 ? this.encoder.getPosition() - 360.0 : this.encoder.getPosition();
+    return this.encoder.getPosition() > 180
+        ? this.encoder.getPosition() - 360.0
+        : this.encoder.getPosition();
   }
 
   public double getVelocityDeg() {
@@ -145,7 +146,8 @@ public class Pivot extends ProfiledPIDSubsystem {
   @Override
   protected void useOutput(double output, TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
-        this.feedforwardController.calculate(setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+        this.feedforwardController.calculate(
+            setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
 
     SmartDashboard.putNumber("pivot position setpoint mp (deg)", setpoint.position);
     SmartDashboard.putNumber("pivot velocity setpoint mp (deg)", setpoint.velocity);
@@ -184,8 +186,11 @@ public class Pivot extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("pivot kg", SmartDashboard.getNumber("pivot kg", kG));
     SmartDashboard.putNumber("pivot kv", SmartDashboard.getNumber("pivot kv", kV));
 
-    SmartDashboard.putNumber("pivot max vel (deg)", SmartDashboard.getNumber("pivot max vel (deg)", kMaxVelocityDeg));
-    SmartDashboard.putNumber("pivot max acc (deg)", SmartDashboard.getNumber("pivot max acc (deg)", kMaxAccelerationDeg));
+    SmartDashboard.putNumber(
+        "pivot max vel (deg)", SmartDashboard.getNumber("pivot max vel (deg)", kMaxVelocityDeg));
+    SmartDashboard.putNumber(
+        "pivot max acc (deg)",
+        SmartDashboard.getNumber("pivot max acc (deg)", kMaxAccelerationDeg));
 
     SmartDashboard.putNumber("pivot target position (deg)", this.getPositionDeg());
   }
@@ -208,11 +213,17 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     this.m_controller.setConstraints(new Constraints(tunedMaxVel, tunedMaxAcc));
 
-    this.setGoal(MathUtil.clamp(SmartDashboard.getNumber("pivot target position (deg)", this.getPositionDeg()), kMinAngle, kMaxAngle));
+    this.setGoal(
+        MathUtil.clamp(
+            SmartDashboard.getNumber("pivot target position (deg)", this.getPositionDeg()),
+            kMinAngle,
+            kMaxAngle));
   }
 
   private Command moveToAngle(DoubleSupplier angleDegSupplier) {
-    return run(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))).until(this::atGoal);
+    return run(() ->
+            this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle)))
+        .until(this::atGoal);
   }
 
   private Command moveToAngle(double angleDeg) {
