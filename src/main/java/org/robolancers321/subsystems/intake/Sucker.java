@@ -2,6 +2,7 @@
 package org.robolancers321.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -30,29 +31,32 @@ public class Sucker extends SubsystemBase {
   private static final int kMotorPort = 14;
 
   private static final boolean kInvertMotor = false;
-  private static final int kCurrentLimit = 20;
+  private static final int kCurrentLimit = 60;
 
-  private static final double kFF = 0.00;
+  private static final double kInSpeed = 0.4;
+  private static final double kOutSpeed = -1.0;
 
-  private static final double kInRPM = -2000;
-  private static final double kOutRPM = 1000;
+  // private static final double kFF = 0.00017;
+
+  // private static final double kInRPM = 2000;
+  // private static final double kOutRPM = -2500;
 
   /*
    * Implementation
    */
 
-  private final CANSparkMax motor;
+  private final CANSparkFlex motor;
   private final RelativeEncoder encoder;
-  private final SparkPIDController controller;
+  // private final SparkPIDController controller;
 
   private Sucker() {
-    this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
+    this.motor = new CANSparkFlex(kMotorPort, MotorType.kBrushless);
     this.encoder = this.motor.getEncoder();
-    this.controller = this.motor.getPIDController();
+    // this.controller = this.motor.getPIDController();
 
     this.configureMotor();
     this.configureEncoder();
-    this.configureController();
+    // this.configureController();
     this.motor.burnFlash();
   }
 
@@ -67,20 +71,20 @@ public class Sucker extends SubsystemBase {
     this.encoder.setVelocityConversionFactor(1.0);
   }
 
-  private void configureController() {
-    this.controller.setP(0.0);
-    this.controller.setI(0.0);
-    this.controller.setD(0.0);
-    this.controller.setFF(kFF);
-  }
+  // private void configureController() {
+  //   this.controller.setP(0.0);
+  //   this.controller.setI(0.0);
+  //   this.controller.setD(0.0);
+  //   this.controller.setFF(kFF);
+  // }
 
   public double getVelocityRPM() {
     return this.encoder.getVelocity();
   }
 
-  private void useController(double desiredRPM) {
-    this.controller.setReference(desiredRPM, ControlType.kVelocity);
-  }
+  // private void useController(double desiredRPM) {
+  //   this.controller.setReference(desiredRPM, ControlType.kVelocity);
+  // }
 
   private void doSendables() {
     SmartDashboard.putNumber("sucker rpm", this.getVelocityRPM());
@@ -91,32 +95,40 @@ public class Sucker extends SubsystemBase {
     this.doSendables();
   }
 
-  private void initTuning() {
-    SmartDashboard.putNumber("sucker kff", SmartDashboard.getNumber("sucker kff", kFF));
-    SmartDashboard.putNumber("sucker target rpm", 0.0);
+  // private void initTuning() {
+  //   SmartDashboard.putNumber("sucker kff", SmartDashboard.getNumber("sucker kff", kFF));
+  //   SmartDashboard.putNumber("sucker target rpm", 0.0);
+  // }
+
+  // private void tune() {
+  //   double tunedFF = SmartDashboard.getNumber("sucker kff", kFF);
+
+  //   this.controller.setFF(tunedFF);
+
+  //   double targetRPM = SmartDashboard.getNumber("sucker target rpm", 0.0);
+
+  //   this.useController(targetRPM);
+  // }
+
+  private Command setSpeed(double speed){
+    return run(() -> this.motor.set(speed));
   }
 
-  private void tune() {
-    double tunedFF = SmartDashboard.getNumber("sucker kff", kFF);
-
-    this.controller.setFF(tunedFF);
-
-    double targetRPM = SmartDashboard.getNumber("sucker target rpm", 0.0);
-
-    this.useController(targetRPM);
+  public Command off() {
+    return setSpeed(0.0);
   }
 
   public Command in() {
-    return run(() -> this.useController(kInRPM)).finallyDo(() -> this.useController(0.0));
+    return setSpeed(kInSpeed);
   }
 
   public Command out() {
-    return run(() -> this.useController(kOutRPM)).finallyDo(() -> this.useController(0.0));
+    return setSpeed(kOutSpeed);
   }
 
-  public Command tuneController() {
-    initTuning();
+  // public Command tuneController() {
+  //   initTuning();
 
-    return run(this::tune);
-  }
+  //   return run(this::tune);
+  // }
 }

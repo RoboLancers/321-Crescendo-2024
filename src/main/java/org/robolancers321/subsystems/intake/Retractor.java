@@ -15,7 +15,11 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+
+import java.util.function.DoubleSupplier;
 
 public class Retractor extends ProfiledPIDSubsystem {
   /*
@@ -43,7 +47,7 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   private static final double kGearRatio = 360.0;
 
-  private static final float kMinAngle = -20.0f;
+  private static final float kMinAngle = -15f;
   private static final float kMaxAngle = 160.0f;
 
   private static final double kP = 0.0065;
@@ -54,15 +58,15 @@ public class Retractor extends ProfiledPIDSubsystem {
   private static final double kG = 0.0155;
   private static final double kV = 0.000;
 
-  private static final double kMaxVelocityDeg = 90.0;
-  private static final double kMaxAccelerationDeg = 60.0;
+  private static final double kMaxVelocityDeg = 120.0;
+  private static final double kMaxAccelerationDeg = 90.0;
 
-  private static final double kToleranceDeg = 5.0;
+  private static final double kToleranceDeg = 2.0;
 
   private enum RetractorSetpoint {
     kRetracted(160),
-    kMating(0),
-    kIntake(-10.0);
+    kMating(160),
+    kIntake(-15.0);
 
     public final double angle;
 
@@ -132,9 +136,12 @@ public class Retractor extends ProfiledPIDSubsystem {
   }
 
   public double getPositionDeg() {
-    return this.encoder.getPosition() > 180
-        ? this.encoder.getPosition() - 360.0
-        : this.encoder.getPosition();
+    return MathUtil.clamp(
+        this.encoder.getPosition() > 180
+            ? this.encoder.getPosition() - 360.0
+            : this.encoder.getPosition(),
+        kMinAngle,
+        kMaxAngle);
   }
 
   public double getVelocityDeg() {
@@ -170,7 +177,8 @@ public class Retractor extends ProfiledPIDSubsystem {
   private void doSendables() {
     SmartDashboard.putBoolean("retractor at goal", this.atGoal());
     SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
-    SmartDashboard.putNumber("retractor velocity (deg)", this.getVelocityDeg());
+    SmartDashboard.putNumber("retractor velocity (deg)", this.m_controller.getGoal().position);
+    SmartDashboard.putNumber("retractor mp goal (deg)", this.getVelocityDeg());
   }
 
   @Override
@@ -224,9 +232,17 @@ public class Retractor extends ProfiledPIDSubsystem {
             kMaxAngle));
   }
 
+  private Command moveToAngle(DoubleSupplier angleDegSupplier) {
+    return new SequentialCommandGroup(
+      new InstantCommand(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))),
+      this.run(() ->
+            this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle)))
+        .until(this::atGoal)
+    );
+  }
+
   private Command moveToAngle(double angleDeg) {
-    return run(() -> this.setGoal(MathUtil.clamp(angleDeg, kMinAngle, kMaxAngle)))
-        .until(this::atGoal);
+    return this.moveToAngle(() -> angleDeg);
   }
 
   public Command moveToRetracted() {

@@ -11,6 +11,8 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -26,7 +28,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontLeft() {
     if (frontLeft == null)
-      frontLeft = new SwerveModule("Front Left", 2, 1, 9, false, true, false, -0.457520);
+      frontLeft = new SwerveModule("front left", 2, 1, 9, false, true, false, -0.457520);
 
     return frontLeft;
   }
@@ -35,7 +37,7 @@ public class SwerveModule {
 
   public static SwerveModule getFrontRight() {
     if (frontRight == null)
-      frontRight = new SwerveModule("Front Right", 4, 3, 10, false, true, false, 0.140137);
+      frontRight = new SwerveModule("front right", 4, 3, 10, false, true, false, 0.140137);
 
     return frontRight;
   }
@@ -44,7 +46,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackRight() {
     if (backRight == null)
-      backRight = new SwerveModule("Back Right", 6, 5, 11, true, true, false, -0.128906);
+      backRight = new SwerveModule("back right", 6, 5, 11, true, true, false, -0.128906);
 
     return backRight;
   }
@@ -53,7 +55,7 @@ public class SwerveModule {
 
   public static SwerveModule getBackLeft() {
     if (backLeft == null)
-      backLeft = new SwerveModule("Back Left", 8, 7, 12, false, true, false, -0.083984);
+      backLeft = new SwerveModule("back left", 8, 7, 12, false, true, false, -0.083984);
 
     return backLeft;
   }
@@ -77,9 +79,9 @@ public class SwerveModule {
   private static final double kDriveD = 0.00;
   private static final double kDriveFF = 0.198;
 
-  private static final double kTurnP = 10; // 20
+  private static final double kTurnP = 0.50;
   private static final double kTurnI = 0.00;
-  private static final double kTurnD = 0;
+  private static final double kTurnD = 0.005;
 
   /*
    * Implementation
@@ -91,11 +93,10 @@ public class SwerveModule {
   private CANSparkMax turnMotor;
 
   private RelativeEncoder driveEncoder;
-  private CANcoder absoluteTurnEncoder;
-  private RelativeEncoder turnEncoder;
+  private CANcoder turnEncoder;
 
   private SparkPIDController driveController;
-  private SparkPIDController turnController;
+  private PIDController turnController;
 
   private SwerveModule(
       String id,
@@ -147,7 +148,7 @@ public class SwerveModule {
     this.turnMotor.setSmartCurrentLimit(40);
     this.turnMotor.enableVoltageCompensation(12);
 
-    this.absoluteTurnEncoder = new CANcoder(turnEncoderPort);
+    this.turnEncoder = new CANcoder(turnEncoderPort);
     CANcoderConfiguration config = kCANCoderConfig;
     config.MagnetSensor.withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf);
     config.MagnetSensor.withMagnetOffset(turnEncoderOffset);
@@ -155,22 +156,10 @@ public class SwerveModule {
         invertTurnEncoder
             ? SensorDirectionValue.Clockwise_Positive
             : SensorDirectionValue.CounterClockwise_Positive);
-    this.absoluteTurnEncoder.getConfigurator().apply(config);
+    this.turnEncoder.getConfigurator().apply(config);
 
-    this.turnEncoder = this.turnMotor.getEncoder();
-    this.turnEncoder.setPositionConversionFactor(kTurnPositionConversionFactor);
-    this.turnEncoder.setPosition(
-        this.absoluteTurnEncoder
-            .getAbsolutePosition()
-            .getValueAsDouble()); // TODO: do we need to delay this call?
-
-    this.turnController = this.turnMotor.getPIDController();
-    this.turnController.setPositionPIDWrappingMinInput(-Math.PI);
-    this.turnController.setPositionPIDWrappingMaxInput(Math.PI);
-    this.turnController.setPositionPIDWrappingEnabled(true);
-    this.turnController.setP(kTurnP);
-    this.turnController.setI(kTurnI);
-    this.turnController.setD(kTurnD);
+    this.turnController = new PIDController(kTurnP, kTurnI, kTurnD);
+    this.turnController.enableContinuousInput(-Math.PI, Math.PI);
 
     this.turnMotor.burnFlash();
   }
@@ -180,11 +169,11 @@ public class SwerveModule {
   }
 
   public double getTurnAngleRotations() {
-    return this.turnEncoder.getPosition();
+    return this.turnEncoder.getPosition().getValueAsDouble();
   }
 
   public double getTurnAngleRad() {
-    return 2 * Math.PI * this.turnEncoder.getPosition();
+    return 2 * Math.PI * this.getTurnAngleRotations();
   }
 
   public double getTurnAngleDeg() {
@@ -216,18 +205,20 @@ public class SwerveModule {
     SmartDashboard.putNumber(this.id + " ref angle", optimized.angle.getDegrees());
 
     this.driveController.setReference(optimized.speedMetersPerSecond, ControlType.kVelocity);
-    this.turnController.setReference(optimized.angle.getRotations(), ControlType.kPosition);
+
+    this.turnController.setSetpoint(optimized.angle.getRadians());
+
+    double turnOutput =
+        MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0);
+
+    this.turnMotor.set(turnOutput);
   }
 
   protected void doSendables() {
     SmartDashboard.putNumber(this.id + " position m", this.getPosition().distanceMeters);
 
-    SmartDashboard.putNumber(this.id + " Drive Vel (m/s)", this.getDriveVelocityMPS());
-    SmartDashboard.putNumber(this.id + " Turn Angle (deg)", this.getTurnAngleDeg());
-
-    SmartDashboard.putNumber(
-        this.id + " abs enc deg",
-        360 * this.absoluteTurnEncoder.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber(this.id + " drive vel (m/s)", this.getDriveVelocityMPS());
+    SmartDashboard.putNumber(this.id + " turn angle (deg)", this.getTurnAngleDeg());
   }
 
   protected static void initTuning() {
@@ -260,8 +251,6 @@ public class SwerveModule {
     double tunedTurnI = SmartDashboard.getNumber("module turn ki", kTurnI);
     double tunedTurnD = SmartDashboard.getNumber("module turn kd", kTurnD);
 
-    this.turnController.setP(tunedTurnP);
-    this.turnController.setI(tunedTurnI);
-    this.turnController.setD(tunedTurnD);
+    this.turnController.setPID(tunedTurnP, tunedTurnI, tunedTurnD);
   }
 }

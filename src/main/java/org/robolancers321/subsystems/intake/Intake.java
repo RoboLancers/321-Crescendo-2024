@@ -1,9 +1,10 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.intake;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
-public class Intake extends SubsystemBase {
+public class Intake {
   /*
    * Singleton
    */
@@ -27,14 +28,15 @@ public class Intake extends SubsystemBase {
    */
 
   public final Retractor retractor;
-
-  // TODO
-  // public final Sucker sucker;
+  public final Sucker sucker;
 
   private Intake() {
     this.retractor = Retractor.getInstance();
+    this.sucker = Sucker.getInstance();
+  }
 
-    // TODO
-    // this.sucker = Sucker.getInstance();
+  // TODO: use beam break to auto retract and rumble
+  public Command deployIntake() {
+    return new SequentialCommandGroup(this.retractor.moveToIntake(), this.sucker.in());
   }
 }

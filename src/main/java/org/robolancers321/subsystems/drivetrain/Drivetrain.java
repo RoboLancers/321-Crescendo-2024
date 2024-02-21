@@ -30,15 +30,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -78,6 +69,9 @@ public class Drivetrain extends SubsystemBase {
   private static final double kMaxSpeedMetersPerSecond = 4.0;
   private static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
+  private static final double kMaxTeleopSpeedPercent = 0.8;
+  private static final double kMaxTeleopRotationPercent = 1.0;
+
   public static final PathConstraints kAutoConstraints =
       new PathConstraints(4.0, 1.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
@@ -95,29 +89,37 @@ public class Drivetrain extends SubsystemBase {
   private static final double kTranslationI = 0.0;
   private static final double kTranslationD = 0.0;
 
+  // corrects heading during path planner
   private static final double kRotationP = 4.0;
   private static final double kRotationI = 0.0;
   private static final double kRotationD = 0.0;
+
+  // corrects heading during teleop
+  private static final double kHeadingP = 0.00;
+  private static final double kHeadingI = 0.00;
+  private static final double kHeadingD = 0.00;
 
   /*
    * Implementation
    */
 
-  private SwerveModule frontLeft;
-  private SwerveModule frontRight;
-  private SwerveModule backRight;
-  private SwerveModule backLeft;
+  private final SwerveModule frontLeft;
+  private final SwerveModule frontRight;
+  private final SwerveModule backRight;
+  private final SwerveModule backLeft;
 
-  private AHRS gyro;
+  private final AHRS gyro;
 
-  private PhotonCamera mainCamera;
-  private PhotonPoseEstimator visionEstimator;
+  // private final PIDController headingController;
 
-  private SwerveDrivePoseEstimator odometry;
+  // private final PhotonCamera mainCamera;
+  // private final PhotonCamera noteCamera;
 
-  private PhotonCamera noteCamera;
+  // private final PhotonPoseEstimator visionEstimator;
 
-  private Field2d field;
+  private final SwerveDrivePoseEstimator odometry;
+
+  private final Field2d field;
 
   private Drivetrain() {
     this.frontLeft = SwerveModule.getFrontLeft();
@@ -126,27 +128,41 @@ public class Drivetrain extends SubsystemBase {
     this.backLeft = SwerveModule.getBackLeft();
 
     this.gyro = new AHRS(SPI.Port.kMXP);
-    this.zeroYaw();
 
-    this.mainCamera = new PhotonCamera(kMainCameraName);
+    // this.headingController = new PIDController(kHeadingP, kHeadingI, kHeadingD);
 
-    this.visionEstimator =
-        new PhotonPoseEstimator(
-            kAprilTagFieldLayout,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            mainCamera,
-            kRobotToCameraTransform);
+    // this.mainCamera = new PhotonCamera(kMainCameraName);
+    // this.noteCamera = new PhotonCamera(kNoteCameraName);
+
+    // this.visionEstimator =
+    //     new PhotonPoseEstimator(
+    //         kAprilTagFieldLayout,
+    //         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+    //         mainCamera,
+    //         kRobotToCameraTransform);
 
     this.odometry =
         new SwerveDrivePoseEstimator(
             kSwerveKinematics, this.gyro.getRotation2d(), this.getModulePositions(), new Pose2d());
 
-    this.noteCamera = new PhotonCamera(kNoteCameraName);
-
     this.field = new Field2d();
 
-    SmartDashboard.putData(this.field);
+    this.configureGyro();
+    this.configureController();
+    this.configurePathPlanner();
+    this.configureField();
+  }
 
+  public void configureGyro() {
+    this.gyro.zeroYaw();
+    this.gyro.setAngleAdjustment(90.0); // TODO: change this depending on navx orientation
+  }
+
+  private void configureController() {
+    // this.headingController.setPID(kHeadingP, kHeadingI, kHeadingD);
+  }
+
+  private void configurePathPlanner() {
     AutoBuilder.configureHolonomic(
         this::getPose,
         this::resetPose,
@@ -166,6 +182,10 @@ public class Drivetrain extends SubsystemBase {
           return false;
         },
         this);
+  }
+
+  private void configureField() {
+    SmartDashboard.putData(this.field);
 
     PathPlannerLogging.setLogActivePathCallback(
         poses -> this.field.getObject("pathplanner path poses").setPoses(poses));
@@ -175,13 +195,17 @@ public class Drivetrain extends SubsystemBase {
         curr -> this.field.getObject("pathplanner curr pose").setPose(curr));
   }
 
+  public double getYawDeg() {
+    return this.gyro.getYaw();
+  }
+
   public Pose2d getPose() {
     return this.odometry.getEstimatedPosition();
   }
 
   public void resetPose(Pose2d pose) {
     this.odometry.resetPosition(
-        Rotation2d.fromDegrees(this.gyro.getAngle()), // .plus(Rotation2d.fromDegrees(180)),
+        Rotation2d.fromDegrees(this.getYawDeg()), // .plus(Rotation2d.fromDegrees(180)),
         this.getModulePositions(),
         pose);
   }
@@ -206,10 +230,6 @@ public class Drivetrain extends SubsystemBase {
       this.backRight.getPosition(),
       this.backLeft.getPosition()
     };
-  }
-
-  public double getYawDeg() {
-    return this.gyro.getYaw();
   }
 
   private void updateModules(SwerveModuleState[] states) {
@@ -256,51 +276,75 @@ public class Drivetrain extends SubsystemBase {
     this.updateModules(states);
   }
 
-  private void fuseVision() {
-    Optional<EstimatedRobotPose> visionEstimate = visionEstimator.update();
+  // private void fuseVision() {
+  //   Optional<EstimatedRobotPose> visionEstimate = visionEstimator.update();
 
-    if (visionEstimate.isEmpty()) return;
+  //   if (visionEstimate.isEmpty()) return;
 
-    this.odometry.addVisionMeasurement(
-        visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
-  }
+  //   this.odometry.addVisionMeasurement(
+  //       visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
+  // }
 
-  private Translation2d getRelativeNoteLocation() {
-    PhotonPipelineResult latestResult = this.noteCamera.getLatestResult();
+  // private Translation2d getRelativeNoteLocation() {
+  //   PhotonPipelineResult latestResult = this.noteCamera.getLatestResult();
 
-    if (!latestResult.hasTargets()) return new Translation2d();
+  //   if (!latestResult.hasTargets()) return new Translation2d();
 
-    PhotonTrackedTarget bestTarget = latestResult.getBestTarget();
+  //   PhotonTrackedTarget bestTarget = latestResult.getBestTarget();
 
-    // TODO: plus or minus mount pitch?
-    double dz =
-        kNoteCameraMountHeight
-            / Math.tan((-bestTarget.getPitch() + kNoteCameraMountPitch) * Math.PI / 180.0);
-    double dx = dz * Math.tan(bestTarget.getYaw() * Math.PI / 180.0);
+  //   // TODO: plus or minus mount pitch?
+  //   double dz =
+  //       kNoteCameraMountHeight
+  //           / Math.tan((-bestTarget.getPitch() + kNoteCameraMountPitch) * Math.PI / 180.0);
+  //   double dx = dz * Math.tan(bestTarget.getYaw() * Math.PI / 180.0);
 
-    return new Translation2d(dx, dz);
-  }
+  //   return new Translation2d(dx, dz);
+  // }
+
+  // private void initTuning() {
+  //   SmartDashboard.putNumber(
+  //       "drive heading kp", SmartDashboard.getNumber("drive heading kp", kHeadingP));
+  //   SmartDashboard.putNumber(
+  //       "drive heading ki", SmartDashboard.getNumber("drive heading ki", kHeadingI));
+  //   SmartDashboard.putNumber(
+  //       "drive heading kd", SmartDashboard.getNumber("drive heading kd", kHeadingD));
+
+  //   SmartDashboard.putNumber("drive target heading", this.getYawDeg());
+  // }
+
+  // private void tune() {
+  //   double tunedHeadingP = SmartDashboard.getNumber("drive heading kp", kHeadingP);
+  //   double tunedHeadingI = SmartDashboard.getNumber("drive heading ki", kHeadingI);
+  //   double tunedHeadingD = SmartDashboard.getNumber("drive heading kd", kHeadingD);
+
+  //   this.headingController.setPID(tunedHeadingP, tunedHeadingI, tunedHeadingD);
+
+  //   double targetHeading = SmartDashboard.getNumber("drive target heading", this.getYawDeg());
+
+  //   this.headingController.setSetpoint(targetHeading);
+
+  //   this.drive(0.0, 0.0, this.headingController.calculate(this.getYawDeg()), true);
+  // }
 
   private void doSendables() {
-    SmartDashboard.putNumber("Drive Heading", this.getYawDeg());
+    SmartDashboard.putNumber("drive heading (deg)", this.getYawDeg());
 
     Pose2d odometryPose = this.getPose();
 
-    SmartDashboard.putNumber("Odometry Pos X (m)", odometryPose.getX());
-    SmartDashboard.putNumber("Odometry Pos Y (m)", odometryPose.getY());
-    SmartDashboard.putNumber("Odometry Angle (deg)", odometryPose.getRotation().getDegrees());
+    SmartDashboard.putNumber("odometry pos x (m)", odometryPose.getX());
+    SmartDashboard.putNumber("odometry pos y (m)", odometryPose.getY());
+    SmartDashboard.putNumber("odometry angle (deg)", odometryPose.getRotation().getDegrees());
 
-    Translation2d note = this.getRelativeNoteLocation();
+    // Translation2d note = this.getRelativeNoteLocation();
 
-    SmartDashboard.putNumber("note x pffset", note.getX());
-    SmartDashboard.putNumber("note z offset", note.getY());
+    // SmartDashboard.putNumber("note x offset", note.getX());
+    // SmartDashboard.putNumber("note z offset", note.getY());
   }
 
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-
-    this.fuseVision();
+    // this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 
@@ -313,40 +357,50 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command zeroYaw() {
-    return runOnce(
-        () -> {
-          this.gyro.zeroYaw();
-          this.gyro.setAngleAdjustment(0.0); // TODO: change this depending on navx orientation
-        });
+    return runOnce(this::configureGyro);
   }
 
   private Command stop() {
     return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
   }
 
-  private Command feedForwardDrive(
-      DoubleSupplier throttleSupplier,
-      DoubleSupplier strafeSupplier,
-      DoubleSupplier omegaSupplier,
-      BooleanSupplier fieldCentricSupplier) {
-    return run(() -> {
-          double desiredThrottle = throttleSupplier.getAsDouble();
-          double desiredStrafe = strafeSupplier.getAsDouble();
-          double desiredOmega = omegaSupplier.getAsDouble();
-          boolean desiredFieldCentic = fieldCentricSupplier.getAsBoolean();
-
-          this.drive(desiredThrottle, desiredStrafe, desiredOmega, desiredFieldCentic);
-        })
-        .finallyDo(() -> this.stop());
-  }
-
   public Command teleopDrive(XboxController controller, boolean fieldCentric) {
-    return this.feedForwardDrive(
-        () -> 0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftY(), 0.05),
-        () -> -0.1 * kMaxSpeedMetersPerSecond * MathUtil.applyDeadband(controller.getLeftX(), 0.05),
+    // this.headingController.setSetpoint(this.getYawDeg());
+
+    // return run(() -> {
+    //       // TODO: multiply by some shit
+    //       this.headingController.setSetpoint(
+    //           this.headingController.getSetpoint()
+    //               + 0.02
+    //                   * kMaxTeleopRotationPercent
+    //                   * kMaxOmegaRadiansPerSecond
+    //                   * controller.getRightX());
+
+    //       this.drive(
+    //           kMaxTeleopSpeedPercent
+    //               * kMaxSpeedMetersPerSecond
+    //               * MathUtil.applyDeadband(controller.getLeftY(), 0.05),
+    //           kMaxTeleopSpeedPercent
+    //               * kMaxSpeedMetersPerSecond
+    //               * MathUtil.applyDeadband(controller.getLeftX(), 0.05),
+    //           this.headingController.calculate(this.getYawDeg()),
+    //           fieldCentric);
+    //     })
+    //     .finallyDo(this::stop);
+
+    return run(
         () ->
-            -0.3 * kMaxOmegaRadiansPerSecond * MathUtil.applyDeadband(controller.getRightX(), 0.05),
-        () -> fieldCentric);
+            this.drive(
+                kMaxTeleopSpeedPercent
+                    * kMaxSpeedMetersPerSecond
+                    * MathUtil.applyDeadband(controller.getLeftY(), 0.02),
+                -kMaxTeleopSpeedPercent
+                    * kMaxSpeedMetersPerSecond
+                    * MathUtil.applyDeadband(controller.getLeftX(), 0.02),
+                -kMaxTeleopRotationPercent
+                    * kMaxOmegaRadiansPerSecond
+                    * MathUtil.applyDeadband(controller.getRightX(), 0.02),
+                fieldCentric));
   }
 
   public Command tuneModules() {
@@ -372,6 +426,12 @@ public class Drivetrain extends SubsystemBase {
         })
         .finallyDo(() -> this.stop());
   }
+
+  // public Command tuneController() {
+  //   this.initTuning();
+
+  //   return this.run(this::tune);
+  // }
 
   public Command dangerouslyRunDrive(double speed) {
     return run(

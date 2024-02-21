@@ -4,7 +4,7 @@ package org.robolancers321.subsystems.launcher;
 import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
-import com.revrobotics.CANSparkBase.ControlType;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,15 +26,14 @@ public class Flywheel extends SubsystemBase {
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 40;
 
-  // TODO
-  // private static final double kRampUpRate = 0.5;
+  private static final double kRampUpRate = 4000;
 
-  private static final double kFF = 0.000152;
+  private static final double kFF = 0.000153;
 
   private static final double kToleranceRPM = 40.0;
 
   private enum FlywheelSetpoint {
-    kAmp(0.0);
+    kAmp(1000.0);
 
     public final double rpm;
 
@@ -51,8 +50,7 @@ public class Flywheel extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SparkPIDController controller;
 
-  // TODO
-  // private final SlewRateLimiter limiter;
+  private final SlewRateLimiter limiter;
 
   private double goalRPM = 0.0;
 
@@ -63,8 +61,7 @@ public class Flywheel extends SubsystemBase {
 
     this.controller = this.motor.getPIDController();
 
-    // TODO
-    // this.limiter = new SlewRateLimiter(kRampUpRate);
+    this.limiter = new SlewRateLimiter(kRampUpRate);
 
     this.configureMotor();
     this.configureEncoder();
@@ -96,23 +93,19 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void useController() {
-    this.controller.setReference(this.goalRPM, ControlType.kVelocity);
-
     // TODO
-    // this.controller.setReference(
-    //     this.limiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
+    this.controller.setReference(
+        this.limiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
   }
 
   public boolean isRevved() {
     return epsilonEquals(this.getRPM(), this.goalRPM, kToleranceRPM);
   }
 
-  private void dangerouslySetSpeed(double speed) {
-    this.motor.set(speed);
-  }
-
   private void doSendables() {
     SmartDashboard.putNumber("flywheel rpm", this.getRPM());
+
+    SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }
 
   @Override
@@ -135,12 +128,7 @@ public class Flywheel extends SubsystemBase {
     this.useController();
   }
 
-  public Command dangerouslyYeet(double speed) {
-    return run(() -> this.dangerouslySetSpeed(speed))
-        .finallyDo(() -> this.dangerouslySetSpeed(0.0));
-  }
-
-  private Command off() {
+  public Command off() {
     return runOnce(
         () -> {
           this.goalRPM = 0.0;
@@ -149,22 +137,23 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command yeetNoteAmp() {
-    this.goalRPM = FlywheelSetpoint.kAmp.rpm;
-
-    return run(this::useController).finallyDo(this::off);
+    return run(() -> {
+      this.goalRPM = FlywheelSetpoint.kAmp.rpm;
+      this.useController();
+    });
   }
 
   public Command yeetNoteSpeaker(DoubleSupplier rpmSupplier) {
-    return run(() -> {
+    return run(
+        () -> {
           this.goalRPM = rpmSupplier.getAsDouble();
           this.useController();
-        })
-        .finallyDo(this::off);
+        });
   }
 
   public Command tuneController() {
     this.initTuning();
 
-    return run(this::tune).finallyDo(this::off);
+    return run(this::tune);
   }
 }

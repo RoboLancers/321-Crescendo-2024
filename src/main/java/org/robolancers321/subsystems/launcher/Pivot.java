@@ -13,7 +13,10 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+
 import java.util.function.DoubleSupplier;
 
 public class Pivot extends ProfiledPIDSubsystem {
@@ -55,7 +58,7 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final double kMaxVelocityDeg = 240;
   private static final double kMaxAccelerationDeg = 360;
 
-  private static final double kToleranceDeg = 5.0;
+  private static final double kToleranceDeg = 2.0;
 
   private enum PivotSetpoint {
     kRetracted(0.0),
@@ -117,7 +120,7 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   private void configureController() {
-    super.m_controller.enableContinuousInput(0.0, 360.0);
+    super.m_controller.enableContinuousInput(-180.0, 180.0);
     super.m_controller.setTolerance(kToleranceDeg);
     super.m_controller.setGoal(this.getPositionDeg());
 
@@ -130,9 +133,16 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   public double getPositionDeg() {
-    return this.encoder.getPosition() > 180
-        ? this.encoder.getPosition() - 360.0
-        : this.encoder.getPosition();
+    double angle =
+        this.encoder.getPosition() > 180
+            ? this.encoder.getPosition() - 360.0
+            : this.encoder.getPosition();
+
+    if (angle > kMinAngle && angle < kMaxAngle) return angle;
+
+    if (angle > kMinAngle - 40.0 && angle < kMaxAngle) return kMinAngle;
+
+    return kMaxAngle;
   }
 
   public double getVelocityDeg() {
@@ -168,6 +178,8 @@ public class Pivot extends ProfiledPIDSubsystem {
   public void doSendables() {
     SmartDashboard.putBoolean("pivot at goal", this.atGoal());
     SmartDashboard.putNumber("pivot position (deg)", this.getPositionDeg());
+    SmartDashboard.putNumber("pivot velocity (deg)", this.m_controller.getGoal().position);
+    SmartDashboard.putNumber("pivot mp goal (deg)", this.getVelocityDeg());
   }
 
   @Override
@@ -221,9 +233,12 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   private Command moveToAngle(DoubleSupplier angleDegSupplier) {
-    return run(() ->
+    return new SequentialCommandGroup(
+      new InstantCommand(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))),
+      this.run(() ->
             this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle)))
-        .until(this::atGoal);
+        .until(this::atGoal)
+    );
   }
 
   private Command moveToAngle(double angleDeg) {

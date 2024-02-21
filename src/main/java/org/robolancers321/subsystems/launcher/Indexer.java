@@ -10,10 +10,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 public class Indexer extends SubsystemBase {
   /*
@@ -35,14 +33,14 @@ public class Indexer extends SubsystemBase {
   private static final int kMotorPort = 16;
   // private static final int kBeamBreakPort = 0; // TODO
 
-  private static final boolean kInvertMotor = false;
+  private static final boolean kInvertMotor = true;
   private static final int kCurrentLimit = 20;
 
-  private static final double kFF = 0;
+  private static final double kFF = 0.000153;
 
-  private static final double kHandoffRPM = 1500;
-  private static final double kReindexRPM = 500;
-  private static final double kOuttakeRPM = 5000;
+  private static final double kHandoffRPM = 5000;
+  private static final double kReindexRPM = 3000;
+  private static final double kOuttakeRPM = 3000;
 
   /*
    * Implementation
@@ -94,10 +92,6 @@ public class Indexer extends SubsystemBase {
     // return this.beamBreak.get(); // TODO
   }
 
-  private void dangerouslySetSpeed(double speed) {
-    this.motor.set(speed);
-  }
-
   private void setRPM(double rpm) {
     this.controller.setReference(rpm, ControlType.kVelocity);
   }
@@ -127,40 +121,28 @@ public class Indexer extends SubsystemBase {
     this.setRPM(targetRPM);
   }
 
-  public Command manualIndex(DoubleSupplier appliedSpeedSupplier) {
-    return run(() -> dangerouslySetSpeed(appliedSpeedSupplier.getAsDouble()));
-  }
-
-  public Command manualIndex(double appliedSpeed) {
-    return this.manualIndex(() -> appliedSpeed);
-  }
-
-  private Command off() {
-    return runOnce(() -> this.setRPM(0.0));
+  public Command off() {
+    return run(() -> this.setRPM(0.0));
   }
 
   public Command acceptHandoff(BooleanSupplier beamBreakStateSupplier) {
-    return run(() -> this.setRPM(kHandoffRPM)).until(beamBreakStateSupplier).finallyDo(this::off);
+    return run(() -> this.setRPM(kHandoffRPM)).until(beamBreakStateSupplier);
   }
 
   public Command shiftIntoPosition(BooleanSupplier beamBreakStateSupplier) {
     return new SequentialCommandGroup(
-            run(() -> this.setRPM(kReindexRPM)).until(beamBreakStateSupplier),
-            run(() -> this.setRPM(-kReindexRPM))
-                .until(() -> !beamBreakStateSupplier.getAsBoolean()))
-        .finallyDo(this::off);
+        run(() -> this.setRPM(kReindexRPM)).until(beamBreakStateSupplier).withTimeout(0.4),
+        run(() -> this.setRPM(-kReindexRPM))
+            .until(() -> !beamBreakStateSupplier.getAsBoolean())
+            .withTimeout(2.0));
   }
 
   public Command outtake(BooleanSupplier beamBreakStateSupplier) {
     return new ParallelRaceGroup(
-            run(() -> this.setRPM(kOuttakeRPM)),
-            new SequentialCommandGroup(
+        run(() -> this.setRPM(kOuttakeRPM)),
+        new SequentialCommandGroup(
                 new WaitUntilCommand(beamBreakStateSupplier),
-                new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())),
-            new WaitCommand(
-                0.4) // just incase beam break fails, stop after some safe amount of time
-            )
-        .finallyDo(this::off);
+                new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())));
   }
 
   public Command tuneController() {
