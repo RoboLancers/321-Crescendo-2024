@@ -36,8 +36,6 @@ public class RobotContainer {
 
   LED led = new LED();
   AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
-  // private CommandXboxController controller = new CommandXboxController(0);
- //
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
@@ -53,9 +51,8 @@ public class RobotContainer {
     // this.configureAutoChooser();
   }
 
- 
   private void configureBindings() {
-
+    // TODO: register led bindings here
  
     // this.drivetrain.setDefaultCommand(this.drivetrain.tuneModules());
 
@@ -82,52 +79,13 @@ public class RobotContainer {
     // this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
     // new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.zeroYaw());
-
-    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-    //     .onTrue(this.intake.retractor.moveToIntake());
-
-    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-    //     .onFalse(this.intake.retractor.moveToRetracted());
-
-    // new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.8)
-    //     .onTrue(this.launcher.pivot.aimAtAmp());
-
-    // new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.8)
-    //     .onFalse(this.launcher.pivot.moveToRetracted());
   }
 
-  // private void configureAutoChooser() {
-  //   // NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
+  private void configureAutoChooser() {
+    // NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
 
-  //   // this.autoChooser.addOption("Do Nothing", new InstantCommand());
-  // }
-    // example usage
-    // LED.registerSignal(4, () -> true, LED.breath(Section.FULL, Color.kAliceBlue, Color.kAzure));
-    // LED.registerSignal(3, controller.y(), LED.wave(Section.FULL, Color.kYellow, Color.kWhite));
-    // LED.registerSignal(2, controller.x(), LED.wave(Section.FULL, Color.kBlue, Color.kWhite));
-    // LED.registerSignal(1, controller.a(), LED.wave(Section.FULL, Color.kGreen, Color.kWhite));
-
-    // RobotModeTriggers.teleop()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //             () ->
-    //                 // 0 priority & constant true condition effectively acts as a default pattern
-    //                 LED.registerSignal(
-    //                     0,
-    //                     () -> true,
-    //                     LED.solid(
-    //                         Section.FULL,
-    //                         DriverStation.getAlliance().get() == Alliance.Red
-    //                             ? Color.kRed
-    //                             : Color.kBlue))));
-
-    // LED.registerSignal(
-    //     6,
-    //     controller.rightBumper(),
-    //     buf -> {
-    //       // iterate through buffer and apply colors as desired
-    //     });
-  
+    // this.autoChooser.addOption("Do Nothing", new InstantCommand());
+  }
 
   public Command getAutonomousCommand() {
     return new InstantCommand();

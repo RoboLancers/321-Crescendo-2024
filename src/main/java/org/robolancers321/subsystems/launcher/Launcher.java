@@ -87,7 +87,7 @@ public class Launcher {
             new WaitCommand(2.0)
           )
         )
-      )
+      ),
       this.pivot.moveToRetracted()
     );
   }
