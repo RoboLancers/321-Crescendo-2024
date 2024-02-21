@@ -5,15 +5,20 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 
+import org.robolancers321.commands.Mate;
 import org.robolancers321.subsystems.LED;
-import org.robolancers321.subsystems.LED.LEDPattern;
 import org.robolancers321.subsystems.LED.Section;
+import org.robolancers321.subsystems.drivetrain.Drivetrain;
+import org.robolancers321.subsystems.intake.Intake;
+import org.robolancers321.subsystems.launcher.Launcher;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.function.BooleanSupplier;
 
@@ -29,8 +34,6 @@ public class RobotContainer {
 
   // SendableChooser<Command> autoChooser;
 
-
-  private LED led = LED.getInstance();
   LED led = new LED();
   AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
   // private CommandXboxController controller = new CommandXboxController(0);
@@ -53,12 +56,7 @@ public class RobotContainer {
  
   private void configureBindings() {
 
-    LED.register(4, () -> controller.b().getAsBoolean(), LEDPattern.WAVE, Color.kBlue, Color.kRed); 
-    LED.register(4, () -> controller.b().getAsBoolean(), LEDPattern.WAVE, Color.kBlue, Color.kRed);
-    LED.register(3, () -> controller.y().getAsBoolean(), LEDPattern.SOLID, Color.kGreen, null);
-    LED.register(
-        2, () -> controller.x().getAsBoolean(), LEDPattern.BREATH, Color.kBlue, Color.kRed);
-    LED.register(1, () -> controller.a().getAsBoolean(), LEDPattern.STROBE, Color.kYellow, null);
+ 
     // this.drivetrain.setDefaultCommand(this.drivetrain.tuneModules());
 
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
@@ -129,7 +127,7 @@ public class RobotContainer {
     //     buf -> {
     //       // iterate through buffer and apply colors as desired
     //     });
-  }
+  
 
   public Command getAutonomousCommand() {
     return new InstantCommand();
