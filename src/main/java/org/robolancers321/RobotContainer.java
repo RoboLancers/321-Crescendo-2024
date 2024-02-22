@@ -1,16 +1,29 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.ScoreSpeakerFixed;
+import org.robolancers321.subsystems.LED;
+import org.robolancers321.subsystems.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
+
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.function.BooleanSupplier;
+
+
 
 public class RobotContainer {
   Drivetrain drivetrain;
@@ -21,6 +34,9 @@ public class RobotContainer {
   XboxController manipulatorController;
 
   // SendableChooser<Command> autoChooser;
+
+  LED led = new LED();
+  AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
@@ -37,6 +53,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // TODO: register led bindings here
+ 
     // this.drivetrain.setDefaultCommand(this.drivetrain.tuneModules());
 
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
@@ -77,11 +95,11 @@ public class RobotContainer {
     //     .onFalse(this.launcher.pivot.moveToRetracted());
   }
 
-  // private void configureAutoChooser() {
-  //   // NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
+  private void configureAutoChooser() {
+    // NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
 
-  //   // this.autoChooser.addOption("Do Nothing", new InstantCommand());
-  // }
+    // this.autoChooser.addOption("Do Nothing", new InstantCommand());
+  }
 
   public Command getAutonomousCommand() {
     return new InstantCommand();

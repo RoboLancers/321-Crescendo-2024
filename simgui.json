@@ -1,10 +1,32 @@
 {
-  "NTProvider": {
-    "types": {
-      "/FMSInfo": "FMSInfo"
+  "HALProvider": {
+    "Addressable LEDs": {
+      "0": {
+        "columns": 25,
+        "serpentine": true
+      },
+      "window": {
+        "visible": true
+      }
+    },
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    },
+    "Timing": {
+      "window": {
+        "visible": false
+      }
     }
   },
-  "NetworkTables Info": {
-    "visible": true
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser"
+    }
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }
