@@ -34,7 +34,7 @@ public class Sucker extends SubsystemBase {
   private static final int kCurrentLimit = 60;
 
   private static final double kInSpeed = 0.4;
-  private static final double kOutSpeed = -1.0;
+  private static final double kOutSpeed = -0.4;
 
   // private static final double kFF = 0.00017;
 
@@ -45,12 +45,12 @@ public class Sucker extends SubsystemBase {
    * Implementation
    */
 
-  private final CANSparkFlex motor;
+  private final CANSparkMax motor;
   private final RelativeEncoder encoder;
   // private final SparkPIDController controller;
 
   private Sucker() {
-    this.motor = new CANSparkFlex(kMotorPort, MotorType.kBrushless);
+    this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
     this.encoder = this.motor.getEncoder();
     // this.controller = this.motor.getPIDController();
 

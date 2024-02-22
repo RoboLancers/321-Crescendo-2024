@@ -63,7 +63,8 @@ public class Pivot extends ProfiledPIDSubsystem {
   private enum PivotSetpoint {
     kRetracted(0.0),
     kMating(0.0),
-    kAmp(85.0);
+    kAmp(90.0),
+    kSpeaker(0.0);
 
     public final double angle;
 
@@ -259,6 +260,10 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   public Command aimAtSpeaker(DoubleSupplier angleDegSupplier) {
     return this.moveToAngle(angleDegSupplier);
+  }
+
+  public Command aimAtSpeakerFixed() {
+    return this.moveToAngle(PivotSetpoint.kSpeaker.angle);
   }
 
   public Command tuneControllers() {

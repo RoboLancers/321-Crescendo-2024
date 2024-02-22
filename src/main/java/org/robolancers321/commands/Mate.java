@@ -24,7 +24,7 @@ public class Mate extends SequentialCommandGroup {
         this.intake.retractor.moveToMating(),
         this.launcher.pivot.moveToMating()
       ),
-      new ParallelRaceGroup(this.intake.sucker.out(), this.launcher.acceptHandoff(), new WaitCommand(2.0))
+      new ParallelRaceGroup(this.intake.sucker.out(), this.launcher.acceptHandoff(), new WaitCommand(0.6))
     );
   }
 }

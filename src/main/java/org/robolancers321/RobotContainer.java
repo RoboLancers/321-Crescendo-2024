@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import org.robolancers321.commands.Mate;
+import org.robolancers321.commands.ScoreSpeakerFixed;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
@@ -51,16 +52,17 @@ public class RobotContainer {
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(this.intake.deployIntake());
-    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-    //     .onFalse(this.intake.retractor.moveToRetracted());
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .onFalse(this.intake.retractor.moveToRetracted());
 
-    new Trigger(this.driverController::getXButton).onTrue(this.launcher.scoreAmp());
+    // new Trigger(this.manipulatorController::getXButton).onTrue(this.launcher.scoreAmp());
+    // new Trigger(this.manipulatorController::getYButton).onTrue(this.launcher.scoreSpeaker());
+    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFixed());
+    new Trigger(this.manipulatorController::getXButton).onTrue(new Mate().andThen(this.launcher.scoreAmp()));
 
-    new Trigger(this.driverController::getAButton).onTrue(new Mate());
+    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
-    // this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
-
-    // new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.zeroYaw());
+    new Trigger(() -> this.driverController.getLeftBumper() && this.driverController.getRightBumper()).onTrue(this.drivetrain.zeroYaw());
 
     // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
     //     .onTrue(this.intake.retractor.moveToIntake());

@@ -34,11 +34,11 @@ public class Indexer extends SubsystemBase {
   // private static final int kBeamBreakPort = 0; // TODO
 
   private static final boolean kInvertMotor = true;
-  private static final int kCurrentLimit = 20;
+  private static final int kCurrentLimit = 60;
 
   private static final double kFF = 0.000153;
 
-  private static final double kHandoffRPM = 5000;
+  private static final double kHandoffRPM = 3000;
   private static final double kReindexRPM = 3000;
   private static final double kOuttakeRPM = 3000;
 
@@ -99,6 +99,7 @@ public class Indexer extends SubsystemBase {
   private void doSendables() {
     SmartDashboard.putNumber("indexer rpm", this.getRPM());
     SmartDashboard.putBoolean("indexer detected note", this.jawnDetected());
+    SmartDashboard.putNumber("indexer voltage", this.motor.getBusVoltage());
   }
 
   @Override

@@ -81,13 +81,30 @@ public class Launcher {
       new ParallelRaceGroup(
         this.flywheel.yeetNoteAmp(),
         new SequentialCommandGroup(
+          new WaitCommand(1.0),
+          new ParallelRaceGroup(
+            this.indexer.outtake(this::getBeamBreakState),
+            new WaitCommand(0.5)
+          )
+        )
+      ),
+      this.pivot.moveToRetracted()
+    );
+  }
+
+  public Command scoreSpeaker(){
+    return new SequentialCommandGroup(
+      this.pivot.aimAtSpeakerFixed(),
+      new ParallelRaceGroup(
+        this.flywheel.yeetNoteSpeakerFixed(),
+        new SequentialCommandGroup(
           new WaitCommand(3.0),
           new ParallelRaceGroup(
             this.indexer.outtake(this::getBeamBreakState),
             new WaitCommand(2.0)
           )
         )
-      )
+      ),
       this.pivot.moveToRetracted()
     );
   }
