@@ -5,6 +5,7 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -47,15 +48,15 @@ public class Pivot extends ProfiledPIDSubsystem {
   private static final float kMinAngle = 0.0f;
   private static final float kMaxAngle = 90.0f;
 
-  private static final double kP = 0.04;
+  private static final double kP = 0.02;
   private static final double kI = 0.0;
-  private static final double kD = 0.02;
+  private static final double kD = 0.01;
 
   private static final double kS = 0.0;
   private static final double kG = 0.0;
   private static final double kV = 0.0;
 
-  private static final double kMaxVelocityDeg = 240;
+  private static final double kMaxVelocityDeg = 150;
   private static final double kMaxAccelerationDeg = 360;
 
   private static final double kToleranceDeg = 2.0;
@@ -101,6 +102,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
 
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
@@ -179,8 +181,9 @@ public class Pivot extends ProfiledPIDSubsystem {
   public void doSendables() {
     SmartDashboard.putBoolean("pivot at goal", this.atGoal());
     SmartDashboard.putNumber("pivot position (deg)", this.getPositionDeg());
-    SmartDashboard.putNumber("pivot velocity (deg)", this.m_controller.getGoal().position);
-    SmartDashboard.putNumber("pivot mp goal (deg)", this.getVelocityDeg());
+    SmartDashboard.putNumber("pivot mp goal pos (deg)", this.m_controller.getGoal().position);
+    SmartDashboard.putNumber("pivot mp goal vel (deg)", this.m_controller.getGoal().velocity);
+    SmartDashboard.putNumber("pivot velocity (deg)", this.getVelocityDeg());
   }
 
   @Override

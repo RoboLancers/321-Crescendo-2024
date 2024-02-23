@@ -127,7 +127,11 @@ public class Indexer extends SubsystemBase {
   }
 
   public Command acceptHandoff(BooleanSupplier beamBreakStateSupplier) {
-    return run(() -> this.setRPM(kHandoffRPM)).until(beamBreakStateSupplier);
+    return run(() -> this.setRPM(kHandoffRPM))
+      .until(beamBreakStateSupplier)
+      .andThen(run(() -> this.setRPM(-0.1 * kHandoffRPM))
+      .until(() -> !beamBreakStateSupplier.getAsBoolean()))
+      .andThen(runOnce(() -> this.setRPM(0.0)));
   }
 
   public Command shiftIntoPosition(BooleanSupplier beamBreakStateSupplier) {

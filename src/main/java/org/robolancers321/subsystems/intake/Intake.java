@@ -2,6 +2,8 @@
 package org.robolancers321.subsystems.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class Intake {
@@ -37,6 +39,6 @@ public class Intake {
 
   // TODO: use beam break to auto retract and rumble
   public Command deployIntake() {
-    return new SequentialCommandGroup(this.retractor.moveToIntake(), this.sucker.in());
+    return new ParallelCommandGroup(this.retractor.moveToIntake(), this.sucker.in());
   }
 }

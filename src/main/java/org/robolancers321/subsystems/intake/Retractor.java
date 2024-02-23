@@ -6,6 +6,7 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.MathUtil;
@@ -58,15 +59,15 @@ public class Retractor extends ProfiledPIDSubsystem {
   private static final double kG = 0.0155;
   private static final double kV = 0.000;
 
-  private static final double kMaxVelocityDeg = 120.0;
-  private static final double kMaxAccelerationDeg = 90.0;
+  private static final double kMaxVelocityDeg = 180.0;
+  private static final double kMaxAccelerationDeg = 360.0;
 
   private static final double kToleranceDeg = 2.0;
 
   private enum RetractorSetpoint {
     kRetracted(160),
     kMating(160),
-    kIntake(-15.0);
+    kIntake(-10.0);
 
     public final double angle;
 
@@ -103,6 +104,7 @@ public class Retractor extends ProfiledPIDSubsystem {
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
 
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);

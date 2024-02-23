@@ -1,12 +1,15 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.launcher;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-public class Launcher {
+public class Launcher extends SubsystemBase {
   /*
    * Singleton
    */
@@ -24,7 +27,7 @@ public class Launcher {
    */
 
   // TODO
-  // private static final int kBeamBreakPort = 0;
+  private static final int kBeamBreakPort = 9;
 
   // TODO
   // private static final double kDebounceTime = 0.05;
@@ -38,7 +41,7 @@ public class Launcher {
   public final Flywheel flywheel;
 
   // TODO
-  // private final DigitalInput beamBreak;
+  private final DigitalInput beamBreak;
 
   // TODO
   // private final Debouncer beamBreakDebouncer;
@@ -52,7 +55,7 @@ public class Launcher {
     this.flywheel = Flywheel.getInstance();
 
     // TODO
-    // this.beamBreak = new DigitalInput(kBeamBreakPort);
+    this.beamBreak = new DigitalInput(kBeamBreakPort);
 
     // TODO
     // this.beamBreakDebouncer = new Debouncer(kDebounceTime, Debouncer.DebounceType.kBoth);
@@ -61,14 +64,15 @@ public class Launcher {
     // this.aimTable = new AimTable();
   }
 
-  // TODO
-  /*
-
-  */
-
   public boolean getBeamBreakState() {
-    return false;
+    // return false;
+    return !beamBreak.get();
     // return beamBreakDebouncer.calculate(beamBreak.get()); // TODO
+  }
+
+  @Override
+  public void periodic(){
+    SmartDashboard.putBoolean("launcher middle beam broken", this.getBeamBreakState());
   }
 
   public Command acceptHandoff() {
