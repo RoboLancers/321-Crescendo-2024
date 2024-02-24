@@ -78,7 +78,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kMaxSpeedMetersPerSecond = 4.0;
   private static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
-  private static final double kMaxTeleopSpeedPercent = 0.8;
+  private static final double kMaxTeleopSpeedPercent = 1.0;
   private static final double kMaxTeleopRotationPercent = 1.0;
 
   public static final PathConstraints kAutoConstraints =
@@ -104,7 +104,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kRotationD = 0.0;
 
   // corrects heading during teleop
-  private static final double kHeadingP = 0.25;
+  private static final double kHeadingP = 0;// 0.25;
   private static final double kHeadingI = 0.0;
   private static final double kHeadingD = 0.0;
 
@@ -397,7 +397,7 @@ public class Drivetrain extends SubsystemBase {
     return runOnce(this::configureGyro);
   }
 
-  private Command stop() {
+  public Command stop() {
     return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
   }
 
@@ -429,13 +429,18 @@ public class Drivetrain extends SubsystemBase {
 
           SmartDashboard.putNumber("drive heading controller setpoint", this.headingController.getSetpoint());
 
-          this.drive(
-              kMaxTeleopSpeedPercent
+          Translation2d strafeVec = new Translation2d(
+            kMaxTeleopSpeedPercent
                   * kMaxSpeedMetersPerSecond
                   * MathUtil.applyDeadband(-controller.getLeftY(), 0.05),
-              kMaxTeleopSpeedPercent
+            kMaxTeleopSpeedPercent
                   * kMaxSpeedMetersPerSecond
-                  * MathUtil.applyDeadband(controller.getLeftX(), 0.05),
+                  * MathUtil.applyDeadband(controller.getLeftX(), 0.05)
+          ).rotateBy(Rotation2d.fromDegrees(90.0));
+
+          this.drive(
+              strafeVec.getX(),
+              strafeVec.getY(),
               turnOutput,
               true);
         })

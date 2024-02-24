@@ -33,8 +33,8 @@ public class Sucker extends SubsystemBase {
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 60;
 
-  private static final double kInSpeed = 0.4;
-  private static final double kOutSpeed = -0.4;
+  private static final double kInSpeed = 0.6;
+  private static final double kOutSpeed = -0.6;
 
   // private static final double kFF = 0.00017;
 
@@ -119,7 +119,7 @@ public class Sucker extends SubsystemBase {
   }
 
   public Command in() {
-    return setSpeed(kInSpeed);
+    return setSpeed(kInSpeed).finallyDo(() -> this.motor.set(0));
   }
 
   public Command out() {

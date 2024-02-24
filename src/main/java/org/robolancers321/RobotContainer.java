@@ -16,6 +16,7 @@ import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -56,7 +58,7 @@ public class RobotContainer {
     // this.autoChooser = AutoBuilder.buildAutoChooser();
 
     this.configureBindings();
-    // this.configureAutoChooser();
+    this.configureAuto();
   }
 
   private void configureBindings() {
@@ -80,21 +82,38 @@ public class RobotContainer {
               new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
                   .onFalse(this.intake.retractor.moveToRetracted());
 
+              new Trigger(this.driverController::getRightBumper).whileTrue(this.intake.sucker.in());
+
+              new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+                  .whileTrue(this.intake.outtakeNote());
+              new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+                  .onFalse(this.intake.retractor.moveToRetracted());
+
               new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFixed());
               new Trigger(this.manipulatorController::getXButton).onTrue(new Mate().andThen(this.launcher.scoreAmp().raceWith(this.intake.sucker.off())));
+
+              new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.launcher.pivot.aimAtAmp());
+              new Trigger(() -> this.manipulatorController.getLeftY() > 0.8).onTrue(this.launcher.pivot.moveToRetracted());
 
               this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
               new Trigger(() -> this.driverController.getLeftBumper() && this.driverController.getRightBumper()).onTrue(this.drivetrain.zeroYaw());
   }
 
-  private void configureAutoChooser() {
-    // NamedCommands.registerCommand("Say Hello", new PrintCommand("Hello"));
+  private void configureAuto() {
+    NamedCommands.registerCommand("Drivetrain Off", this.drivetrain.stop());
+    NamedCommands.registerCommand("Score Speaker Fixed", new ScoreSpeakerFixed());
+    NamedCommands.registerCommand("Deploy Intake", this.intake.deployIntake());
+    NamedCommands.registerCommand("Retract Intake", this.intake.retractor.moveToRetracted());
+    
 
     // this.autoChooser.addOption("Do Nothing", new InstantCommand());
   }
 
   public Command getAutonomousCommand() {
-    return this.drivetrain.zeroYaw().andThen(new PathPlannerAuto("tuning"));
+    // Command auto = new PathPlannerAuto("tuning");
+
+    // return this.drivetrain.zeroYaw().andThen(auto);
+    return AutoBuilder.buildAuto("2NB-PP");
   }
 }

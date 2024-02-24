@@ -41,4 +41,11 @@ public class Intake {
   public Command deployIntake() {
     return new ParallelCommandGroup(this.retractor.moveToIntake(), this.sucker.in());
   }
+
+  public Command outtakeNote(){
+    return new SequentialCommandGroup(
+      this.retractor.moveToIntake(),
+      this.sucker.out()
+    );
+  }
 }

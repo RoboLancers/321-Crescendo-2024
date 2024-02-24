@@ -26,7 +26,7 @@ public class Flywheel extends SubsystemBase {
   private static final boolean kInvertMotor = false;
   private static final int kCurrentLimit = 40;
 
-  private static final double kRampUpRate = 6000;
+  private static final double kRampUpRate = 8000;
 
   private static final double kFF = 0.000153;
 
@@ -34,7 +34,7 @@ public class Flywheel extends SubsystemBase {
 
   private enum FlywheelSetpoint {
     kAmp(1000.0),
-    kSpeaker(5500.0);
+    kSpeaker(6400.0);
 
     public final double rpm;
 
@@ -111,6 +111,8 @@ public class Flywheel extends SubsystemBase {
 
   @Override
   public void periodic() {
+    this.useController();
+
     this.doSendables();
   }
 
@@ -133,29 +135,25 @@ public class Flywheel extends SubsystemBase {
     return runOnce(
         () -> {
           this.goalRPM = 0.0;
-          this.useController();
         });
   }
 
   public Command yeetNoteAmp() {
-    return run(() -> {
+    return runOnce(() -> {
       this.goalRPM = FlywheelSetpoint.kAmp.rpm;
-      this.useController();
     });
   }
 
   public Command yeetNoteSpeaker(DoubleSupplier rpmSupplier) {
-    return run(
+    return runOnce(
         () -> {
           this.goalRPM = rpmSupplier.getAsDouble();
-          this.useController();
         });
   }
 
   public Command yeetNoteSpeakerFixed() {
-    return run(() -> {
+    return runOnce(() -> {
       this.goalRPM = FlywheelSetpoint.kSpeaker.rpm;
-      this.useController();
     });
   }
 

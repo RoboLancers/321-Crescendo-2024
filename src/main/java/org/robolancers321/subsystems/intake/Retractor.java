@@ -48,7 +48,7 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   private static final double kGearRatio = 360.0;
 
-  private static final float kMinAngle = -15f;
+  private static final float kMinAngle = -18f;
   private static final float kMaxAngle = 160.0f;
 
   private static final double kP = 0.0065;
@@ -60,14 +60,14 @@ public class Retractor extends ProfiledPIDSubsystem {
   private static final double kV = 0.000;
 
   private static final double kMaxVelocityDeg = 180.0;
-  private static final double kMaxAccelerationDeg = 360.0;
+  private static final double kMaxAccelerationDeg = 540.0;
 
   private static final double kToleranceDeg = 2.0;
 
   private enum RetractorSetpoint {
     kRetracted(160),
     kMating(160),
-    kIntake(-10.0);
+    kIntake(-18);
 
     public final double angle;
 
