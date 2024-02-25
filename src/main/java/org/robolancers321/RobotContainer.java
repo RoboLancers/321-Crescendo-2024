@@ -1,38 +1,19 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
-
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.ScoreSpeakerFixed;
+import org.robolancers321.commands.ScoreStage;
 import org.robolancers321.subsystems.LED;
-import org.robolancers321.subsystems.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Intake;
 import org.robolancers321.subsystems.launcher.Launcher;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import java.util.function.BooleanSupplier;
-
-
 
 public class RobotContainer {
   Drivetrain drivetrain;
@@ -63,7 +44,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     // TODO: register led bindings here
- 
+
     // this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
 
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
@@ -73,39 +54,47 @@ public class RobotContainer {
     // this.launcher.indexer.setDefaultCommand(this.launcher.indexer.tuneController());
     // this.launcher.flywheel.setDefaultCommand(this.launcher.flywheel.tuneController());
 
-              this.intake.sucker.setDefaultCommand(this.intake.sucker.off());
-              this.launcher.indexer.setDefaultCommand(this.launcher.indexer.off());
-              this.launcher.flywheel.setDefaultCommand(this.launcher.flywheel.off());
+    this.intake.sucker.setDefaultCommand(this.intake.sucker.off());
+    this.launcher.indexer.setDefaultCommand(this.launcher.indexer.off());
+    this.launcher.flywheel.setDefaultCommand(this.launcher.flywheel.off());
 
-              new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-                  .whileTrue(this.intake.deployIntake());
-              new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-                  .onFalse(this.intake.retractor.moveToRetracted());
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .whileTrue(this.intake.deployIntake());
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .onFalse(this.intake.retractor.moveToRetracted());
 
-              new Trigger(this.driverController::getRightBumper).whileTrue(this.intake.sucker.in());
+    new Trigger(this.driverController::getRightBumper).whileTrue(this.intake.sucker.in());
 
-              new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-                  .whileTrue(this.intake.outtakeNote());
-              new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-                  .onFalse(this.intake.retractor.moveToRetracted());
+    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+        .whileTrue(this.intake.outtakeNote());
+    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+        .onFalse(this.intake.retractor.moveToRetracted());
 
-              new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFixed());
-              new Trigger(this.manipulatorController::getXButton).onTrue(new Mate().andThen(this.launcher.scoreAmp().raceWith(this.intake.sucker.off())));
+    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFixed());
+    new Trigger(this.manipulatorController::getXButton)
+        .onTrue(new Mate().andThen(this.launcher.scoreAmp().raceWith(this.intake.sucker.off())));
 
-              new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.launcher.pivot.aimAtAmp());
-              new Trigger(() -> this.manipulatorController.getLeftY() > 0.8).onTrue(this.launcher.pivot.moveToRetracted());
+    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8)
+        .onTrue(this.launcher.pivot.aimAtAmp());
+    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
+        .onTrue(this.launcher.pivot.moveToRetracted());
 
-              this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
+    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
-              new Trigger(() -> this.driverController.getLeftBumper() && this.driverController.getRightBumper()).onTrue(this.drivetrain.zeroYaw());
+    new Trigger(
+            () -> this.driverController.getLeftBumper() && this.driverController.getRightBumper())
+        .onTrue(this.drivetrain.zeroYaw());
   }
 
   private void configureAuto() {
     NamedCommands.registerCommand("Drivetrain Off", this.drivetrain.stop());
+
     NamedCommands.registerCommand("Score Speaker Fixed", new ScoreSpeakerFixed());
+    NamedCommands.registerCommand("Score Stage", new ScoreStage());
+    // NamedCommands.registerCommand("Score Top", (. . .));
+
     NamedCommands.registerCommand("Deploy Intake", this.intake.deployIntake());
     NamedCommands.registerCommand("Retract Intake", this.intake.retractor.moveToRetracted());
-    
 
     // this.autoChooser.addOption("Do Nothing", new InstantCommand());
   }
@@ -114,6 +103,6 @@ public class RobotContainer {
     // Command auto = new PathPlannerAuto("tuning");
 
     // return this.drivetrain.zeroYaw().andThen(auto);
-    return AutoBuilder.buildAuto("2NB-PP");
+    return AutoBuilder.buildAuto("3NB");
   }
 }

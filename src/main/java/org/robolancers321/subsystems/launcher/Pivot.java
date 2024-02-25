@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
+ 
 import java.util.function.DoubleSupplier;
 
 public class Pivot extends ProfiledPIDSubsystem {
@@ -245,7 +245,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     );
   }
 
-  private Command moveToAngle(double angleDeg) {
+  public Command moveToAngle(double angleDeg) {
     return this.moveToAngle(() -> angleDeg);
   }
 

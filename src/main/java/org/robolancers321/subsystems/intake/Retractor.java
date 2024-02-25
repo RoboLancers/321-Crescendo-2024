@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
 import java.util.function.DoubleSupplier;
 
 public class Retractor extends ProfiledPIDSubsystem {
@@ -62,7 +61,7 @@ public class Retractor extends ProfiledPIDSubsystem {
   private static final double kMaxVelocityDeg = 180.0;
   private static final double kMaxAccelerationDeg = 540.0;
 
-  private static final double kToleranceDeg = 2.0;
+  private static final double kToleranceDeg = 6.0;
 
   private enum RetractorSetpoint {
     kRetracted(160),
@@ -236,11 +235,14 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   private Command moveToAngle(DoubleSupplier angleDegSupplier) {
     return new SequentialCommandGroup(
-      new InstantCommand(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))),
-      this.run(() ->
-            this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle)))
-        .until(this::atGoal)
-    );
+        new InstantCommand(
+            () ->
+                this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))),
+        this.run(
+                () ->
+                    this.setGoal(
+                        MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle)))
+            .until(this::atGoal));
   }
 
   private Command moveToAngle(double angleDeg) {
