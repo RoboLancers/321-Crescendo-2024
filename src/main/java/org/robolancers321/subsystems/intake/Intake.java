@@ -3,7 +3,6 @@ package org.robolancers321.subsystems.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class Intake {
@@ -42,10 +41,7 @@ public class Intake {
     return new ParallelCommandGroup(this.retractor.moveToIntake(), this.sucker.in());
   }
 
-  public Command outtakeNote(){
-    return new SequentialCommandGroup(
-      this.retractor.moveToIntake(),
-      this.sucker.out()
-    );
+  public Command outtakeNote() {
+    return new SequentialCommandGroup(this.retractor.moveToIntake(), this.sucker.out());
   }
 }

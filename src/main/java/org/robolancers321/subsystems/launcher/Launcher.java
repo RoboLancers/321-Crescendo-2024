@@ -71,7 +71,7 @@ public class Launcher extends SubsystemBase {
   }
 
   @Override
-  public void periodic(){
+  public void periodic() {
     SmartDashboard.putBoolean("launcher middle beam broken", this.getBeamBreakState());
   }
 
@@ -79,40 +79,30 @@ public class Launcher extends SubsystemBase {
     return this.indexer.acceptHandoff(this::getBeamBreakState);
   }
 
-  public Command scoreAmp(){
+  public Command scoreAmp() {
     return new SequentialCommandGroup(
-      this.pivot.aimAtAmp(),
-      new ParallelRaceGroup(
-        this.flywheel.yeetNoteAmp(),
-        new SequentialCommandGroup(
-          new WaitCommand(1.0),
-          new ParallelRaceGroup(
-            this.indexer.outtake(this::getBeamBreakState),
-            new WaitCommand(0.5)
-          )
-        )
-      ),
-      this.pivot.moveToRetracted()
-    );
+        this.pivot.aimAtAmp(),
+        new ParallelRaceGroup(
+            this.flywheel.yeetNoteAmp(),
+            new SequentialCommandGroup(
+                new WaitCommand(1.0),
+                new ParallelRaceGroup(
+                    this.indexer.outtake(this::getBeamBreakState), new WaitCommand(0.5)))),
+        this.pivot.moveToRetracted());
   }
 
-  public Command scoreSpeaker(){
+  public Command scoreSpeaker() {
     return new SequentialCommandGroup(
-      this.pivot.aimAtSpeakerFixed(),
-      new ParallelRaceGroup(
-        this.flywheel.yeetNoteSpeakerFixed(),
-        new SequentialCommandGroup(
-          new WaitCommand(3.0),
-          new ParallelRaceGroup(
-            this.indexer.outtake(this::getBeamBreakState),
-            new WaitCommand(2.0)
-          )
-        )
-      ),
-      this.pivot.moveToRetracted()
-    );
+        this.pivot.aimAtSpeakerFixed(),
+        new ParallelRaceGroup(
+            this.flywheel.yeetNoteSpeakerFixed(),
+            new SequentialCommandGroup(
+                new WaitCommand(3.0),
+                new ParallelRaceGroup(
+                    this.indexer.outtake(this::getBeamBreakState), new WaitCommand(2.0)))),
+        this.pivot.moveToRetracted());
   }
-  
+
   /*
 
   public Command yeetSpeaker(DoubleSupplier distanceSupplier) {

@@ -128,10 +128,11 @@ public class Indexer extends SubsystemBase {
 
   public Command acceptHandoff(BooleanSupplier beamBreakStateSupplier) {
     return run(() -> this.setRPM(kHandoffRPM))
-      .until(beamBreakStateSupplier)
-      .andThen(run(() -> this.setRPM(-0.1 * kHandoffRPM))
-      .until(() -> !beamBreakStateSupplier.getAsBoolean()))
-      .andThen(runOnce(() -> this.setRPM(0.0)));
+        .until(beamBreakStateSupplier)
+        .andThen(
+            run(() -> this.setRPM(-0.1 * kHandoffRPM))
+                .until(() -> !beamBreakStateSupplier.getAsBoolean()))
+        .andThen(runOnce(() -> this.setRPM(0.0)));
   }
 
   public Command shiftIntoPosition(BooleanSupplier beamBreakStateSupplier) {
@@ -146,8 +147,8 @@ public class Indexer extends SubsystemBase {
     return new ParallelRaceGroup(
         run(() -> this.setRPM(kOuttakeRPM)),
         new SequentialCommandGroup(
-                new WaitUntilCommand(beamBreakStateSupplier),
-                new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())));
+            new WaitUntilCommand(beamBreakStateSupplier),
+            new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())));
   }
 
   public Command tuneController() {

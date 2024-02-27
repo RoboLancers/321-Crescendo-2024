@@ -1,13 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.drivetrain;
 
-import java.util.Optional;
-
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
@@ -38,6 +31,11 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Optional;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -104,7 +102,7 @@ public class Drivetrain extends SubsystemBase {
   private static final double kRotationD = 0.0;
 
   // corrects heading during teleop
-  private static final double kHeadingP = 0;// 0.25;
+  private static final double kHeadingP = 0; // 0.25;
   private static final double kHeadingI = 0.0;
   private static final double kHeadingD = 0.0;
 
@@ -316,14 +314,19 @@ public class Drivetrain extends SubsystemBase {
   // }
 
   private void initTuning() {
-    // SmartDashboard.putNumber("robot to camera dx", SmartDashboard.getNumber("robot to camera dx", kRobotToCameraTransform.getX()));
-    // SmartDashboard.putNumber("robot to camera dy", SmartDashboard.getNumber("robot to camera dy", kRobotToCameraTransform.getY()));
-    // SmartDashboard.putNumber("robot to camera dz", SmartDashboard.getNumber("robot to camera dz", kRobotToCameraTransform.getZ()));
+    // SmartDashboard.putNumber("robot to camera dx", SmartDashboard.getNumber("robot to camera dx",
+    // kRobotToCameraTransform.getX()));
+    // SmartDashboard.putNumber("robot to camera dy", SmartDashboard.getNumber("robot to camera dy",
+    // kRobotToCameraTransform.getY()));
+    // SmartDashboard.putNumber("robot to camera dz", SmartDashboard.getNumber("robot to camera dz",
+    // kRobotToCameraTransform.getZ()));
 
-    // SmartDashboard.putNumber("robot to camera rx", SmartDashboard.getNumber("robot to camera rx", kRobotToCameraTransform.getRotation().getX()));
-    // SmartDashboard.putNumber("robot to camera ry", SmartDashboard.getNumber("robot to camera ry", kRobotToCameraTransform.getRotation().getY()));
-    // SmartDashboard.putNumber("robot to camera rz", SmartDashboard.getNumber("robot to camera rz", kRobotToCameraTransform.getRotation().getZ()));
-
+    // SmartDashboard.putNumber("robot to camera rx", SmartDashboard.getNumber("robot to camera rx",
+    // kRobotToCameraTransform.getRotation().getX()));
+    // SmartDashboard.putNumber("robot to camera ry", SmartDashboard.getNumber("robot to camera ry",
+    // kRobotToCameraTransform.getRotation().getY()));
+    // SmartDashboard.putNumber("robot to camera rz", SmartDashboard.getNumber("robot to camera rz",
+    // kRobotToCameraTransform.getRotation().getZ()));
 
     SmartDashboard.putNumber(
         "drive heading kp", SmartDashboard.getNumber("drive heading kp", kHeadingP));
@@ -341,14 +344,16 @@ public class Drivetrain extends SubsystemBase {
     //   SmartDashboard.getNumber("robot to camera dy", kRobotToCameraTransform.getY()),
     //   SmartDashboard.getNumber("robot to camera dz", kRobotToCameraTransform.getZ()),
     //   new Rotation3d(
-    //     SmartDashboard.getNumber("robot to camera rx", kRobotToCameraTransform.getRotation().getX()),
-    //     SmartDashboard.getNumber("robot to camera ry", kRobotToCameraTransform.getRotation().getY()),
-    //     SmartDashboard.getNumber("robot to camera rz", kRobotToCameraTransform.getRotation().getZ())
+    //     SmartDashboard.getNumber("robot to camera rx",
+    // kRobotToCameraTransform.getRotation().getX()),
+    //     SmartDashboard.getNumber("robot to camera ry",
+    // kRobotToCameraTransform.getRotation().getY()),
+    //     SmartDashboard.getNumber("robot to camera rz",
+    // kRobotToCameraTransform.getRotation().getZ())
     //   )
     // );
 
     // this.visionEstimator.setRobotToCameraTransform(tunedRobotToCameraTransform);
-
 
     double tunedHeadingP = SmartDashboard.getNumber("drive heading kp", kHeadingP);
     double tunedHeadingI = SmartDashboard.getNumber("drive heading ki", kHeadingI);
@@ -404,20 +409,22 @@ public class Drivetrain extends SubsystemBase {
   public Command teleopDrive(XboxController controller, boolean fieldCentric) {
     this.headingController.setSetpoint(this.getYawDeg());
     this.lastCommandedOmega = 0.0;
-    
+
     return run(() -> {
           double omega =
-                      -kMaxTeleopRotationPercent
-                      * kMaxOmegaRadiansPerSecond
-                      * MathUtil.applyDeadband(controller.getRightX(), 0.05);
+              -kMaxTeleopRotationPercent
+                  * kMaxOmegaRadiansPerSecond
+                  * MathUtil.applyDeadband(controller.getRightX(), 0.05);
 
           double turnOutput;
 
-          if(omega == 0){
-            if (this.lastCommandedOmega != 0){
+          if (omega == 0) {
+            if (this.lastCommandedOmega != 0) {
               // the angular momentum of the robot will keep it turning for a moment after you stop
-              // so we set the heading setpoint to the current angle plus a portion of its current velocity
-              this.headingController.setSetpoint(this.getYawDeg() + 0.1 * this.gyro.getRate() * 180.0 / Math.PI);
+              // so we set the heading setpoint to the current angle plus a portion of its current
+              // velocity
+              this.headingController.setSetpoint(
+                  this.getYawDeg() + 0.1 * this.gyro.getRate() * 180.0 / Math.PI);
             }
 
             turnOutput = -this.headingController.calculate(this.getYawDeg());
@@ -427,22 +434,20 @@ public class Drivetrain extends SubsystemBase {
 
           this.lastCommandedOmega = omega;
 
-          SmartDashboard.putNumber("drive heading controller setpoint", this.headingController.getSetpoint());
+          SmartDashboard.putNumber(
+              "drive heading controller setpoint", this.headingController.getSetpoint());
 
-          Translation2d strafeVec = new Translation2d(
-            kMaxTeleopSpeedPercent
-                  * kMaxSpeedMetersPerSecond
-                  * MathUtil.applyDeadband(-controller.getLeftY(), 0.05),
-            kMaxTeleopSpeedPercent
-                  * kMaxSpeedMetersPerSecond
-                  * MathUtil.applyDeadband(controller.getLeftX(), 0.05)
-          ).rotateBy(Rotation2d.fromDegrees(90.0));
+          Translation2d strafeVec =
+              new Translation2d(
+                      kMaxTeleopSpeedPercent
+                          * kMaxSpeedMetersPerSecond
+                          * MathUtil.applyDeadband(-controller.getLeftY(), 0.05),
+                      kMaxTeleopSpeedPercent
+                          * kMaxSpeedMetersPerSecond
+                          * MathUtil.applyDeadband(controller.getLeftX(), 0.05))
+                  .rotateBy(Rotation2d.fromDegrees(90.0));
 
-          this.drive(
-              strafeVec.getX(),
-              strafeVec.getY(),
-              turnOutput,
-              true);
+          this.drive(strafeVec.getX(), strafeVec.getY(), turnOutput, true);
         })
         .finallyDo(this::stop);
 
@@ -489,21 +494,23 @@ public class Drivetrain extends SubsystemBase {
     this.initTuning();
     this.headingController.setSetpoint(this.getYawDeg());
     this.lastCommandedOmega = 0.0;
-    
+
     return run(() -> {
           // TODO: multiply by some shit
           double omega =
-                      -kMaxTeleopRotationPercent
-                      * kMaxOmegaRadiansPerSecond
-                      * MathUtil.applyDeadband(controller.getRightX(), 0.05);
+              -kMaxTeleopRotationPercent
+                  * kMaxOmegaRadiansPerSecond
+                  * MathUtil.applyDeadband(controller.getRightX(), 0.05);
 
           double turnOutput;
 
-          if(omega == 0){
-            if (this.lastCommandedOmega != 0){
+          if (omega == 0) {
+            if (this.lastCommandedOmega != 0) {
               // the angular momentum of the robot will keep it turning for a moment after you stop
-              // so we set the heading setpoint to the current angle plus a portion of its current velocity
-              this.headingController.setSetpoint(this.getYawDeg() + 0.1 * this.gyro.getRate() * 180.0 / Math.PI);
+              // so we set the heading setpoint to the current angle plus a portion of its current
+              // velocity
+              this.headingController.setSetpoint(
+                  this.getYawDeg() + 0.1 * this.gyro.getRate() * 180.0 / Math.PI);
             }
 
             turnOutput = -this.headingController.calculate(this.getYawDeg());
@@ -513,15 +520,12 @@ public class Drivetrain extends SubsystemBase {
 
           this.lastCommandedOmega = omega;
 
-          SmartDashboard.putNumber("drive heading controller setpoint", this.headingController.getSetpoint());
+          SmartDashboard.putNumber(
+              "drive heading controller setpoint", this.headingController.getSetpoint());
 
           this.tune();
 
-          this.drive(
-              0.0,
-              0.0,
-              turnOutput,
-              true);
+          this.drive(0.0, 0.0, turnOutput, true);
         })
         .finallyDo(this::stop);
   }
