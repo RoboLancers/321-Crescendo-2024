@@ -1,10 +1,9 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 
 import org.robolancers321.commands.DeployIntake;
@@ -14,7 +13,6 @@ import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixed;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.subsystems.LED;
-import org.robolancers321.subsystems.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -81,7 +79,7 @@ public class RobotContainer {
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02));
 
     // TODO: register led bindings here
- 
+
     // this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
 
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
@@ -145,7 +143,7 @@ public class RobotContainer {
               // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
               new Trigger(this.driverController::getYButton).onTrue(this.drivetrain.turnToSpeaker());
 
-              this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
+    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
               new Trigger(() -> this.driverController.getLeftBumper() && this.driverController.getRightBumper()).onTrue(this.drivetrain.zeroYaw());
 
@@ -155,6 +153,7 @@ public class RobotContainer {
 
   private void configureAuto() {
     NamedCommands.registerCommand("Drivetrain Off", this.drivetrain.stop());
+
     NamedCommands.registerCommand("Score Speaker Fixed", new ScoreSpeakerFixed());
     NamedCommands.registerCommand("Deploy Intake", new DeployIntake());
     NamedCommands.registerCommand("Retract Intake", this.retractor.moveToRetracted());
@@ -167,6 +166,6 @@ public class RobotContainer {
     // Command auto = new PathPlannerAuto("tuning");
 
     // return this.drivetrain.zeroYaw().andThen(auto);
-    return AutoBuilder.buildAuto("2NB-PP");
+    return AutoBuilder.buildAuto("3NB");
   }
 }

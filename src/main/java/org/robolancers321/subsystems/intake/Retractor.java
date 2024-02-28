@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
 import java.util.function.DoubleSupplier;
 
 import org.robolancers321.Constants.RetractorConstants;
@@ -35,6 +34,47 @@ public class Retractor extends ProfiledPIDSubsystem {
     if (instance == null) instance = new Retractor();
 
     return instance;
+  }
+
+  /*
+   * Constants
+   */
+
+  private static final int kMotorPort = 13;
+
+  private static final boolean kInvertMotor = true;
+  private static final boolean kInvertEncoder = true;
+
+  private static final int kCurrentLimit = 40;
+
+  private static final double kGearRatio = 360.0;
+
+  private static final float kMinAngle = -18f;
+  private static final float kMaxAngle = 160.0f;
+
+  private static final double kP = 0.0065;
+  private static final double kI = 0.000;
+  private static final double kD = 0.0001;
+
+  private static final double kS = 0.000;
+  private static final double kG = 0.0155;
+  private static final double kV = 0.000;
+
+  private static final double kMaxVelocityDeg = 180.0;
+  private static final double kMaxAccelerationDeg = 540.0;
+
+  private static final double kToleranceDeg = 2.0;
+
+  private enum RetractorSetpoint {
+    kRetracted(160),
+    kMating(160),
+    kIntake(-18);
+
+    public final double angle;
+
+    private RetractorSetpoint(double angleDeg) {
+      this.angle = angleDeg;
+    }
   }
 
   /*
