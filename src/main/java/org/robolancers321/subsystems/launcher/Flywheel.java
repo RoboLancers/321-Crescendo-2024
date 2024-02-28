@@ -108,9 +108,9 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void tune() {
-    // double tunedFF = SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF);
+    double tunedFF = SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF);
 
-    // this.controller.setFF(tunedFF);
+    this.controller.setFF(tunedFF);
 
     this.goalRPM = SmartDashboard.getNumber("flywheel target rpm", 0.0);
   }

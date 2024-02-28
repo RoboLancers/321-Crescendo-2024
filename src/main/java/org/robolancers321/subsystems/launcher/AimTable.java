@@ -10,20 +10,10 @@ import java.util.TreeSet;
 
 public class AimTable {
   public static double interpolatePivotAngle(double distance){
-    // double a = 10.5485;
-    // double b = 2.00453;
-    // double c = -4.09559;
-    // double d = 16.7746;
-
-    // double a = -9.83381;
-    // double b = -1.55256;
-    // double c = 2.70116;
-    // double d = 11.7425;
-
-    double a = -15.2112;
-    double b = -1.12398;
-    double c = 1.8594;
-    double d = 9.1191;
+    double a = -22.6139;
+    double b = -0.826057;
+    double c = 1.66209;
+    double d = 12.2049;
 
     return a * Math.atan(b * distance + c) + d;
   }

@@ -245,7 +245,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   private Translation2d getSpeakerPosition(){
-    return MyAlliance.isRed() ? new Translation2d(16.29, 5.55) : new Translation2d(0.25, 5.55);
+    return MyAlliance.isRed() ? new Translation2d(16.53, 5.55) : new Translation2d(0.0, 5.55);
   }
 
   public double getAngleToSpeaker(){

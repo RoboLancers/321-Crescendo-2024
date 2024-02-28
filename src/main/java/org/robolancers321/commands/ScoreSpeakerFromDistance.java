@@ -11,6 +11,7 @@ import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -41,9 +42,10 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
             // this.indexer.shiftBackward(),
             // this.sucker.offInstantly(),
             new ParallelCommandGroup(
-                this.retractor.moveToClearFromLauncher(),
-                this.pivot.moveToAngle(() -> SmartDashboard.getNumber("pivot interpolation angle", 0))
-                // this.pivot.aimAtSpeaker(() -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()))
+                // new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> SmartDashboard.getNumber("pivot interpolation angle", 0) < 10.0),
+                new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()) < 10.0),
+                // this.pivot.moveToAngle(() -> SmartDashboard.getNumber("pivot interpolation angle", 0))
+                this.pivot.aimAtSpeaker(() -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()))
             ),
             this.indexer.shiftForward(),
             this.indexer.shiftBackward(),

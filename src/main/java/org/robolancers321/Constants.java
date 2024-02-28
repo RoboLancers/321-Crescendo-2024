@@ -154,13 +154,13 @@ public final class Constants {
 
         public static final double kRampUpRate = 10000000; // 11200; // 12000;
 
-        public static final double kFF = 0.000153; // TODO: this is tuned for 0.000153
+        public static final double kFF = 0.00016; // TODO: this is tuned for 0.000153
 
         public static final double kToleranceRPM = 100.0;
 
         public enum FlywheelSetpoint {
             kAmp(1000.0),
-            kSpeaker(5600.0);
+            kSpeaker(5200.0);
 
             public final double rpm;
 
