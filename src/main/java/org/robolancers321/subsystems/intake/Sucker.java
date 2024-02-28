@@ -1,18 +1,13 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.intake;
 
-import com.revrobotics.CANSparkBase.ControlType;
-
-import org.robolancers321.Constants.SuckerConstants;
-
-import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.robolancers321.Constants.SuckerConstants;
 
 public class Sucker extends SubsystemBase {
   /*
@@ -96,7 +91,7 @@ public class Sucker extends SubsystemBase {
   //   this.useController(targetRPM);
   // }
 
-  private Command setSpeed(double speed){
+  private Command setSpeed(double speed) {
     return run(() -> this.motor.set(speed));
   }
 
@@ -113,7 +108,7 @@ public class Sucker extends SubsystemBase {
   }
 
   public Command out() {
-    return setSpeed(SuckerConstants.kOutSpeed);
+    return setSpeed(SuckerConstants.kOutSpeed).finallyDo(() -> this.motor.set(0));
   }
 
   // public Command tuneController() {

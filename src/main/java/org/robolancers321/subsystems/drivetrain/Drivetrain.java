@@ -1,9 +1,31 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.drivetrain;
 
+import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -12,39 +34,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.robolancers321.Constants.DrivetrainConstants;
 import org.robolancers321.util.MyAlliance;
-
-import com.kauailabs.navx.frc.AHRS;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drivetrain extends SubsystemBase {
   /*
@@ -91,7 +80,11 @@ public class Drivetrain extends SubsystemBase {
 
     this.gyro = new AHRS(SPI.Port.kMXP);
 
-    this.headingController = new PIDController(DrivetrainConstants.kHeadingP, DrivetrainConstants.kHeadingI, DrivetrainConstants.kHeadingD);
+    this.headingController =
+        new PIDController(
+            DrivetrainConstants.kHeadingP,
+            DrivetrainConstants.kHeadingI,
+            DrivetrainConstants.kHeadingD);
 
     this.mainCamera = new PhotonCamera(DrivetrainConstants.kMainCameraName);
     this.noteCamera = new PhotonCamera(DrivetrainConstants.kNoteCameraName);
@@ -105,7 +98,10 @@ public class Drivetrain extends SubsystemBase {
 
     this.odometry =
         new SwerveDrivePoseEstimator(
-            DrivetrainConstants.kSwerveKinematics, this.gyro.getRotation2d(), this.getModulePositions(), new Pose2d());
+            DrivetrainConstants.kSwerveKinematics,
+            this.gyro.getRotation2d(),
+            this.getModulePositions(),
+            new Pose2d());
 
     this.field = new Field2d();
 
@@ -118,11 +114,18 @@ public class Drivetrain extends SubsystemBase {
   public void configureGyro() {
     this.gyro.zeroYaw();
     this.gyro.setAngleAdjustment(0.0);
-    this.headingController.setSetpoint(0.0);
+  }
+
+  public void setYaw(double angle) {
+    this.gyro.zeroYaw();
+    this.gyro.setAngleAdjustment(angle);
   }
 
   private void configureController() {
-    this.headingController.setPID(DrivetrainConstants.kHeadingP, DrivetrainConstants.kHeadingI, DrivetrainConstants.kHeadingD);
+    this.headingController.setPID(
+        DrivetrainConstants.kHeadingP,
+        DrivetrainConstants.kHeadingI,
+        DrivetrainConstants.kHeadingD);
     this.headingController.enableContinuousInput(-180.0, 180.0);
     this.headingController.setTolerance(3.0);
   }
@@ -134,10 +137,18 @@ public class Drivetrain extends SubsystemBase {
         this::getChassisSpeeds,
         this::drive,
         new HolonomicPathFollowerConfig(
-            new PIDConstants(DrivetrainConstants.kTranslationP, DrivetrainConstants.kTranslationI, DrivetrainConstants.kTranslationD),
-            new PIDConstants(DrivetrainConstants.kRotationP, DrivetrainConstants.kRotationI, DrivetrainConstants.kRotationD),
+            new PIDConstants(
+                DrivetrainConstants.kTranslationP,
+                DrivetrainConstants.kTranslationI,
+                DrivetrainConstants.kTranslationD),
+            new PIDConstants(
+                DrivetrainConstants.kRotationP,
+                DrivetrainConstants.kRotationI,
+                DrivetrainConstants.kRotationD),
             DrivetrainConstants.kMaxSpeedMetersPerSecond,
-            0.5 * Math.hypot(DrivetrainConstants.kTrackWidthMeters, DrivetrainConstants.kWheelBaseMeters),
+            0.5
+                * Math.hypot(
+                    DrivetrainConstants.kTrackWidthMeters, DrivetrainConstants.kWheelBaseMeters),
             new ReplanningConfig()),
         MyAlliance::isRed,
         this);
@@ -164,9 +175,7 @@ public class Drivetrain extends SubsystemBase {
 
   public void resetPose(Pose2d pose) {
     this.odometry.resetPosition(
-        Rotation2d.fromDegrees(this.getYawDeg()),
-        this.getModulePositions(),
-        pose);
+        Rotation2d.fromDegrees(this.getYawDeg()), this.getModulePositions(), pose);
   }
 
   private SwerveModuleState[] getModuleStates() {
@@ -205,7 +214,9 @@ public class Drivetrain extends SubsystemBase {
       boolean fieldRelative) {
     double correctedOmega =
         MathUtil.clamp(
-            desiredOmegaRadPerSec, -DrivetrainConstants.kMaxOmegaRadiansPerSecond, DrivetrainConstants.kMaxOmegaRadiansPerSecond);
+            desiredOmegaRadPerSec,
+            -DrivetrainConstants.kMaxOmegaRadiansPerSecond,
+            DrivetrainConstants.kMaxOmegaRadiansPerSecond);
 
     // apply corrective pose logarithm
     double dt = DrivetrainConstants.kSecondOrderKinematicsDt;
@@ -230,7 +241,8 @@ public class Drivetrain extends SubsystemBase {
   private void drive(ChassisSpeeds speeds) {
     SwerveModuleState[] states = DrivetrainConstants.kSwerveKinematics.toSwerveModuleStates(speeds);
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, DrivetrainConstants.kMaxSpeedMetersPerSecond);
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        states, DrivetrainConstants.kMaxSpeedMetersPerSecond);
 
     this.updateModules(states);
   }
@@ -244,23 +256,25 @@ public class Drivetrain extends SubsystemBase {
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
   }
 
-  private Translation2d getSpeakerPosition(){
+  private Translation2d getSpeakerPosition() {
     return MyAlliance.isRed() ? new Translation2d(16.53, 5.55) : new Translation2d(0.0, 5.55);
   }
 
-  public double getAngleToSpeaker(){
+  public double getAngleToSpeaker() {
     Translation2d speakerLocation = this.getSpeakerPosition();
-    
-    return -180 + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees() + this.getYawDeg();
+
+    return -180
+        + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
+        + this.getYawDeg();
   }
 
-  public double getDistanceToSpeaker(){
+  public double getDistanceToSpeaker() {
     Translation2d speakerLocation = this.getSpeakerPosition();
 
     return this.getPose().getTranslation().getDistance(speakerLocation);
   }
 
-  public double getNoteAngle(){
+  public double getNoteAngle() {
     PhotonPipelineResult latestResult = this.noteCamera.getLatestResult();
 
     if (!latestResult.hasTargets()) return 0.0;
@@ -288,19 +302,25 @@ public class Drivetrain extends SubsystemBase {
 
   private void initTuning() {
     SmartDashboard.putNumber(
-        "drive heading kp", SmartDashboard.getNumber("drive heading kp", DrivetrainConstants.kHeadingP));
+        "drive heading kp",
+        SmartDashboard.getNumber("drive heading kp", DrivetrainConstants.kHeadingP));
     SmartDashboard.putNumber(
-        "drive heading ki", SmartDashboard.getNumber("drive heading ki", DrivetrainConstants.kHeadingI));
+        "drive heading ki",
+        SmartDashboard.getNumber("drive heading ki", DrivetrainConstants.kHeadingI));
     SmartDashboard.putNumber(
-        "drive heading kd", SmartDashboard.getNumber("drive heading kd", DrivetrainConstants.kHeadingD));
+        "drive heading kd",
+        SmartDashboard.getNumber("drive heading kd", DrivetrainConstants.kHeadingD));
 
     SmartDashboard.putNumber("drive target heading", this.getYawDeg());
   }
 
   private void tune() {
-    double tunedHeadingP = SmartDashboard.getNumber("drive heading kp", DrivetrainConstants.kHeadingP);
-    double tunedHeadingI = SmartDashboard.getNumber("drive heading ki", DrivetrainConstants.kHeadingI);
-    double tunedHeadingD = SmartDashboard.getNumber("drive heading kd", DrivetrainConstants.kHeadingD);
+    double tunedHeadingP =
+        SmartDashboard.getNumber("drive heading kp", DrivetrainConstants.kHeadingP);
+    double tunedHeadingI =
+        SmartDashboard.getNumber("drive heading ki", DrivetrainConstants.kHeadingI);
+    double tunedHeadingD =
+        SmartDashboard.getNumber("drive heading kd", DrivetrainConstants.kHeadingD);
 
     this.headingController.setPID(tunedHeadingP, tunedHeadingI, tunedHeadingD);
 
@@ -359,55 +379,64 @@ public class Drivetrain extends SubsystemBase {
           double multiplier = controller.getRightBumper() ? 0.4 : 1.0;
 
           double omega =
-                      -DrivetrainConstants.kMaxTeleopRotationPercent
-                      * DrivetrainConstants.kMaxOmegaRadiansPerSecond
-                      * MathUtil.applyDeadband(controller.getRightX(), 0.05) * multiplier;
+              -DrivetrainConstants.kMaxTeleopRotationPercent
+                  * DrivetrainConstants.kMaxOmegaRadiansPerSecond
+                  * MathUtil.applyDeadband(controller.getRightX(), 0.05)
+                  * multiplier;
 
-          double headingControllerOutput = -this.headingController.calculate(this.getNoteAngle(), 0.0);
+          double headingControllerOutput =
+              -this.headingController.calculate(this.getNoteAngle(), 0.0);
 
-          if (Math.abs(this.getNoteAngle()) > DrivetrainConstants.kHeadingTolerance) omega += 0.5 * headingControllerOutput;
+          if (Math.abs(this.getNoteAngle()) > DrivetrainConstants.kHeadingTolerance)
+            omega += 0.5 * headingControllerOutput;
 
-          Translation2d strafeVec = new Translation2d(
-            DrivetrainConstants.kMaxTeleopSpeedPercent
-                  * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                  * MathUtil.applyDeadband(-controller.getLeftY(), 0.05) * multiplier,
-            DrivetrainConstants.kMaxTeleopSpeedPercent
-                  * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                  * MathUtil.applyDeadband(controller.getLeftX(), 0.05) * multiplier
-          ).rotateBy(Rotation2d.fromDegrees(90.0));
+          Translation2d strafeVec =
+              new Translation2d(
+                      DrivetrainConstants.kMaxTeleopSpeedPercent
+                          * DrivetrainConstants.kMaxSpeedMetersPerSecond
+                          * MathUtil.applyDeadband(-controller.getLeftY(), 0.05)
+                          * multiplier,
+                      DrivetrainConstants.kMaxTeleopSpeedPercent
+                          * DrivetrainConstants.kMaxSpeedMetersPerSecond
+                          * MathUtil.applyDeadband(controller.getLeftX(), 0.05)
+                          * multiplier)
+                  .rotateBy(Rotation2d.fromDegrees(90.0));
 
-          this.drive(
-              strafeVec.getX(),
-              strafeVec.getY(),
-              omega,
-              true);
+          this.drive(strafeVec.getX(), strafeVec.getY(), omega, true);
         })
         .finallyDo(this::stop);
   }
 
-  public Command turnToAngle(double angle){
-    return runOnce(() -> this.headingController.setSetpoint(angle)).andThen(
-      run(() -> {
-        double headingControllerOutput = -this.headingController.calculate(this.getYawDeg(), angle);
+  public Command turnToAngle(double angle) {
+    return runOnce(() -> this.headingController.setSetpoint(angle))
+        .andThen(
+            run(() -> {
+                  double headingControllerOutput =
+                      -this.headingController.calculate(this.getYawDeg(), angle);
 
-        this.drive(0.0, 0.0, headingControllerOutput, true);
-    }).until(this.headingController::atSetpoint)
-    );
+                  this.drive(0.0, 0.0, headingControllerOutput, true);
+                })
+                .until(this.headingController::atSetpoint));
   }
 
-  private Command turnToAngle(DoubleSupplier angleSupplier){
-    return runOnce(() -> this.headingController.setSetpoint(angleSupplier.getAsDouble())).andThen(run(() -> {
-      double headingControllerOutput = -this.headingController.calculate(angleSupplier.getAsDouble(), 0.0);
+  private Command turnToAngle(DoubleSupplier angleSupplier) {
+    return runOnce(() -> this.headingController.setSetpoint(angleSupplier.getAsDouble()))
+        .andThen(
+            run(
+                () -> {
+                  double headingControllerOutput =
+                      -this.headingController.calculate(angleSupplier.getAsDouble(), 0.0);
 
-      this.drive(0.0, 0.0, headingControllerOutput, true);
-    })).until(this.headingController::atSetpoint);
+                  this.drive(0.0, 0.0, headingControllerOutput, true);
+                }))
+        .until(this.headingController::atSetpoint);
   }
 
-  public Command turnToNote(){
+  public Command turnToNote() {
     return this.turnToAngle(this::getNoteAngle);
   }
 
-  public Command turnToSpeaker(){
+  public Command turnToSpeaker() {
     return this.turnToAngle(this::getAngleToSpeaker);
   }
 
@@ -437,7 +466,7 @@ public class Drivetrain extends SubsystemBase {
 
   public Command tuneController(XboxController controller) {
     this.initTuning();
-    
+
     return run(this::tune);
   }
 

@@ -2,15 +2,21 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7644821405410767,
-      "y": 6.707253456115723
+      "x": 1.3615734577178955,
+      "y": 5.537254333496094
     },
-    "rotation": 59.534458682967
+    "rotation": -2.414706623707546e-48
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Score Speaker Fixed"
+          }
+        },
         {
           "type": "race",
           "data": {
@@ -18,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "4NT.1"
+                  "pathName": "Mid 3N.1"
                 }
               },
               {
@@ -69,7 +75,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "4NT.2"
+                  "pathName": "Mid 3N.2"
                 }
               },
               {
@@ -82,22 +88,9 @@
           }
         },
         {
-          "type": "race",
+          "type": "wait",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "4NT.3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Retract Intake"
-                }
-              }
-            ]
+            "waitTime": 0.6
           }
         },
         {
@@ -105,47 +98,9 @@
           "data": {
             "commands": [
               {
-                "type": "named",
-                "data": {
-                  "name": "Drivetrain Off"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Score From Distance"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
                 "type": "path",
                 "data": {
-                  "pathName": "4NT.4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Deploy Intake"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "4NT.5"
+                  "pathName": "Mid 3N.3"
                 }
               },
               {
