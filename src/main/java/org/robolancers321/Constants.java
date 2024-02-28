@@ -150,17 +150,17 @@ public final class Constants {
         public static final int kMotorPort = 17;
 
         public static final boolean kInvertMotor = false;
-        public static final int kCurrentLimit = 40;
+        public static final int kCurrentLimit = 60;
 
-        public static final double kRampUpRate = 1000000; // 12000;
+        public static final double kRampUpRate = 10000000; // 11200; // 12000;
 
-        public static final double kFF = 0.000157; // TODO: this is tuned for 0.000153
+        public static final double kFF = 0.000153; // TODO: this is tuned for 0.000153
 
-        public static final double kToleranceRPM = 300.0;
+        public static final double kToleranceRPM = 100.0;
 
         public enum FlywheelSetpoint {
             kAmp(1000.0),
-            kSpeaker(6200.0);
+            kSpeaker(5600.0);
 
             public final double rpm;
 
@@ -197,16 +197,16 @@ public final class Constants {
         public static final float kMinAngle = 0.0f;
         public static final float kMaxAngle = 90.0f;
 
-        public static final double kP = 0.02;
+        public static final double kP = 0.05;
         public static final double kI = 0.0;
-        public static final double kD = 0.01;
+        public static final double kD = 0.00;
 
         public static final double kS = 0.0;
         public static final double kG = 0.0;
         public static final double kV = 0.0;
 
         public static final double kMaxVelocityDeg = 150;
-        public static final double kMaxAccelerationDeg = 360;
+        public static final double kMaxAccelerationDeg = 600;
 
         public static final double kToleranceDeg = 3.0;
 

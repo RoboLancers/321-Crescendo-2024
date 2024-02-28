@@ -80,14 +80,14 @@ public class RobotContainer {
 
     // TODO: register led bindings here
 
-    // this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
+    this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
 
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
     // this.intake.sucker.setDefaultCommand(this.intake.sucker.tuneController());
 
     // this.launcher.pivot.setDefaultCommand(this.launcher.pivot.tuneControllers());
     // this.launcher.indexer.setDefaultCommand(this.launcher.indexer.tuneController());
-    // this.launcher.flywheel.setDefaultCommand(this.launcher.flywheel.tuneController());
+    // this.flywheel.setDefaultCommand(this.flywheel.tuneController());
 
               this.sucker.setDefaultCommand(this.sucker.off());
               this.indexer.setDefaultCommand(this.indexer.off());

@@ -73,6 +73,9 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void useController() {
+    if (this.goalRPM - this.getRPM() > 2 * FlywheelConstants.kToleranceRPM) this.controller.setFF(10 * FlywheelConstants.kFF);
+    else this.controller.setFF(FlywheelConstants.kFF);
+
     this.controller.setReference(
         this.limiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
   }
@@ -83,6 +86,11 @@ public class Flywheel extends SubsystemBase {
 
   private void doSendables() {
     SmartDashboard.putNumber("flywheel rpm", this.getRPM());
+    SmartDashboard.putNumber("flywheel voltage", this.motor.getBusVoltage());
+    SmartDashboard.putNumber("flywheel current", this.motor.getOutputCurrent());
+    SmartDashboard.putBoolean("flywheel isRevved", this.isRevved());
+
+
 
     SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }
@@ -100,13 +108,11 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void tune() {
-    double tunedFF = SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF);
+    // double tunedFF = SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF);
 
-    this.controller.setFF(tunedFF);
+    // this.controller.setFF(tunedFF);
 
     this.goalRPM = SmartDashboard.getNumber("flywheel target rpm", 0.0);
-
-    this.useController();
   }
 
   public Command off() {
