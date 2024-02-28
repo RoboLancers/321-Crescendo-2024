@@ -1,6 +1,8 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.drivetrain;
 
+import org.robolancers321.Constants.SwerveModuleConstants;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -61,29 +63,6 @@ public class SwerveModule {
   }
 
   /*
-   * Constants
-   */
-
-  private static final CANcoderConfiguration kCANCoderConfig = new CANcoderConfiguration();
-
-  private static final double kWheelRadiusMeters = Units.inchesToMeters(2.0);
-  private static final double kGearRatio = 6.12;
-  private static final double kDrivePositionConversionFactor =
-      2 * Math.PI * kWheelRadiusMeters / kGearRatio;
-  private static final double kDriveVelocityConversionFactor =
-      2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
-  private static final double kTurnPositionConversionFactor = 7.0 / 150.0;
-
-  private static final double kDriveP = 0.00;
-  private static final double kDriveI = 0.00;
-  private static final double kDriveD = 0.00;
-  private static final double kDriveFF = 0.198;
-
-  private static final double kTurnP = 0.50;
-  private static final double kTurnI = 0.00;
-  private static final double kTurnD = 0.005;
-
-  /*
    * Implementation
    */
 
@@ -123,14 +102,14 @@ public class SwerveModule {
 
     this.driveEncoder = this.driveMotor.getEncoder();
     this.driveEncoder.setPosition(0.0);
-    this.driveEncoder.setPositionConversionFactor(kDrivePositionConversionFactor);
-    this.driveEncoder.setVelocityConversionFactor(kDriveVelocityConversionFactor);
+    this.driveEncoder.setPositionConversionFactor(SwerveModuleConstants.kDrivePositionConversionFactor);
+    this.driveEncoder.setVelocityConversionFactor(SwerveModuleConstants.kDriveVelocityConversionFactor);
 
     this.driveController = this.driveMotor.getPIDController();
-    this.driveController.setP(kDriveP);
-    this.driveController.setI(kDriveI);
-    this.driveController.setD(kDriveD);
-    this.driveController.setFF(kDriveFF);
+    this.driveController.setP(SwerveModuleConstants.kDriveP);
+    this.driveController.setI(SwerveModuleConstants.kDriveI);
+    this.driveController.setD(SwerveModuleConstants.kDriveD);
+    this.driveController.setFF(SwerveModuleConstants.kDriveFF);
 
     this.driveMotor.burnFlash();
   }
@@ -149,7 +128,7 @@ public class SwerveModule {
     this.turnMotor.enableVoltageCompensation(12);
 
     this.turnEncoder = new CANcoder(turnEncoderPort);
-    CANcoderConfiguration config = kCANCoderConfig;
+    CANcoderConfiguration config = SwerveModuleConstants.kCANCoderConfig;
     config.MagnetSensor.withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf);
     config.MagnetSensor.withMagnetOffset(turnEncoderOffset);
     config.MagnetSensor.withSensorDirection(
@@ -158,7 +137,7 @@ public class SwerveModule {
             : SensorDirectionValue.CounterClockwise_Positive);
     this.turnEncoder.getConfigurator().apply(config);
 
-    this.turnController = new PIDController(kTurnP, kTurnI, kTurnD);
+    this.turnController = new PIDController(SwerveModuleConstants.kTurnP, SwerveModuleConstants.kTurnI, SwerveModuleConstants.kTurnD);
     this.turnController.enableContinuousInput(-Math.PI, Math.PI);
 
     this.turnMotor.burnFlash();
@@ -223,33 +202,33 @@ public class SwerveModule {
 
   protected static void initTuning() {
     SmartDashboard.putNumber(
-        "module drive kp", SmartDashboard.getNumber("module drive kp", kDriveP));
+        "module drive kp", SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP));
     SmartDashboard.putNumber(
-        "module drive ki", SmartDashboard.getNumber("module drive ki", kDriveI));
+        "module drive ki", SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI));
     SmartDashboard.putNumber(
-        "module drive kd", SmartDashboard.getNumber("module drive kd", kDriveD));
+        "module drive kd", SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD));
     SmartDashboard.putNumber(
-        "module drive kff", SmartDashboard.getNumber("module drive kff", kDriveFF));
+        "module drive kff", SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF));
 
-    SmartDashboard.putNumber("module turn kp", SmartDashboard.getNumber("module turn kp", kTurnP));
-    SmartDashboard.putNumber("module turn ki", SmartDashboard.getNumber("module turn ki", kTurnI));
-    SmartDashboard.putNumber("module turn kd", SmartDashboard.getNumber("module turn kd", kTurnD));
+    SmartDashboard.putNumber("module turn kp", SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP));
+    SmartDashboard.putNumber("module turn ki", SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI));
+    SmartDashboard.putNumber("module turn kd", SmartDashboard.getNumber("module turn kd", SwerveModuleConstants.kTurnD));
   }
 
   protected void tune() {
-    double tunedDriveP = SmartDashboard.getNumber("module drive kp", kDriveP);
-    double tunedDriveI = SmartDashboard.getNumber("module drive ki", kDriveI);
-    double tunedDriveD = SmartDashboard.getNumber("module drive kd", kDriveD);
-    double tunedDriveFF = SmartDashboard.getNumber("module drive kff", kDriveFF);
+    double tunedDriveP = SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP);
+    double tunedDriveI = SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI);
+    double tunedDriveD = SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD);
+    double tunedDriveFF = SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF);
 
     this.driveController.setP(tunedDriveP);
     this.driveController.setI(tunedDriveI);
     this.driveController.setD(tunedDriveD);
     this.driveController.setFF(tunedDriveFF);
 
-    double tunedTurnP = SmartDashboard.getNumber("module turn kp", kTurnP);
-    double tunedTurnI = SmartDashboard.getNumber("module turn ki", kTurnI);
-    double tunedTurnD = SmartDashboard.getNumber("module turn kd", kTurnD);
+    double tunedTurnP = SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP);
+    double tunedTurnI = SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI);
+    double tunedTurnD = SmartDashboard.getNumber("module turn kd", SwerveModuleConstants.kTurnD);
 
     this.turnController.setPID(tunedTurnP, tunedTurnI, tunedTurnD);
   }

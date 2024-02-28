@@ -1930,8 +1930,8 @@
         "2NB": {
             "waypoints": [
                 {
-                    "x": 0.7504693865776062,
-                    "y": 4.449067115783691,
+                    "x": 1.458544373512268,
+                    "y": 5.464902400970459,
                     "heading": -1.0303768814651526,
                     "isInitialGuess": false,
                     "translationConstrained": true,

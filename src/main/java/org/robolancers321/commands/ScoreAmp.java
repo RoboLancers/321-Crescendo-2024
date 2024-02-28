@@ -1,7 +1,5 @@
 package org.robolancers321.commands;
 
-import java.util.function.DoubleSupplier;
-
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
@@ -10,27 +8,41 @@ import org.robolancers321.subsystems.launcher.Pivot;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-public class ScoreSpeakerFixed extends SequentialCommandGroup {
+public class ScoreAmp extends SequentialCommandGroup {
     private Retractor retractor;
+    private Sucker sucker;
     private Pivot pivot;
+    private Indexer indexer;
     private Flywheel flywheel;
 
-    public ScoreSpeakerFixed(){
+    public ScoreAmp(){
         this.retractor = Retractor.getInstance();
+        this.sucker = Sucker.getInstance();
         this.pivot = Pivot.getInstance();
+        this.indexer = Indexer.getInstance();
         this.flywheel = Flywheel.getInstance();
-        
+
         this.addCommands(
             new ParallelCommandGroup(
                 this.retractor.moveToMating(),
                 this.pivot.moveToMating()
             ),
-            this.flywheel.revSpeaker(),
-            new RunCommand(() -> {})
+            new ParallelRaceGroup(
+                this.sucker.out(),
+                this.indexer.acceptHandoff()
+            ),
+            this.pivot.aimAtAmp(),
+            this.indexer.shiftForward(),
+            this.indexer.shiftBackward(),
+            this.flywheel.revAmp(),
+            this.indexer.outtake(),
+            this.flywheel.off(),
+            new ParallelCommandGroup(
+                this.retractor.moveToRetracted(),
+                this.pivot.moveToRetracted()
+            )
         );
     }
 }

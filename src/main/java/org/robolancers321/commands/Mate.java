@@ -1,31 +1,39 @@
-/* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import org.robolancers321.subsystems.intake.Retractor;
+import org.robolancers321.subsystems.intake.Sucker;
+import org.robolancers321.subsystems.launcher.Indexer;
+import org.robolancers321.subsystems.launcher.Pivot;
+
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-
-import org.robolancers321.subsystems.intake.Intake;
-import org.robolancers321.subsystems.launcher.Launcher;
 
 public class Mate extends SequentialCommandGroup {
-  private Intake intake;
-  private Launcher launcher;
+    private Retractor retractor;
+    private Sucker sucker;
+    private Pivot pivot;
+    private Indexer indexer;
 
-  public Mate() {
-    this.intake = Intake.getInstance();
-    this.launcher = Launcher.getInstance();
+    public Mate(){
+        this.retractor = Retractor.getInstance();
+        this.sucker = Sucker.getInstance();
+        this.pivot = Pivot.getInstance();
+        this.indexer = Indexer.getInstance();
 
-    // TODO: use actual fb instead of time out on accept command
-    
-    addCommands(
-      new ParallelCommandGroup(
-        this.intake.retractor.moveToMating(),
-        this.launcher.pivot.moveToMating()
-      ),
-      new ParallelRaceGroup(this.intake.sucker.out(), this.launcher.acceptHandoff(), new WaitCommand(0.6))
-    );
-  }
+        this.addCommands(
+            new ParallelCommandGroup(
+                this.retractor.moveToMating(),
+                this.pivot.moveToMating()
+            ),
+            new ParallelRaceGroup(
+                this.sucker.out(),
+                this.indexer.acceptHandoff()
+            ),
+            new ParallelCommandGroup(
+                this.indexer.shiftBackward(),
+                this.pivot.moveToRetracted()
+            )
+        );
+    }
 }

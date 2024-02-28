@@ -2,6 +2,9 @@
 package org.robolancers321.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.ControlType;
+
+import org.robolancers321.Constants.SuckerConstants;
+
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
@@ -25,23 +28,6 @@ public class Sucker extends SubsystemBase {
   }
 
   /*
-   * Constants
-   */
-
-  private static final int kMotorPort = 14;
-
-  private static final boolean kInvertMotor = false;
-  private static final int kCurrentLimit = 60;
-
-  private static final double kInSpeed = 0.6;
-  private static final double kOutSpeed = -0.6;
-
-  // private static final double kFF = 0.00017;
-
-  // private static final double kInRPM = 2000;
-  // private static final double kOutRPM = -2500;
-
-  /*
    * Implementation
    */
 
@@ -50,7 +36,7 @@ public class Sucker extends SubsystemBase {
   // private final SparkPIDController controller;
 
   private Sucker() {
-    this.motor = new CANSparkMax(kMotorPort, MotorType.kBrushless);
+    this.motor = new CANSparkMax(SuckerConstants.kMotorPort, MotorType.kBrushless);
     this.encoder = this.motor.getEncoder();
     // this.controller = this.motor.getPIDController();
 
@@ -61,9 +47,9 @@ public class Sucker extends SubsystemBase {
   }
 
   private void configureMotor() {
-    this.motor.setInverted(kInvertMotor);
+    this.motor.setInverted(SuckerConstants.kInvertMotor);
     this.motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    this.motor.setSmartCurrentLimit(kCurrentLimit);
+    this.motor.setSmartCurrentLimit(SuckerConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
   }
 
@@ -118,12 +104,16 @@ public class Sucker extends SubsystemBase {
     return setSpeed(0.0);
   }
 
+  public Command offInstantly() {
+    return runOnce(() -> this.motor.set(0.0));
+  }
+
   public Command in() {
-    return setSpeed(kInSpeed).finallyDo(() -> this.motor.set(0));
+    return setSpeed(SuckerConstants.kInSpeed).finallyDo(() -> this.motor.set(0));
   }
 
   public Command out() {
-    return setSpeed(kOutSpeed);
+    return setSpeed(SuckerConstants.kOutSpeed);
   }
 
   // public Command tuneController() {

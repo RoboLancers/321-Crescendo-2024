@@ -8,7 +8,11 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
 import java.util.function.DoubleSupplier;
+
+import org.robolancers321.Constants.FlywheelConstants;
 
 public class Flywheel extends SubsystemBase {
   private static Flywheel instance = null;
@@ -17,30 +21,6 @@ public class Flywheel extends SubsystemBase {
     if (instance == null) instance = new Flywheel();
 
     return instance;
-  }
-
-  /* Constants */
-
-  private static final int kMotorPort = 17;
-
-  private static final boolean kInvertMotor = false;
-  private static final int kCurrentLimit = 40;
-
-  private static final double kRampUpRate = 8000;
-
-  private static final double kFF = 0.000153;
-
-  private static final double kToleranceRPM = 40.0;
-
-  private enum FlywheelSetpoint {
-    kAmp(1000.0),
-    kSpeaker(6400.0);
-
-    public final double rpm;
-
-    private FlywheelSetpoint(double rpm) {
-      this.rpm = rpm;
-    }
   }
 
   /*
@@ -56,13 +36,13 @@ public class Flywheel extends SubsystemBase {
   private double goalRPM = 0.0;
 
   private Flywheel() {
-    this.motor = new CANSparkFlex(kMotorPort, CANSparkLowLevel.MotorType.kBrushless);
+    this.motor = new CANSparkFlex(FlywheelConstants.kMotorPort, CANSparkLowLevel.MotorType.kBrushless);
 
     this.encoder = this.motor.getEncoder();
 
     this.controller = this.motor.getPIDController();
 
-    this.limiter = new SlewRateLimiter(kRampUpRate);
+    this.limiter = new SlewRateLimiter(FlywheelConstants.kRampUpRate);
 
     this.configureMotor();
     this.configureEncoder();
@@ -71,9 +51,9 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void configureMotor() {
-    this.motor.setInverted(kInvertMotor);
+    this.motor.setInverted(FlywheelConstants.kInvertMotor);
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
-    this.motor.setSmartCurrentLimit(kCurrentLimit);
+    this.motor.setSmartCurrentLimit(FlywheelConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
   }
 
@@ -85,22 +65,20 @@ public class Flywheel extends SubsystemBase {
     this.controller.setP(0.0);
     this.controller.setI(0.0);
     this.controller.setD(0.0);
-    this.controller.setFF(kFF);
+    this.controller.setFF(FlywheelConstants.kFF);
   }
 
   private double getRPM() {
-    // TODO: filter here?
     return this.encoder.getVelocity();
   }
 
   private void useController() {
-    // TODO
     this.controller.setReference(
         this.limiter.calculate(this.goalRPM), CANSparkBase.ControlType.kVelocity);
   }
 
   public boolean isRevved() {
-    return epsilonEquals(this.getRPM(), this.goalRPM, kToleranceRPM);
+    return epsilonEquals(this.getRPM(), this.goalRPM, FlywheelConstants.kToleranceRPM);
   }
 
   private void doSendables() {
@@ -117,12 +95,12 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("flywheel kff", SmartDashboard.getNumber("flywheel kff", kFF));
+    SmartDashboard.putNumber("flywheel kff", SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF));
     SmartDashboard.putNumber("flywheel target rpm", 0.0);
   }
 
   private void tune() {
-    double tunedFF = SmartDashboard.getNumber("flywheel kff", kFF);
+    double tunedFF = SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF);
 
     this.controller.setFF(tunedFF);
 
@@ -132,29 +110,21 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command off() {
-    return runOnce(
-        () -> {
-          this.goalRPM = 0.0;
-        });
-  }
-
-  public Command yeetNoteAmp() {
     return runOnce(() -> {
-      this.goalRPM = FlywheelSetpoint.kAmp.rpm;
+      this.goalRPM = 0.0;
     });
   }
 
-  public Command yeetNoteSpeaker(DoubleSupplier rpmSupplier) {
-    return runOnce(
-        () -> {
-          this.goalRPM = rpmSupplier.getAsDouble();
-        });
+  public Command revAmp() {
+    return runOnce(() -> {
+      this.goalRPM = FlywheelConstants.FlywheelSetpoint.kAmp.rpm;
+    }).alongWith(new WaitUntilCommand(this::isRevved));
   }
 
-  public Command yeetNoteSpeakerFixed() {
+  public Command revSpeaker() {
     return runOnce(() -> {
-      this.goalRPM = FlywheelSetpoint.kSpeaker.rpm;
-    });
+      this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
+    }).alongWith(new WaitUntilCommand(this::isRevved));
   }
 
   public Command tuneController() {

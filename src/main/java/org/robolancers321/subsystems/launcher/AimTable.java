@@ -9,76 +9,95 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 public class AimTable {
-  public static class AimCharacteristic {
-    public final double angle;
-    public final double rpm;
+  public static double interpolatePivotAngle(double distance){
+    // double a = 10.5485;
+    // double b = 2.00453;
+    // double c = -4.09559;
+    // double d = 16.7746;
 
-    public AimCharacteristic(double angle, double rpm) {
-      this.angle = angle;
-      this.rpm = rpm;
-    }
+    // double a = -9.83381;
+    // double b = -1.55256;
+    // double c = 2.70116;
+    // double d = 11.7425;
+
+    double a = -15.2112;
+    double b = -1.12398;
+    double c = 1.8594;
+    double d = 9.1191;
+
+    return a * Math.atan(b * distance + c) + d;
   }
 
-  // TODO: tune
-  private static final LinkedHashMap<Double, AimCharacteristic> table =
-      new LinkedHashMap<>() {
-        {
-          put(0.0, new AimCharacteristic(0.0, 0.0));
-          put(1.0, new AimCharacteristic(0.0, 0.0));
-        }
-      };
+  // public static class AimCharacteristic {
+  //   public final double angle;
+  //   public final double rpm;
 
-  private static double interpolate(
-      double lowKey, double lowValue, double highKey, double highValue, double x) {
-    double percent = (x - lowKey) / (highKey - lowKey);
+  //   public AimCharacteristic(double angle, double rpm) {
+  //     this.angle = angle;
+  //     this.rpm = rpm;
+  //   }
+  // }
 
-    return lowKey + percent * (highValue - lowValue);
-  }
+  // // TODO: tune
+  // private static final LinkedHashMap<Double, AimCharacteristic> table =
+  //     new LinkedHashMap<>() {
+  //       {
+  //         put(0.0, new AimCharacteristic(0.0, 0.0));
+  //         put(1.0, new AimCharacteristic(0.0, 0.0));
+  //       }
+  //     };
 
-  private static final double kInterpolationCacheThreshold = 0.0;
+  // private static double interpolate(
+  //     double lowKey, double lowValue, double highKey, double highValue, double x) {
+  //   double percent = (x - lowKey) / (highKey - lowKey);
 
-  private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
-    List<Double> keys = table.keySet().stream().sorted().toList();
-    double lowerBound = keys.get(0);
-    double upperBound = keys.get(keys.size() - 1);
+  //   return lowKey + percent * (highValue - lowValue);
+  // }
 
-    if (distance < lowerBound) {
-      AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
+  // private static final double kInterpolationCacheThreshold = 0.0;
 
-      return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
-    }
+  // private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
+  //   List<Double> keys = table.keySet().stream().sorted().toList();
+  //   double lowerBound = keys.get(0);
+  //   double upperBound = keys.get(keys.size() - 1);
 
-    if (distance > upperBound) {
-      AimTable.AimCharacteristic upperValue = table.get(upperBound);
+  //   if (distance < lowerBound) {
+  //     AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
 
-      return new AimTable.AimCharacteristic(upperValue.angle, upperValue.rpm);
-    }
+  //     return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
+  //   }
 
-    NavigableSet<Double> values = new TreeSet<>(keys);
-    double lowKey = values.floor(distance);
-    double highKey = values.ceiling(distance);
+  //   if (distance > upperBound) {
+  //     AimTable.AimCharacteristic upperValue = table.get(upperBound);
 
-    return new AimCharacteristic(
-        interpolate(lowKey, table.get(lowKey).angle, highKey, table.get(highKey).angle, distance),
-        interpolate(lowKey, table.get(lowKey).rpm, highKey, table.get(highKey).rpm, distance));
-  }
+  //     return new AimTable.AimCharacteristic(upperValue.angle, upperValue.rpm);
+  //   }
 
-  private double lastDistance;
-  private AimCharacteristic lastAimCharacteristic;
+  //   NavigableSet<Double> values = new TreeSet<>(keys);
+  //   double lowKey = values.floor(distance);
+  //   double highKey = values.ceiling(distance);
 
-  public AimTable() {
-    this.lastDistance = 0.0;
-    this.lastAimCharacteristic = new AimCharacteristic(0.0, 0.0);
-  }
+  //   return new AimCharacteristic(
+  //       interpolate(lowKey, table.get(lowKey).angle, highKey, table.get(highKey).angle, distance),
+  //       interpolate(lowKey, table.get(lowKey).rpm, highKey, table.get(highKey).rpm, distance));
+  // }
 
-  public void updateSpeakerAimCharacteristic(double distance) {
-    if (!epsilonEquals(this.lastDistance, distance, kInterpolationCacheThreshold)) {
-      this.lastDistance = distance;
-      this.lastAimCharacteristic = calculateSpeakerAimCharacteristic(distance);
-    }
-  }
+  // private double lastDistance;
+  // private AimCharacteristic lastAimCharacteristic;
 
-  public AimCharacteristic getSpeakerAimCharacteristic() {
-    return this.lastAimCharacteristic;
-  }
+  // public AimTable() {
+  //   this.lastDistance = 0.0;
+  //   this.lastAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+  // }
+
+  // public void updateSpeakerAimCharacteristic(double distance) {
+  //   if (!epsilonEquals(this.lastDistance, distance, kInterpolationCacheThreshold)) {
+  //     this.lastDistance = distance;
+  //     this.lastAimCharacteristic = calculateSpeakerAimCharacteristic(distance);
+  //   }
+  // }
+
+  // public AimCharacteristic getSpeakerAimCharacteristic() {
+  //   return this.lastAimCharacteristic;
+  // }
 }
