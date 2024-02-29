@@ -19,6 +19,8 @@ import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixed;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.autonomous.Auto3NBSweep;
+import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
 import org.robolancers321.subsystems.LED;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
@@ -150,6 +152,9 @@ public class RobotContainer {
 
     // // return this.drivetrain.zeroYaw().andThen(auto);
     // var path = PathPlannerPath.fromChoreoTrajectory("").getPreviewStartingHolonomicPose()
-    return AutoBuilder.buildAuto("3NB-Sweep");
+    // return AutoBuilder.buildAuto("3NB-Sweep");
+
+    // return new Auto3NBSweep();
+    return new Auto3NBSweepStraight();
   }
 }

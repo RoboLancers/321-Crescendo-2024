@@ -100,6 +100,8 @@ public class SwerveModule extends VirtualSubsystem {
     this.turnController = new PIDController(SwerveModuleConstants.kTurnP, SwerveModuleConstants.kTurnI, SwerveModuleConstants.kTurnD);
     this.configTurn(
         turnMotorPort, turnEncoderPort, invertTurnMotor, invertTurnEncoder, turnEncoderOffset);
+
+    this.commandedState = new SwerveModuleState();
   }
 
   private void configDrive(int driveMotorPort, boolean invertDriveMotor) {

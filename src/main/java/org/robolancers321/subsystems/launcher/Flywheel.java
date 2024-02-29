@@ -5,6 +5,7 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,6 +34,9 @@ public class Flywheel extends SubsystemBase {
 
   private final SlewRateLimiter limiter;
 
+  private double startRevTime;
+  private double endRevTime;
+
   private double goalRPM = 0.0;
 
   private Flywheel() {
@@ -52,7 +56,7 @@ public class Flywheel extends SubsystemBase {
 
   private void configureMotor() {
     this.motor.setInverted(FlywheelConstants.kInvertMotor);
-    this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+    this.motor.setIdleMode(CANSparkBase.IdleMode.kCoast);
     this.motor.setSmartCurrentLimit(FlywheelConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
   }
@@ -73,7 +77,7 @@ public class Flywheel extends SubsystemBase {
   }
 
   private void useController() {
-    if (this.goalRPM - this.getRPM() > 2 * FlywheelConstants.kToleranceRPM) this.controller.setFF(10 * FlywheelConstants.kFF);
+    if (this.goalRPM - this.getRPM() > FlywheelConstants.kToleranceRPM) this.controller.setFF(10 * FlywheelConstants.kFF);
     else this.controller.setFF(FlywheelConstants.kFF);
 
     this.controller.setReference(
@@ -90,13 +94,15 @@ public class Flywheel extends SubsystemBase {
     SmartDashboard.putNumber("flywheel current", this.motor.getOutputCurrent());
     SmartDashboard.putBoolean("flywheel isRevved", this.isRevved());
 
-
+    SmartDashboard.putNumber("flywheel rev time", this.endRevTime - this.startRevTime);
 
     SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }
 
   @Override
   public void periodic() {
+    if (isRevved() && this.goalRPM != 0.0) this.endRevTime = Timer.getFPGATimestamp();
+
     this.useController();
 
     this.doSendables();
@@ -130,6 +136,8 @@ public class Flywheel extends SubsystemBase {
   public Command revSpeaker() {
     return runOnce(() -> {
       this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
+
+      this.startRevTime = Timer.getFPGATimestamp();
     }).alongWith(new WaitUntilCommand(this::isRevved));
   }
 

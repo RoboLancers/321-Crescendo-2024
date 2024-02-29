@@ -43,7 +43,7 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
             // this.sucker.offInstantly(),
             new ParallelCommandGroup(
                 // new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> SmartDashboard.getNumber("pivot interpolation angle", 0) < 10.0),
-                new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()) < 10.0),
+                new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()) < 20.0),
                 // this.pivot.moveToAngle(() -> SmartDashboard.getNumber("pivot interpolation angle", 0))
                 this.pivot.aimAtSpeaker(() -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()))
             ),

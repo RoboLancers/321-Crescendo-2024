@@ -40,8 +40,8 @@ public class LED extends VirtualSubsystem {
   private static final double kStripeDuration = 0.5;
 
   static int kWavefrontSpeed = 10;
-  static int kFadeSpeed = 2000;
-  static double kFadeProbability = 0.3;
+  static int kFadeSpeed = 1200;
+  static double kFadeProbability = 0.35;
   static int kWavefrontSeparation = 10;
   static int kWavefrontLength = 1;
   static double kWavefrontPosition = -1;

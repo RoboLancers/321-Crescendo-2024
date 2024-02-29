@@ -150,7 +150,7 @@ public final class Constants {
         public static final int kMotorPort = 17;
 
         public static final boolean kInvertMotor = false;
-        public static final int kCurrentLimit = 60;
+        public static final int kCurrentLimit = 75;
 
         public static final double kRampUpRate = 10000000; // 11200; // 12000;
 
