@@ -40,12 +40,25 @@ public class LED extends VirtualSubsystem {
   private static final double kStripeDuration = 0.5;
 
   static int kWavefrontSpeed = 10;
-  static int kFadeSpeed = 1200;
-  static double kFadeProbability = 0.35;
+  static int kFadeSpeed = 1600;
+  static double kFadeProbability = 0.25;
   static int kWavefrontSeparation = 10;
   static int kWavefrontLength = 1;
   static double kWavefrontPosition = -1;
   static rgb kMeteorColor = new rgb(255, 0, 0);
+
+  public static rgb[] kDefaultMeteorColors = {
+    new rgb(250, 0, 0),
+    // new rgb(250, 200, 0),
+  };
+
+  public static rgb[] kNoteMeteorColors = {
+    new rgb(250, 120, 20),
+    // new rgb(250, 200, 0),
+  };
+
+  static int colorIndex = 0;
+
   static rgb[] meteorBuf = new rgb[kLEDStripLength];
 
   // private static final int kFadeSpeed = 0;
@@ -69,7 +82,7 @@ public class LED extends VirtualSubsystem {
   private final AddressableLEDBuffer ledBuffer;
   private static TreeSet<Signal> ledSignals;
 
-  private Consumer<AddressableLEDBuffer> currPattern = LED.meteorRain(0.20);
+  private Consumer<AddressableLEDBuffer> currPattern = LED.meteorRain(0.20, kDefaultMeteorColors);
 
   public LED() {
     this.ledStrip = new AddressableLED(kLEDPWMPort);
@@ -213,8 +226,8 @@ public class LED extends VirtualSubsystem {
     }
   }
 
-  public static Consumer<AddressableLEDBuffer> meteorRain(double dt) {
-    return buf -> meteorRain(buf, dt);
+  public static Consumer<AddressableLEDBuffer> meteorRain(double dt, rgb[] meteorColors) {
+    return buf -> meteorRain(buf, dt, meteorColors);
   }
 
   // private static void meteorRain(AddressableLEDBuffer buffer, double dt) {
@@ -248,7 +261,7 @@ public class LED extends VirtualSubsystem {
   //   buffer.setRGB(index, r, g, b);
   // }
 
-  private static void meteorRain(AddressableLEDBuffer buffer, double dt) {
+  private static void meteorRain(AddressableLEDBuffer buffer, double dt, rgb[] meteorColors) {
     for (int i = 0; i < kLEDStripLength; i++) {
       if (rng.nextDouble() < kFadeProbability) {
         fadeToBlack(buffer, i, dt);
@@ -259,17 +272,22 @@ public class LED extends VirtualSubsystem {
 
     if (kWavefrontPosition - kWavefrontLength >= kLEDStripLength) {
       kWavefrontPosition -= kWavefrontSeparation;
+      colorIndex++;
     }
 
     double nthWavefrontPosition = kWavefrontPosition;
+
+    int colorOffset = 0;
 
     while (nthWavefrontPosition >= 0) {
       for (int k = 0; k < kWavefrontLength; k++) {
         if ((int) Math.round(nthWavefrontPosition - k) >= 0
             && (int) Math.round(nthWavefrontPosition - k) < kLEDStripLength) {
-          meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = kMeteorColor;
+          // meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = kMeteorColor;
+          meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = meteorColors[(colorIndex + colorOffset) % meteorColors.length];
         }
       }
+      colorOffset++;
       nthWavefrontPosition -= kWavefrontSeparation;
     }
 

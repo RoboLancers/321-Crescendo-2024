@@ -76,6 +76,10 @@ public class Flywheel extends SubsystemBase {
     return this.encoder.getVelocity();
   }
 
+  public double getGoalRPM(){
+    return this.goalRPM;
+  }
+
   private void useController() {
     if (this.goalRPM - this.getRPM() > FlywheelConstants.kToleranceRPM) this.controller.setFF(10 * FlywheelConstants.kFF);
     else this.controller.setFF(FlywheelConstants.kFF);

@@ -5,6 +5,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -22,6 +23,7 @@ import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.autonomous.Auto3NBSweep;
 import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
 import org.robolancers321.subsystems.LED;
+import org.robolancers321.subsystems.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -66,7 +68,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    LED.registerSignal(1, () -> true, LED.meteorRain(0.02));
+    LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
+    LED.registerSignal(2, this.indexer::jawnDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
+    LED.registerSignal(3, () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0), LED.solid(Section.FULL, new Color(0, 255, 0)));
 
     // TODO: register led bindings here
 
@@ -154,7 +158,7 @@ public class RobotContainer {
     // var path = PathPlannerPath.fromChoreoTrajectory("").getPreviewStartingHolonomicPose()
     // return AutoBuilder.buildAuto("3NB-Sweep");
 
-    // return new Auto3NBSweep();
-    return new Auto3NBSweepStraight();
+    return new Auto3NBSweep();
+    // return new Auto3NBSweepStraight();
   }
 }
