@@ -1,9 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.drivetrain;
 
-import org.robolancers321.Constants.SwerveModuleConstants;
-import org.robolancers321.util.VirtualSubsystem;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -20,6 +17,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.robolancers321.Constants.SwerveModuleConstants;
+import org.robolancers321.util.VirtualSubsystem;
 
 public class SwerveModule extends VirtualSubsystem {
   /*
@@ -97,7 +96,11 @@ public class SwerveModule extends VirtualSubsystem {
 
     this.turnMotor = new CANSparkMax(turnMotorPort, MotorType.kBrushless);
     this.turnEncoder = new CANcoder(turnEncoderPort);
-    this.turnController = new PIDController(SwerveModuleConstants.kTurnP, SwerveModuleConstants.kTurnI, SwerveModuleConstants.kTurnD);
+    this.turnController =
+        new PIDController(
+            SwerveModuleConstants.kTurnP,
+            SwerveModuleConstants.kTurnI,
+            SwerveModuleConstants.kTurnD);
     this.configTurn(
         turnMotorPort, turnEncoderPort, invertTurnMotor, invertTurnEncoder, turnEncoderOffset);
 
@@ -111,8 +114,10 @@ public class SwerveModule extends VirtualSubsystem {
     this.driveMotor.enableVoltageCompensation(12);
 
     this.driveEncoder.setPosition(0.0);
-    this.driveEncoder.setPositionConversionFactor(SwerveModuleConstants.kDrivePositionConversionFactor);
-    this.driveEncoder.setVelocityConversionFactor(SwerveModuleConstants.kDriveVelocityConversionFactor);
+    this.driveEncoder.setPositionConversionFactor(
+        SwerveModuleConstants.kDrivePositionConversionFactor);
+    this.driveEncoder.setVelocityConversionFactor(
+        SwerveModuleConstants.kDriveVelocityConversionFactor);
 
     this.driveController.setP(SwerveModuleConstants.kDriveP);
     this.driveController.setI(SwerveModuleConstants.kDriveI);
@@ -182,7 +187,8 @@ public class SwerveModule extends VirtualSubsystem {
   }
 
   protected void update(SwerveModuleState desiredState) {
-    this.commandedState = SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
+    this.commandedState =
+        SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
   }
 
   protected void doSendables() {
@@ -194,24 +200,32 @@ public class SwerveModule extends VirtualSubsystem {
 
   protected static void initTuning() {
     SmartDashboard.putNumber(
-        "module drive kp", SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP));
+        "module drive kp",
+        SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP));
     SmartDashboard.putNumber(
-        "module drive ki", SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI));
+        "module drive ki",
+        SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI));
     SmartDashboard.putNumber(
-        "module drive kd", SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD));
+        "module drive kd",
+        SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD));
     SmartDashboard.putNumber(
-        "module drive kff", SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF));
+        "module drive kff",
+        SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF));
 
-    SmartDashboard.putNumber("module turn kp", SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP));
-    SmartDashboard.putNumber("module turn ki", SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI));
-    SmartDashboard.putNumber("module turn kd", SmartDashboard.getNumber("module turn kd", SwerveModuleConstants.kTurnD));
+    SmartDashboard.putNumber(
+        "module turn kp", SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP));
+    SmartDashboard.putNumber(
+        "module turn ki", SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI));
+    SmartDashboard.putNumber(
+        "module turn kd", SmartDashboard.getNumber("module turn kd", SwerveModuleConstants.kTurnD));
   }
 
   protected void tune() {
     double tunedDriveP = SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP);
     double tunedDriveI = SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI);
     double tunedDriveD = SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD);
-    double tunedDriveFF = SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF);
+    double tunedDriveFF =
+        SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF);
 
     this.driveController.setP(tunedDriveP);
     this.driveController.setI(tunedDriveI);
@@ -226,10 +240,11 @@ public class SwerveModule extends VirtualSubsystem {
   }
 
   @Override
-  public void periodic(){
+  public void periodic() {
     SmartDashboard.putNumber(this.id + " ref angle", this.commandedState.angle.getDegrees());
 
-    this.driveController.setReference(this.commandedState.speedMetersPerSecond, ControlType.kVelocity);
+    this.driveController.setReference(
+        this.commandedState.speedMetersPerSecond, ControlType.kVelocity);
 
     this.turnController.setSetpoint(this.commandedState.angle.getRadians());
 

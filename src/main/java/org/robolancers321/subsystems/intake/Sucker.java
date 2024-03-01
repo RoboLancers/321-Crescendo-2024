@@ -4,6 +4,7 @@ package org.robolancers321.subsystems.intake;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,11 +29,14 @@ public class Sucker extends SubsystemBase {
 
   private final CANSparkMax motor;
   private final RelativeEncoder encoder;
+
+  private final DigitalInput touchSensor;
   // private final SparkPIDController controller;
 
   private Sucker() {
     this.motor = new CANSparkMax(SuckerConstants.kMotorPort, MotorType.kBrushless);
     this.encoder = this.motor.getEncoder();
+    this.touchSensor = new DigitalInput(SuckerConstants.kTouchSensorPort);
     // this.controller = this.motor.getPIDController();
 
     this.configureMotor();
@@ -68,12 +72,17 @@ public class Sucker extends SubsystemBase {
   // }
 
   private void doSendables() {
+
     SmartDashboard.putNumber("sucker rpm", this.getVelocityRPM());
+    SmartDashboard.putBoolean("touch sensor", this.touchSensor.get());
   }
 
   @Override
   public void periodic() {
+
     this.doSendables();
+
+
   }
 
   // private void initTuning() {
