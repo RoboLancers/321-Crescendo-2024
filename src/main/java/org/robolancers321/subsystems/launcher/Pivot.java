@@ -17,9 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
- 
 import java.util.function.DoubleSupplier;
-
 import org.robolancers321.Constants.PivotConstants;
 
 public class Pivot extends ProfiledPIDSubsystem {
@@ -46,11 +44,16 @@ public class Pivot extends ProfiledPIDSubsystem {
   private Pivot() {
     super(
         new ProfiledPIDController(
-            PivotConstants.kP, PivotConstants.kI, PivotConstants.kD, new TrapezoidProfile.Constraints(PivotConstants.kMaxVelocityDeg, PivotConstants.kMaxAccelerationDeg)));
+            PivotConstants.kP,
+            PivotConstants.kI,
+            PivotConstants.kD,
+            new TrapezoidProfile.Constraints(
+                PivotConstants.kMaxVelocityDeg, PivotConstants.kMaxAccelerationDeg)));
 
     this.motor = new CANSparkMax(PivotConstants.kMotorPort, kBrushless);
     this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
-    this.feedforwardController = new ArmFeedforward(PivotConstants.kS, PivotConstants.kG, PivotConstants.kV);
+    this.feedforwardController =
+        new ArmFeedforward(PivotConstants.kS, PivotConstants.kG, PivotConstants.kV);
 
     this.configureMotor();
     this.configureEncoder();
@@ -104,7 +107,8 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     if (angle > PivotConstants.kMinAngle && angle < PivotConstants.kMaxAngle) return angle;
 
-    if (angle > PivotConstants.kMinAngle - 40.0 && angle < PivotConstants.kMaxAngle) return PivotConstants.kMinAngle;
+    if (angle > PivotConstants.kMinAngle - 40.0 && angle < PivotConstants.kMaxAngle)
+      return PivotConstants.kMinAngle;
 
     return PivotConstants.kMaxAngle;
   }
@@ -164,7 +168,8 @@ public class Pivot extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("pivot kv", SmartDashboard.getNumber("pivot kv", PivotConstants.kV));
 
     SmartDashboard.putNumber(
-        "pivot max vel (deg)", SmartDashboard.getNumber("pivot max vel (deg)", PivotConstants.kMaxVelocityDeg));
+        "pivot max vel (deg)",
+        SmartDashboard.getNumber("pivot max vel (deg)", PivotConstants.kMaxVelocityDeg));
     SmartDashboard.putNumber(
         "pivot max acc (deg)",
         SmartDashboard.getNumber("pivot max acc (deg)", PivotConstants.kMaxAccelerationDeg));
@@ -185,8 +190,10 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
-    double tunedMaxVel = SmartDashboard.getNumber("pivot max vel (deg)", PivotConstants.kMaxVelocityDeg);
-    double tunedMaxAcc = SmartDashboard.getNumber("pivot max acc (deg)", PivotConstants.kMaxAccelerationDeg);
+    double tunedMaxVel =
+        SmartDashboard.getNumber("pivot max vel (deg)", PivotConstants.kMaxVelocityDeg);
+    double tunedMaxAcc =
+        SmartDashboard.getNumber("pivot max acc (deg)", PivotConstants.kMaxAccelerationDeg);
 
     this.m_controller.setConstraints(new Constraints(tunedMaxVel, tunedMaxAcc));
 
@@ -199,11 +206,21 @@ public class Pivot extends ProfiledPIDSubsystem {
 
   public Command moveToAngle(DoubleSupplier angleDegSupplier) {
     return new SequentialCommandGroup(
-      new InstantCommand(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), PivotConstants.kMinAngle, PivotConstants.kMaxAngle))),
-      this.run(() ->
-            this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), PivotConstants.kMinAngle, PivotConstants.kMaxAngle)))
-        .until(this::atGoal)
-    );
+        new InstantCommand(
+            () ->
+                this.setGoal(
+                    MathUtil.clamp(
+                        angleDegSupplier.getAsDouble(),
+                        PivotConstants.kMinAngle,
+                        PivotConstants.kMaxAngle))),
+        this.run(
+                () ->
+                    this.setGoal(
+                        MathUtil.clamp(
+                            angleDegSupplier.getAsDouble(),
+                            PivotConstants.kMinAngle,
+                            PivotConstants.kMaxAngle)))
+            .until(this::atGoal));
   }
 
   public Command moveToAngle(double angleDeg) {

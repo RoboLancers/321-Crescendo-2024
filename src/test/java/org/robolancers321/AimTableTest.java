@@ -1,5 +1,5 @@
-// /* (C) Robolancers 2024 */
-// package org.robolancers321;
+/* (C) Robolancers 2024 */
+package org.robolancers321;
 
 // import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 // import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,7 +59,8 @@
 //       double highKey = values.ceiling(distance);
 
 //       return new AimTable.AimCharacteristic(
-//           interpolate(lowKey, table.get(lowKey).angle, highKey, table.get(highKey).angle, distance),
+//           interpolate(lowKey, table.get(lowKey).angle, highKey, table.get(highKey).angle,
+// distance),
 //           interpolate(lowKey, table.get(lowKey).rpm, highKey, table.get(highKey).rpm, distance));
 //     }
 

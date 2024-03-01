@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import java.util.function.DoubleSupplier;
-
 import org.robolancers321.Constants.RetractorConstants;
 
 public class Retractor extends ProfiledPIDSubsystem {
@@ -88,11 +87,16 @@ public class Retractor extends ProfiledPIDSubsystem {
   private Retractor() {
     super(
         new ProfiledPIDController(
-            RetractorConstants.kP, RetractorConstants.kI, RetractorConstants.kD, new TrapezoidProfile.Constraints(RetractorConstants.kMaxVelocityDeg, RetractorConstants.kMaxAccelerationDeg)));
+            RetractorConstants.kP,
+            RetractorConstants.kI,
+            RetractorConstants.kD,
+            new TrapezoidProfile.Constraints(
+                RetractorConstants.kMaxVelocityDeg, RetractorConstants.kMaxAccelerationDeg)));
 
     this.motor = new CANSparkMax(RetractorConstants.kMotorPort, kBrushless);
     this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
-    this.feedforwardController = new ArmFeedforward(RetractorConstants.kS, RetractorConstants.kG, RetractorConstants.kV);
+    this.feedforwardController =
+        new ArmFeedforward(RetractorConstants.kS, RetractorConstants.kG, RetractorConstants.kV);
 
     this.configureMotor();
     this.configureEncoder();
@@ -192,20 +196,27 @@ public class Retractor extends ProfiledPIDSubsystem {
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("retractor kp", SmartDashboard.getNumber("retractor kp", RetractorConstants.kP));
-    SmartDashboard.putNumber("retractor ki", SmartDashboard.getNumber("retractor ki", RetractorConstants.kI));
-    SmartDashboard.putNumber("retractor kd", SmartDashboard.getNumber("retractor kd", RetractorConstants.kD));
+    SmartDashboard.putNumber(
+        "retractor kp", SmartDashboard.getNumber("retractor kp", RetractorConstants.kP));
+    SmartDashboard.putNumber(
+        "retractor ki", SmartDashboard.getNumber("retractor ki", RetractorConstants.kI));
+    SmartDashboard.putNumber(
+        "retractor kd", SmartDashboard.getNumber("retractor kd", RetractorConstants.kD));
 
-    SmartDashboard.putNumber("retractor ks", SmartDashboard.getNumber("retractor ks", RetractorConstants.kS));
-    SmartDashboard.putNumber("retractor kv", SmartDashboard.getNumber("retractor kv", RetractorConstants.kV));
-    SmartDashboard.putNumber("retractor kg", SmartDashboard.getNumber("retractor kg", RetractorConstants.kG));
+    SmartDashboard.putNumber(
+        "retractor ks", SmartDashboard.getNumber("retractor ks", RetractorConstants.kS));
+    SmartDashboard.putNumber(
+        "retractor kv", SmartDashboard.getNumber("retractor kv", RetractorConstants.kV));
+    SmartDashboard.putNumber(
+        "retractor kg", SmartDashboard.getNumber("retractor kg", RetractorConstants.kG));
 
     SmartDashboard.putNumber(
         "retractor max vel (deg)",
         SmartDashboard.getNumber("retractor max vel (deg)", RetractorConstants.kMaxVelocityDeg));
     SmartDashboard.putNumber(
         "retractor max acc (deg)",
-        SmartDashboard.getNumber("retractor max acc (deg)", RetractorConstants.kMaxAccelerationDeg));
+        SmartDashboard.getNumber(
+            "retractor max acc (deg)", RetractorConstants.kMaxAccelerationDeg));
 
     SmartDashboard.putNumber("retractor target position (deg)", this.getPositionDeg());
   }
@@ -223,8 +234,10 @@ public class Retractor extends ProfiledPIDSubsystem {
 
     this.feedforwardController = new ArmFeedforward(tunedS, tunedG, tunedV);
 
-    double tunedMaxVel = SmartDashboard.getNumber("retractor max vel (deg)", RetractorConstants.kMaxVelocityDeg);
-    double tunedMaxAcc = SmartDashboard.getNumber("retractor max acc (deg)", RetractorConstants.kMaxAccelerationDeg);
+    double tunedMaxVel =
+        SmartDashboard.getNumber("retractor max vel (deg)", RetractorConstants.kMaxVelocityDeg);
+    double tunedMaxAcc =
+        SmartDashboard.getNumber("retractor max acc (deg)", RetractorConstants.kMaxAccelerationDeg);
 
     this.m_controller.setConstraints(new Constraints(tunedMaxVel, tunedMaxAcc));
 
@@ -237,11 +250,21 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   private Command moveToAngle(DoubleSupplier angleDegSupplier) {
     return new SequentialCommandGroup(
-      new InstantCommand(() -> this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), RetractorConstants.kMinAngle, RetractorConstants.kMaxAngle))),
-      this.run(() ->
-            this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), RetractorConstants.kMinAngle, RetractorConstants.kMaxAngle)))
-        .until(this::atGoal)
-    );
+        new InstantCommand(
+            () ->
+                this.setGoal(
+                    MathUtil.clamp(
+                        angleDegSupplier.getAsDouble(),
+                        RetractorConstants.kMinAngle,
+                        RetractorConstants.kMaxAngle))),
+        this.run(
+                () ->
+                    this.setGoal(
+                        MathUtil.clamp(
+                            angleDegSupplier.getAsDouble(),
+                            RetractorConstants.kMinAngle,
+                            RetractorConstants.kMaxAngle)))
+            .until(this::atGoal));
   }
 
   private Command moveToAngle(double angleDeg) {
@@ -256,7 +279,7 @@ public class Retractor extends ProfiledPIDSubsystem {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kMating.angle);
   }
 
-  public Command moveToClearFromLauncher(){
+  public Command moveToClearFromLauncher() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kClearFromLauncher.angle);
   }
 
