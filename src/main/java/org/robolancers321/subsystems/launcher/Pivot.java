@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -17,12 +18,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
- 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import java.util.function.DoubleSupplier;
 
+import org.robolancers321.Constants;
 import org.robolancers321.Constants.PivotConstants;
 
-public class Pivot extends ProfiledPIDSubsystem {
+public class Pivot extends SubsystemBase {
   /*
    * Singleton
    */
@@ -42,15 +45,19 @@ public class Pivot extends ProfiledPIDSubsystem {
   private final CANSparkMax motor;
   private final AbsoluteEncoder encoder;
   private ArmFeedforward feedforwardController;
+  private PIDController feedbackController;
+  private TrapezoidProfile motionProfile;
+  private TrapezoidProfile.State previousReference;
+  private TrapezoidProfile.State goalReference;
 
   private Pivot() {
-    super(
-        new ProfiledPIDController(
-            PivotConstants.kP, PivotConstants.kI, PivotConstants.kD, new TrapezoidProfile.Constraints(PivotConstants.kMaxVelocityDeg, PivotConstants.kMaxAccelerationDeg)));
-
     this.motor = new CANSparkMax(PivotConstants.kMotorPort, kBrushless);
     this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
     this.feedforwardController = new ArmFeedforward(PivotConstants.kS, PivotConstants.kG, PivotConstants.kV);
+    this.feedbackController = new PIDController(PivotConstants.kP, PivotConstants.kI, PivotConstants.kD);
+    this.motionProfile = new TrapezoidProfile(Constants.PivotConstants.kProfileConstraints);
+    this.previousReference = new TrapezoidProfile.State(this.getPositionDeg(), 0);
+    this.goalReference = previousReference;
 
     this.configureMotor();
     this.configureEncoder();
@@ -63,7 +70,11 @@ public class Pivot extends ProfiledPIDSubsystem {
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(PivotConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
-    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
+
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535); //analog sensor
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 65535); //alternate encoder
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20); //abs encoder position
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20); //abs encoder velocity
 
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
@@ -84,16 +95,9 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   private void configureController() {
-    super.m_controller.enableContinuousInput(-180.0, 180.0);
-    super.m_controller.setTolerance(PivotConstants.kToleranceDeg);
-    super.m_controller.setGoal(this.getPositionDeg());
-
-    this.m_enabled = true;
-  }
-
-  @Override
-  public double getMeasurement() {
-    return this.getPositionDeg();
+    feedbackController.enableContinuousInput(-180.0, 180.0);
+    // super.m_controller.setTolerance(PivotConstants.kToleranceDeg);
+    feedbackController.setSetpoint(previousReference.position);
   }
 
   public double getPositionDeg() {
@@ -114,11 +118,14 @@ public class Pivot extends ProfiledPIDSubsystem {
   }
 
   private boolean atGoal() {
-    return super.m_controller.atGoal();
+    return Math.abs(goalReference.position - getPositionDeg()) < PivotConstants.kToleranceDeg;
   }
 
-  @Override
-  protected void useOutput(double output, TrapezoidProfile.State setpoint) {
+  private void setGoal(double position) {
+    goalReference = new TrapezoidProfile.State(position, 0);
+  }
+
+  protected void useOutput(TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
         this.feedforwardController.calculate(
             setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
@@ -128,7 +135,7 @@ public class Pivot extends ProfiledPIDSubsystem {
 
     SmartDashboard.putNumber("pivot ff output", feedforwardOutput);
 
-    double feedbackOutput = super.m_controller.calculate(this.getPositionDeg());
+    double feedbackOutput = feedbackController.calculate(this.getPositionDeg(), setpoint.position);
 
     SmartDashboard.putNumber("pivot fb output", feedbackOutput);
 
@@ -142,14 +149,19 @@ public class Pivot extends ProfiledPIDSubsystem {
   public void doSendables() {
     SmartDashboard.putBoolean("pivot at goal", this.atGoal());
     SmartDashboard.putNumber("pivot position (deg)", this.getPositionDeg());
-    SmartDashboard.putNumber("pivot mp goal pos (deg)", this.m_controller.getGoal().position);
-    SmartDashboard.putNumber("pivot mp goal vel (deg)", this.m_controller.getGoal().velocity);
+    SmartDashboard.putNumber("pivot mp setpoint pos (deg)", this.previousReference.position);
+    SmartDashboard.putNumber("pivot mp setpoint vel (deg)", this.previousReference.velocity);
     SmartDashboard.putNumber("pivot velocity (deg)", this.getVelocityDeg());
   }
 
   @Override
   public void periodic() {
-    super.periodic();
+
+    //update assumed position with next profile timestamp
+    previousReference = motionProfile.calculate(0.02, previousReference, goalReference);
+
+    //set position to where we're supposed to be. Velocity isn't an input, so can't interupt 
+    useOutput(previousReference);
 
     this.doSendables();
   }
@@ -177,7 +189,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     double tunedI = SmartDashboard.getNumber("pivot ki", PivotConstants.kI);
     double tunedD = SmartDashboard.getNumber("pivot kd", PivotConstants.kD);
 
-    super.m_controller.setPID(tunedP, tunedI, tunedD);
+    this.feedbackController.setPID(tunedP, tunedI, tunedD);
 
     double tunedS = SmartDashboard.getNumber("pivot ks", PivotConstants.kS);
     double tunedG = SmartDashboard.getNumber("pivot kg", PivotConstants.kG);
@@ -188,11 +200,11 @@ public class Pivot extends ProfiledPIDSubsystem {
     double tunedMaxVel = SmartDashboard.getNumber("pivot max vel (deg)", PivotConstants.kMaxVelocityDeg);
     double tunedMaxAcc = SmartDashboard.getNumber("pivot max acc (deg)", PivotConstants.kMaxAccelerationDeg);
 
-    this.m_controller.setConstraints(new Constraints(tunedMaxVel, tunedMaxAcc));
+    this.motionProfile = new TrapezoidProfile(new Constraints(tunedMaxVel, tunedMaxAcc));
 
     this.setGoal(
         MathUtil.clamp(
-            SmartDashboard.getNumber("pivot target position (deg)", this.getPositionDeg()),
+            SmartDashboard.getNumber("pivot target position (deg)", goalReference.position),
             PivotConstants.kMinAngle,
             PivotConstants.kMaxAngle));
   }
