@@ -51,8 +51,6 @@ public class Pivot extends SubsystemBase {
   private TrapezoidProfile.State goalReference;
 
   private Pivot() {
-   
-
     this.motor = new CANSparkMax(PivotConstants.kMotorPort, kBrushless);
     this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
     this.feedforwardController = new ArmFeedforward(PivotConstants.kS, PivotConstants.kG, PivotConstants.kV);

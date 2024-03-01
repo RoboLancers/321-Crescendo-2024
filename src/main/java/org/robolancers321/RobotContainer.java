@@ -73,7 +73,7 @@ public class RobotContainer {
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
     // this.intake.sucker.setDefaultCommand(this.intake.sucker.tuneController());
 
-    this.pivot.setDefaultCommand(this.pivot.tuneControllers());
+    // this.pivot.setDefaultCommand(this.pivot.tuneControllers());
     // this.launcher.indexer.setDefaultCommand(this.launcher.indexer.tuneController());
     // this.flywheel.setDefaultCommand(this.flywheel.tuneController());
 
