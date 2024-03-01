@@ -74,7 +74,7 @@ public class Sucker extends SubsystemBase {
   private void doSendables() {
 
     SmartDashboard.putNumber("sucker rpm", this.getVelocityRPM());
-    SmartDashboard.putBoolean("touch sensor", this.touchSensor.get());
+    SmartDashboard.putBoolean("touch sensor", !this.touchSensor.get());
   }
 
   @Override

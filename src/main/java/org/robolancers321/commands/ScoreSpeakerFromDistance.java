@@ -35,18 +35,19 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
     this.aimTable = new AimTable();
 
     SmartDashboard.putNumber("pivot interpolation angle", 0);
+    SmartDashboard.putNumber("aimtable speaker rpm", 0.0);
 
     this.addCommands(
         this.drivetrain.turnToSpeaker(),
         this.drivetrain.stop(),
         // this.indexer.shiftBackward(),
         // this.sucker.offInstantly(),
-        new ParallelCommandGroup(
+        new SequentialCommandGroup(
             // new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new
             // InstantCommand(), () -> SmartDashboard.getNumber("pivot interpolation angle", 0) <
             // 10.0),
             new ConditionalCommand(
-                this.retractor.moveToClearFromLauncher(),
+                this.pivot.moveToAngle(30.0).andThen(this.retractor.moveToClearFromLauncher()),
                 new InstantCommand(),
                 () ->
                     AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()) < 10.0),
@@ -60,9 +61,8 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
                 () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),
             this.flywheel.revSpeakerFromRPM(
                 () -> {
-                  SmartDashboard.putNumber("aimtable speaker rpm", 0.0);
                   return SmartDashboard.getNumber("aimtable speaker rpm", 0.0);
-                }),
+                })),
             // this.aimTable.updateSpeakerAimCharacteristic(this.drivetrain.getDistanceToSpeaker()).rpm)),
             this.indexer.shiftForward(),
             this.indexer.shiftBackward(),
@@ -70,6 +70,6 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
             this.indexer.outtake(),
             this.flywheel.off(),
             new ParallelCommandGroup(
-                this.retractor.moveToRetracted(), this.pivot.moveToRetracted())));
+                this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
   }
 }

@@ -127,7 +127,7 @@ public class RobotContainer {
     // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
     new Trigger(this.driverController::getYButton).onTrue(this.drivetrain.turnToSpeaker());
 
-    // this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
+    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
     new Trigger(
             () -> this.driverController.getLeftBumper() && this.driverController.getRightBumper())
