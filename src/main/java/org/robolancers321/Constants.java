@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
@@ -197,16 +199,19 @@ public final class Constants {
         public static final float kMinAngle = 0.0f;
         public static final float kMaxAngle = 90.0f;
 
-        public static final double kP = 0.05;
+        public static final double kP = 0.0; //0.03
         public static final double kI = 0.0;
         public static final double kD = 0.00;
 
         public static final double kS = 0.0;
         public static final double kG = 0.0;
-        public static final double kV = 0.0;
+        public static final double kV = 0.0; //0.35
 
-        public static final double kMaxVelocityDeg = 150;
-        public static final double kMaxAccelerationDeg = 600;
+        public static final double kMaxVelocityDeg = 50;
+        public static final double kMaxAccelerationDeg = 50;
+        public static TrapezoidProfile.Constraints kProfileConstraints =
+            new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
+
 
         public static final double kToleranceDeg = 3.0;
 

@@ -77,7 +77,7 @@ public class SwerveModule extends VirtualSubsystem {
   private final SparkPIDController driveController;
   private final PIDController turnController;
 
-  private SwerveModuleState commandedState;
+  private SwerveModuleState commandedState = new SwerveModuleState();
 
   private SwerveModule(
       String id,

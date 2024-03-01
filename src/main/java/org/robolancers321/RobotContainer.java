@@ -68,12 +68,12 @@ public class RobotContainer {
 
     // TODO: register led bindings here
 
-    this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
+    // this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
 
     // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
     // this.intake.sucker.setDefaultCommand(this.intake.sucker.tuneController());
 
-    // this.launcher.pivot.setDefaultCommand(this.launcher.pivot.tuneControllers());
+    this.pivot.setDefaultCommand(this.pivot.tuneControllers());
     // this.launcher.indexer.setDefaultCommand(this.launcher.indexer.tuneController());
     // this.flywheel.setDefaultCommand(this.flywheel.tuneController());
 
@@ -121,7 +121,7 @@ public class RobotContainer {
     // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
     new Trigger(this.driverController::getYButton).onTrue(this.drivetrain.turnToSpeaker());
 
-    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
+    // this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
     new Trigger(
             () -> this.driverController.getLeftBumper() && this.driverController.getRightBumper())
