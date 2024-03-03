@@ -70,7 +70,8 @@ public class RobotContainer {
   private void configureBindings() {
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
     LED.registerSignal(2, this.indexer::jawnDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
-    LED.registerSignal(3, () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0), LED.solid(Section.FULL, new Color(0, 255, 0)));
+    LED.registerSignal(3, () -> (!this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0), LED.solid(Section.FULL, new Color(255, 255, 255)));
+    LED.registerSignal(4, () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0), LED.solid(Section.FULL, new Color(0, 255, 0)));
 
     // TODO: register led bindings here
 
@@ -87,47 +88,47 @@ public class RobotContainer {
     this.indexer.setDefaultCommand(this.indexer.off());
     this.flywheel.setDefaultCommand(this.flywheel.off());
 
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(new DeployIntake());
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .onFalse(this.retractor.moveToRetracted());
+    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+    //     .whileTrue(new DeployIntake());
+    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+    //     .onFalse(this.retractor.moveToRetracted());
 
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .whileTrue(new OuttakeNote());
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .onFalse(this.retractor.moveToRetracted());
+    // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+    //     .whileTrue(new OuttakeNote());
+    // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+    //     .onFalse(this.retractor.moveToRetracted());
 
-    new Trigger(this.manipulatorController::getBButton).onTrue(new Mate());
-    new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
-    new Trigger(this.manipulatorController::getAButton)
-        .onFalse(
-            new SequentialCommandGroup(
-                new ParallelRaceGroup(this.indexer.acceptHandoff(), this.sucker.out()),
-                new WaitCommand(0.5),
-                this.flywheel.off(),
-                new ParallelCommandGroup(
-                    this.retractor.moveToRetracted(), this.pivot.moveToRetracted())));
+    // new Trigger(this.manipulatorController::getBButton).onTrue(new Mate());
+    // new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
+    // new Trigger(this.manipulatorController::getAButton)
+    //     .onFalse(
+    //         new SequentialCommandGroup(
+    //             new ParallelRaceGroup(this.indexer.acceptHandoff(), this.sucker.out()),
+    //             new WaitCommand(0.5),
+    //             this.flywheel.off(),
+    //             new ParallelCommandGroup(
+    //                 this.retractor.moveToRetracted(), this.pivot.moveToRetracted())));
     new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance());
-    new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixed());
-    new Trigger(this.manipulatorController::getXButton)
-        .onFalse(
-            new SequentialCommandGroup(
-                new ParallelRaceGroup(this.indexer.acceptHandoff(), this.sucker.out()),
-                new WaitCommand(0.5),
-                this.flywheel.off(),
-                new ParallelCommandGroup(
-                    this.retractor.moveToRetracted(), this.pivot.moveToRetracted())));
+    // new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixed());
+    // new Trigger(this.manipulatorController::getXButton)
+    //     .onFalse(
+    //         new SequentialCommandGroup(
+    //             new ParallelRaceGroup(this.indexer.acceptHandoff(), this.sucker.out()),
+    //             new WaitCommand(0.5),
+    //             this.flywheel.off(),
+    //             new ParallelCommandGroup(
+    //                 this.retractor.moveToRetracted(), this.pivot.moveToRetracted())));
 
-    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
-    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
-        .onTrue(this.pivot.moveToRetracted());
+    // new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
+    // new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
+    //     .onTrue(this.pivot.moveToRetracted());
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(0.0));
     new Trigger(this.driverController::getBButton).onTrue(this.drivetrain.turnToAngle(90.0));
     // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
     new Trigger(this.driverController::getYButton).onTrue(this.drivetrain.turnToSpeaker());
 
-    // this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
+    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
     new Trigger(
             () -> this.driverController.getLeftBumper() && this.driverController.getRightBumper())

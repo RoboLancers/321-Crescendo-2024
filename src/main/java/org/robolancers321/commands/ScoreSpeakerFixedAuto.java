@@ -27,7 +27,7 @@ public class ScoreSpeakerFixedAuto extends SequentialCommandGroup {
 
     this.addCommands(
         new ParallelCommandGroup(this.retractor.moveToMating(), this.pivot.moveToMating()),
-        this.flywheel.revSpeaker(),
+        // this.flywheel.revSpeaker(),
         new ParallelRaceGroup(this.indexer.acceptHandoff(), this.sucker.out()),
         new WaitCommand(0.5),
         this.flywheel.off());

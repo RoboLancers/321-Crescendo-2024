@@ -18,6 +18,18 @@ public class AimTable {
     return a * Math.atan(b * distance + c) + d;
   }
 
+  public static double interpolateFlywheelRPM(double distance){
+    double a = 9831.55;
+    double b = 0.634101;
+    double c = 0.390975;
+    double d = -0.326495;
+    double f = 0.613281;
+    double g = 1.48692;
+    double h = -18403.3;
+
+    return a * Math.pow(Math.pow(distance, b) + Math.pow(c, distance) + d * distance + f, g) + h;
+  }
+
   // public static class AimCharacteristic {
   //   public final double angle;
   //   public final double rpm;
