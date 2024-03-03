@@ -1,9 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -22,8 +19,6 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
   private Flywheel flywheel;
   private Drivetrain drivetrain;
 
-  private AimTable aimTable;
-
   public ScoreSpeakerFromDistance() {
     this.retractor = Retractor.getInstance();
     this.sucker = Sucker.getInstance();
@@ -32,22 +27,17 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
     this.drivetrain = Drivetrain.getInstance();
 
-        this.addCommands(
-            this.drivetrain.turnToSpeaker(),
-            this.drivetrain.stop(),
-            // this.indexer.shiftBackward(),
-            // this.sucker.offInstantly(),
-            new ParallelCommandGroup(
-                // new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> SmartDashboard.getNumber("pivot interpolation angle", 0) < 10.0),
-                // new ConditionalCommand(this.retractor.moveToClearFromLauncher(), new InstantCommand(), () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()) < 20.0),
-                // this.pivot.moveToAngle(() -> SmartDashboard.getNumber("pivot interpolation angle", 0))
-                this.pivot.aimAtSpeaker(() -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker()))
-            ),
-            this.indexer.shiftForward(),
-            this.indexer.shiftBackward(),
-            this.flywheel.revSpeakerFromRPM(() -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker())),
-            this.indexer.outtake(),
-            this.flywheel.off()
-        );
-    }
+    this.addCommands(
+        this.drivetrain.turnToSpeaker(),
+        this.drivetrain.stop(),
+        this.indexer.shiftForward(),
+        this.indexer.shiftBackward(),
+        new ParallelCommandGroup(
+            this.pivot.aimAtSpeaker(
+                () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),
+            this.flywheel.revSpeakerFromRPM(
+                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))),
+        this.indexer.outtake(),
+        this.flywheel.off());
+  }
 }

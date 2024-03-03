@@ -1,10 +1,8 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
@@ -18,6 +16,7 @@ public class ScoreSpeakerFixedAuto extends SequentialCommandGroup {
   private Flywheel flywheel;
   private Sucker sucker;
 
+  // assumes arms are at mating with note inside sucker
   public ScoreSpeakerFixedAuto() {
     this.retractor = Retractor.getInstance();
     this.pivot = Pivot.getInstance();
@@ -26,10 +25,9 @@ public class ScoreSpeakerFixedAuto extends SequentialCommandGroup {
     this.sucker = Sucker.getInstance();
 
     this.addCommands(
-        new ParallelCommandGroup(this.retractor.moveToMating(), this.pivot.moveToMating()),
-        // this.flywheel.revSpeaker(),
-        new ParallelRaceGroup(this.indexer.acceptHandoff(), this.sucker.out()),
-        new WaitCommand(0.5),
+        this.flywheel.revSpeaker(),
+        new ParallelRaceGroup(
+            this.indexer.acceptHandoff().andThen(this.indexer.outtake()), this.sucker.out()),
         this.flywheel.off());
   }
 }

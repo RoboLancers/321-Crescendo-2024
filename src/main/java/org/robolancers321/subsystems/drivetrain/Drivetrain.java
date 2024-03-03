@@ -266,6 +266,9 @@ public class Drivetrain extends SubsystemBase {
     return -180
         + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
         + this.getYawDeg();
+
+    // TODO: is it worth using this.getPose().getRotation() instead? i think we trust gyro over
+    // vision when it comes to angle
   }
 
   public double getDistanceToSpeaker() {
@@ -384,11 +387,13 @@ public class Drivetrain extends SubsystemBase {
                   * MathUtil.applyDeadband(controller.getRightX(), 0.05)
                   * multiplier;
 
-          double headingControllerOutput =
-              -this.headingController.calculate(this.getNoteAngle(), 0.0);
+          // TODO: uncomment for aim assist
 
-          if (Math.abs(this.getNoteAngle()) > DrivetrainConstants.kHeadingTolerance)
-            omega += 0.5 * headingControllerOutput;
+          // double headingControllerOutput =
+          //     -this.headingController.calculate(this.getNoteAngle(), 0.0);
+
+          // if (Math.abs(this.getNoteAngle()) > DrivetrainConstants.kHeadingTolerance)
+          //   omega += 0.5 * headingControllerOutput;
 
           Translation2d strafeVec =
               new Translation2d(

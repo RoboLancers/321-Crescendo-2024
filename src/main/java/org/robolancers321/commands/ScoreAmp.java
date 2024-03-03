@@ -2,7 +2,6 @@
 package org.robolancers321.commands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -25,14 +24,11 @@ public class ScoreAmp extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
 
     this.addCommands(
-        new ParallelCommandGroup(this.retractor.moveToMating(), this.pivot.moveToMating()),
-        new ParallelRaceGroup(this.sucker.out(), this.indexer.acceptHandoff()),
-        this.pivot.aimAtAmp(),
         this.indexer.shiftForward(),
         this.indexer.shiftBackward(),
-        this.flywheel.revAmp(),
+        new ParallelCommandGroup(this.pivot.aimAtAmp(), this.flywheel.revAmp()),
         this.indexer.outtake(),
         this.flywheel.off(),
-        new ParallelCommandGroup(this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
+        this.pivot.moveToRetracted());
   }
 }

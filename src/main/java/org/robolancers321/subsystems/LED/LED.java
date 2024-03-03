@@ -1,5 +1,5 @@
 /* (C) Robolancers 2024 */
-package org.robolancers321.subsystems;
+package org.robolancers321.subsystems.LED;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -23,9 +23,11 @@ import org.robolancers321.util.VirtualSubsystem;
 /*
  99.9% of this class is written by FRC Team 6328 Mechanical Advantage, huge thanks to them - Vincent Z
  Yeah your led thingy was too good to not steal thank you for making it - Alex T
+ Mwahahahah meteor lmao - Matt P
 */
 
 public class LED extends VirtualSubsystem {
+  // TODO: move this into constants
 
   public static final int kLEDPWMPort = 9;
   public static final int kLEDStripLength = 25;
@@ -39,35 +41,26 @@ public class LED extends VirtualSubsystem {
   private static final double kWaveDuration = 3.0;
   private static final double kStripeDuration = 0.5;
 
-  static int kWavefrontSpeed = 10;
-  static int kFadeSpeed = 1600;
-  static double kFadeProbability = 0.25;
-  static int kWavefrontSeparation = 10;
-  static int kWavefrontLength = 1;
-  static double kWavefrontPosition = -1;
-  static rgb kMeteorColor = new rgb(255, 0, 0);
+  private static final int kWavefrontSpeed = 10;
+  private static final int kFadeSpeed = 1600;
+  private static final double kFadeProbability = 0.25;
+  private static final int kWavefrontSeparation = 10;
+  private static final int kWavefrontLength = 1;
 
-  public static rgb[] kDefaultMeteorColors = {
+  public static final rgb[] kDefaultMeteorColors = {
     new rgb(250, 0, 0),
     // new rgb(250, 200, 0),
   };
 
-  public static rgb[] kNoteMeteorColors = {
+  public static final rgb[] kNoteMeteorColors = {
     new rgb(250, 120, 20),
     // new rgb(250, 200, 0),
   };
 
-  static int colorIndex = 0;
+  private static int colorIndex = 0;
+  private static double wavefrontPosition = -1;
 
-  static rgb[] meteorBuf = new rgb[kLEDStripLength];
-
-  // private static final int kFadeSpeed = 0;
-  // private static final double kFadeProbability = 0.2;
-  // private static final int kWavefrontSpeed = 3;
-  // private static final int kWavefrontLength = 2;
-  // private static final int kWavefrontSeparation = 6;
-  // private static final Color8Bit kMeteorColor = new Color8Bit(255, 0, 0);
-  // private static int wavefrontPosition = -1;
+  private static rgb[] meteorBuf = new rgb[kLEDStripLength];
 
   private static final int kCooling = 30; // 20 - 100
   private static final int kSparking = 50; // 0-255
@@ -268,14 +261,14 @@ public class LED extends VirtualSubsystem {
       }
     }
 
-    kWavefrontPosition += kWavefrontSpeed * dt;
+    wavefrontPosition += kWavefrontSpeed * dt;
 
-    if (kWavefrontPosition - kWavefrontLength >= kLEDStripLength) {
-      kWavefrontPosition -= kWavefrontSeparation;
+    if (wavefrontPosition - kWavefrontLength >= kLEDStripLength) {
+      wavefrontPosition -= kWavefrontSeparation;
       colorIndex++;
     }
 
-    double nthWavefrontPosition = kWavefrontPosition;
+    double nthWavefrontPosition = wavefrontPosition;
 
     int colorOffset = 0;
 
@@ -283,8 +276,8 @@ public class LED extends VirtualSubsystem {
       for (int k = 0; k < kWavefrontLength; k++) {
         if ((int) Math.round(nthWavefrontPosition - k) >= 0
             && (int) Math.round(nthWavefrontPosition - k) < kLEDStripLength) {
-          // meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = kMeteorColor;
-          meteorBuf[(int) Math.round(nthWavefrontPosition - k)] = meteorColors[(colorIndex + colorOffset) % meteorColors.length];
+          meteorBuf[(int) Math.round(nthWavefrontPosition - k)] =
+              meteorColors[(colorIndex + colorOffset) % meteorColors.length];
         }
       }
       colorOffset++;
@@ -306,11 +299,11 @@ public class LED extends VirtualSubsystem {
   }
 
   private static class rgb {
-    int r;
-    int g;
-    int b;
+    private int r;
+    private int g;
+    private int b;
 
-    rgb(int r, int g, int b) {
+    public rgb(int r, int g, int b) {
       this.r = r;
       this.g = g;
       this.b = b;

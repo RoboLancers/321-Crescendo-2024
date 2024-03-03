@@ -31,17 +31,14 @@ public class Sucker extends SubsystemBase {
   private final RelativeEncoder encoder;
 
   private final DigitalInput touchSensor;
-  // private final SparkPIDController controller;
 
   private Sucker() {
     this.motor = new CANSparkMax(SuckerConstants.kMotorPort, MotorType.kBrushless);
     this.encoder = this.motor.getEncoder();
     this.touchSensor = new DigitalInput(SuckerConstants.kTouchSensorPort);
-    // this.controller = this.motor.getPIDController();
 
     this.configureMotor();
     this.configureEncoder();
-    // this.configureController();
     this.motor.burnFlash();
   }
 
@@ -56,49 +53,23 @@ public class Sucker extends SubsystemBase {
     this.encoder.setVelocityConversionFactor(1.0);
   }
 
-  // private void configureController() {
-  //   this.controller.setP(0.0);
-  //   this.controller.setI(0.0);
-  //   this.controller.setD(0.0);
-  //   this.controller.setFF(kFF);
-  // }
-
   public double getVelocityRPM() {
     return this.encoder.getVelocity();
   }
 
-  // private void useController(double desiredRPM) {
-  //   this.controller.setReference(desiredRPM, ControlType.kVelocity);
-  // }
+  public boolean noteDetected(){
+    return !this.touchSensor.get();
+  }
 
   private void doSendables() {
-
     SmartDashboard.putNumber("sucker rpm", this.getVelocityRPM());
-    SmartDashboard.putBoolean("touch sensor", !this.touchSensor.get());
+    SmartDashboard.putBoolean("sucker detects note", this.noteDetected());
   }
 
   @Override
   public void periodic() {
-
     this.doSendables();
-
-
   }
-
-  // private void initTuning() {
-  //   SmartDashboard.putNumber("sucker kff", SmartDashboard.getNumber("sucker kff", kFF));
-  //   SmartDashboard.putNumber("sucker target rpm", 0.0);
-  // }
-
-  // private void tune() {
-  //   double tunedFF = SmartDashboard.getNumber("sucker kff", kFF);
-
-  //   this.controller.setFF(tunedFF);
-
-  //   double targetRPM = SmartDashboard.getNumber("sucker target rpm", 0.0);
-
-  //   this.useController(targetRPM);
-  // }
 
   private Command setSpeed(double speed) {
     return run(() -> this.motor.set(speed));
@@ -119,10 +90,4 @@ public class Sucker extends SubsystemBase {
   public Command out() {
     return setSpeed(SuckerConstants.kOutSpeed).finallyDo(() -> this.motor.set(0));
   }
-
-  // public Command tuneController() {
-  //   initTuning();
-
-  //   return run(this::tune);
-  // }
 }

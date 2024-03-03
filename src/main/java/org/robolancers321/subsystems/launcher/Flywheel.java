@@ -134,9 +134,11 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command revSpeaker() {
-    return runOnce(() -> {
-      this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
-    }).alongWith(new WaitUntilCommand(this::isRevved));
+    return runOnce(
+            () -> {
+              this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
+            })
+        .alongWith(new WaitUntilCommand(this::isRevved));
   }
 
   public Command revSpeakerFromRPM(DoubleSupplier rpm) {
@@ -152,6 +154,4 @@ public class Flywheel extends SubsystemBase {
 
     return run(this::tune);
   }
-
-
 }
