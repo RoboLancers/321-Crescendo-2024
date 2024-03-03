@@ -18,6 +18,16 @@ public class AimTable {
     return a * Math.atan(b * distance + c) + d;
   }
 
+  // public static class AimCharacteristic {
+  //   public final double angle;
+  //   public final double rpm;
+
+  //   public AimCharacteristic(double angle, double rpm) {
+  //     this.angle = angle;
+  //     this.rpm = rpm;
+  //   }
+  // }
+
   public static double interpolateFlywheelRPM(double distance){
     double a = 9831.55;
     double b = 0.634101;
@@ -34,21 +44,6 @@ public class AimTable {
   //   public final double angle;
   //   public final double rpm;
 
-  //   public AimCharacteristic(double angle, double rpm) {
-  //     this.angle = angle;
-  //     this.rpm = rpm;
-  //   }
-  // }
-
-  // // TODO: tune
-  // private static final LinkedHashMap<Double, AimCharacteristic> table =
-  //     new LinkedHashMap<>() {
-  //       {
-  //         put(0.0, new AimCharacteristic(0.0, 0.0));
-  //         put(1.0, new AimCharacteristic(0.0, 0.0));
-  //       }
-  //     };
-
   // private static double interpolate(
   //     double lowKey, double lowValue, double highKey, double highValue, double x) {
   //   double percent = (x - lowKey) / (highKey - lowKey);
@@ -56,7 +51,7 @@ public class AimTable {
   //   return lowKey + percent * (highValue - lowValue);
   // }
 
-  // private static final double kInterpolationCacheThreshold = 0.0;
+  // private static final double kInterpolationCacheThreshold = 0.05;
 
   // private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
   //   List<Double> keys = table.keySet().stream().sorted().toList();
@@ -92,14 +87,12 @@ public class AimTable {
   //   this.lastAimCharacteristic = new AimCharacteristic(0.0, 0.0);
   // }
 
-  // public void updateSpeakerAimCharacteristic(double distance) {
+  // public AimCharacteristic updateSpeakerAimCharacteristic(double distance) {
   //   if (!epsilonEquals(this.lastDistance, distance, kInterpolationCacheThreshold)) {
   //     this.lastDistance = distance;
   //     this.lastAimCharacteristic = calculateSpeakerAimCharacteristic(distance);
   //   }
-  // }
 
-  // public AimCharacteristic getSpeakerAimCharacteristic() {
   //   return this.lastAimCharacteristic;
   // }
 }

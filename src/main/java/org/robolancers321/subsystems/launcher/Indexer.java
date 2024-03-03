@@ -5,17 +5,12 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.ControlType;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import java.util.function.BooleanSupplier;
-
 import org.robolancers321.Constants.IndexerConstants;
 
 public class Indexer extends SubsystemBase {
@@ -105,7 +100,8 @@ public class Indexer extends SubsystemBase {
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("indexer kff", SmartDashboard.getNumber("indexer kff", IndexerConstants.kFF));
+    SmartDashboard.putNumber(
+        "indexer kff", SmartDashboard.getNumber("indexer kff", IndexerConstants.kFF));
     SmartDashboard.putNumber("indexer target rpm", 0.0);
   }
 
@@ -128,19 +124,29 @@ public class Indexer extends SubsystemBase {
   }
 
   public Command acceptHandoff() {
-    return setGoalRPM(IndexerConstants.kHandoffRPM).alongWith(new WaitUntilCommand(this::jawnDetected)).withTimeout(1.0);
+    return setGoalRPM(IndexerConstants.kHandoffRPM)
+        .alongWith(new WaitUntilCommand(this::jawnDetected))
+        .withTimeout(1.0);
   }
 
   public Command shiftForward() {
-    return setGoalRPM(IndexerConstants.kShiftForwardRPM).alongWith(new WaitUntilCommand(this::jawnDetected)).andThen(this.off()).withTimeout(1.0);
+    return setGoalRPM(IndexerConstants.kShiftForwardRPM)
+        .alongWith(new WaitUntilCommand(this::jawnDetected))
+        .andThen(this.off())
+        .withTimeout(1.0);
   }
 
   public Command shiftBackward() {
-    return setGoalRPM(IndexerConstants.kShiftBackwardRPM).alongWith(new WaitUntilCommand(this::jawnNotDetected)).andThen(this.off()).withTimeout(1.0);
+    return setGoalRPM(IndexerConstants.kShiftBackwardRPM)
+        .alongWith(new WaitUntilCommand(this::jawnNotDetected))
+        .andThen(this.off())
+        .withTimeout(1.0);
   }
 
   public Command outtake() {
-    return setGoalRPM(IndexerConstants.kOuttakeRPM).alongWith(new WaitUntilCommand(this::jawnNotDetected).andThen(new WaitCommand(0.5))).andThen(this.off());
+    return setGoalRPM(IndexerConstants.kOuttakeRPM)
+        .alongWith(new WaitUntilCommand(this::jawnNotDetected).andThen(new WaitCommand(0.5)))
+        .andThen(this.off());
   }
 
   public Command tuneController() {

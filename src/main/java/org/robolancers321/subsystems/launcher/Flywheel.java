@@ -5,14 +5,11 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-
 import java.util.function.DoubleSupplier;
-
 import org.robolancers321.Constants.FlywheelConstants;
 
 public class Flywheel extends SubsystemBase {
@@ -34,13 +31,11 @@ public class Flywheel extends SubsystemBase {
 
   private final SlewRateLimiter limiter;
 
-  private double startRevTime;
-  private double endRevTime;
-
   private double goalRPM = 0.0;
 
   private Flywheel() {
-    this.motor = new CANSparkFlex(FlywheelConstants.kMotorPort, CANSparkLowLevel.MotorType.kBrushless);
+    this.motor =
+        new CANSparkFlex(FlywheelConstants.kMotorPort, CANSparkLowLevel.MotorType.kBrushless);
 
     this.encoder = this.motor.getEncoder();
 
@@ -56,7 +51,7 @@ public class Flywheel extends SubsystemBase {
 
   private void configureMotor() {
     this.motor.setInverted(FlywheelConstants.kInvertMotor);
-    this.motor.setIdleMode(CANSparkBase.IdleMode.kCoast);
+    this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(FlywheelConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
   }
@@ -76,12 +71,13 @@ public class Flywheel extends SubsystemBase {
     return this.encoder.getVelocity();
   }
 
-  public double getGoalRPM(){
+  public double getGoalRPM() {
     return this.goalRPM;
   }
 
   private void useController() {
-    if (this.goalRPM - this.getRPM() > FlywheelConstants.kToleranceRPM) this.controller.setFF(10 * FlywheelConstants.kFF);
+    if (this.goalRPM - this.getRPM() > 2 * FlywheelConstants.kToleranceRPM)
+      this.controller.setFF(10 * FlywheelConstants.kFF);
     else this.controller.setFF(FlywheelConstants.kFF);
 
     this.controller.setReference(
@@ -98,22 +94,19 @@ public class Flywheel extends SubsystemBase {
     SmartDashboard.putNumber("flywheel current", this.motor.getOutputCurrent());
     SmartDashboard.putBoolean("flywheel isRevved", this.isRevved());
 
-    SmartDashboard.putNumber("flywheel rev time", this.endRevTime - this.startRevTime);
-
     SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }
 
   @Override
   public void periodic() {
-    if (isRevved() && this.goalRPM != 0.0) this.endRevTime = Timer.getFPGATimestamp();
-
     this.useController();
 
     this.doSendables();
   }
 
   private void initTuning() {
-    SmartDashboard.putNumber("flywheel kff", SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF));
+    SmartDashboard.putNumber(
+        "flywheel kff", SmartDashboard.getNumber("flywheel kff", FlywheelConstants.kFF));
     SmartDashboard.putNumber("flywheel target rpm", 0.0);
   }
 
@@ -126,24 +119,32 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command off() {
-    return runOnce(() -> {
-      this.goalRPM = 0.0;
-    });
+    return runOnce(
+        () -> {
+          this.goalRPM = 0.0;
+        });
   }
 
   public Command revAmp() {
+    return runOnce(
+            () -> {
+              this.goalRPM = FlywheelConstants.FlywheelSetpoint.kAmp.rpm;
+            })
+        .alongWith(new WaitUntilCommand(this::isRevved));
+  }
+
+  public Command revSpeaker() {
     return runOnce(() -> {
-      this.goalRPM = FlywheelConstants.FlywheelSetpoint.kAmp.rpm;
+      this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
     }).alongWith(new WaitUntilCommand(this::isRevved));
   }
 
-  public Command revSpeaker(DoubleSupplier rpmSupplier) {
-    return runOnce(() -> {
-      // this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
-      this.goalRPM = rpmSupplier.getAsDouble();
-
-      this.startRevTime = Timer.getFPGATimestamp();
-    }).alongWith(new WaitUntilCommand(this::isRevved));
+  public Command revSpeakerFromRPM(DoubleSupplier rpm) {
+    return runOnce(
+            () -> {
+              this.goalRPM = rpm.getAsDouble();
+            })
+        .alongWith(new WaitUntilCommand(this::isRevved));
   }
 
   public Command tuneController() {
@@ -151,4 +152,6 @@ public class Flywheel extends SubsystemBase {
 
     return run(this::tune);
   }
+
+
 }

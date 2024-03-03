@@ -136,8 +136,10 @@ public final class Constants {
     public static final class SuckerConstants {
         public static final int kMotorPort = 14;
 
-        public static final boolean kInvertMotor = false;
-        public static final int kCurrentLimit = 60;
+    public static final int kTouchSensorPort = 5;
+
+    public static final boolean kInvertMotor = false;
+    public static final int kCurrentLimit = 60;
 
         public static final double kInSpeed = 0.8;
         public static final double kOutSpeed = -0.8;
@@ -174,7 +176,7 @@ public final class Constants {
 
     public static final class IndexerConstants {
         public static final int kMotorPort = 16;
-        public static final int kBeamBreakPort = 9;
+        public static final int kBeamBreakPort = 7;
 
         public static final boolean kInvertMotor = true;
         public static final int kCurrentLimit = 60;
