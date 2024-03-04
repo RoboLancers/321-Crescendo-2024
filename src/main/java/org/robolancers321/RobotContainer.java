@@ -60,9 +60,9 @@ public class RobotContainer {
 
     this.configureLEDs();
     this.configureDefaultCommands();
-    // this.configureDriverController();
-    // this.configureManipulatorController();
-    // this.configureAuto();
+    this.configureDriverController();
+    this.configureManipulatorController();
+    this.configureAuto();
   }
 
   private void configureLEDs() {
@@ -92,7 +92,6 @@ public class RobotContainer {
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
     this.flywheel.setDefaultCommand(this.flywheel.off());
-    this.pivot.setDefaultCommand(this.pivot.tuneControllers());
   }
 
   private void configureDriverController() {
