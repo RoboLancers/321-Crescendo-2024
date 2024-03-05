@@ -9926,12 +9926,6 @@
                 },
                 {
                     "scope": [
-                        7
-                    ],
-                    "type": "StopPoint"
-                },
-                {
-                    "scope": [
                         4
                     ],
                     "type": "StopPoint"
