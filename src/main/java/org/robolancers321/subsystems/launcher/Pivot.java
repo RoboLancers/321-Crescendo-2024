@@ -107,12 +107,12 @@ public class Pivot extends SubsystemBase {
             ? this.encoder.getPosition() - 360.0
             : this.encoder.getPosition();
 
-    if (angle > PivotConstants.kMinAngle - 0.5 && angle < PivotConstants.kMaxAngle + 0.5) return angle;
+    if (angle > PivotConstants.kMinAngle && angle < PivotConstants.kMaxAngle + 0.5) return angle;
 
     if (angle > PivotConstants.kMinAngle - 40.0 && angle < PivotConstants.kMaxAngle)
-      return PivotConstants.kMinAngle - 0.5;
+      return PivotConstants.kMinAngle;
 
-    return PivotConstants.kMaxAngle + 0.5;
+    return PivotConstants.kMaxAngle;
   }
 
   public double getVelocityDeg() {
