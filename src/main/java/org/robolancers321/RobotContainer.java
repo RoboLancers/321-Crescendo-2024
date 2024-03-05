@@ -17,6 +17,7 @@ import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.autonomous.Auto3NBSweep;
 import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
+import org.robolancers321.commands.autonomous.Auto3NMid;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -135,7 +136,9 @@ public class RobotContainer {
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
     this.autoChooser.addOption("3NB Sweep", new Auto3NBSweep());
     this.autoChooser.addOption("3NB Sweep Straight", new Auto3NBSweepStraight());
-    
+    this.autoChooser.addOption("3NMid", new Auto3NMid());
+    this.autoChooser.addOption("4NTClose", new ());
+
   }
 
   public Command getAutonomousCommand() {

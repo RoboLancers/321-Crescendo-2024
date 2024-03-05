@@ -2406,6 +2406,12 @@
                         5
                     ],
                     "type": "StopPoint"
+                },
+                {
+                    "scope": [
+                        0
+                    ],
+                    "type": "StopPoint"
                 }
             ],
             "usesControlIntervalGuessing": true,
