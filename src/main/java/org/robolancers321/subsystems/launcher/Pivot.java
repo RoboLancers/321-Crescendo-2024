@@ -78,11 +78,11 @@ public class Pivot extends SubsystemBase {
 
     this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) PivotConstants.kMaxAngle);
     this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) PivotConstants.kMinAngle);
-    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
-    this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
+    // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
+    // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
 
-    // this.motor.enableSoftLimit(SoftLimitDirection.kForward, false);
-    // this.motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+    this.motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    this.motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
   }
 
   private void configureEncoder() {

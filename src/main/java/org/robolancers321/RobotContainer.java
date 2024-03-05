@@ -1,19 +1,11 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.Mate;
-import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.ScoreAmp;
-import org.robolancers321.commands.ScoreSpeakerFixed;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
+import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.autonomous.Auto3NBSweep;
 import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
@@ -25,6 +17,17 @@ import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -60,9 +63,9 @@ public class RobotContainer {
 
     this.configureLEDs();
     this.configureDefaultCommands();
-    // this.configureDriverController();
-    // this.configureManipulatorController();
-    // this.configureAuto();
+    this.configureDriverController();
+    this.configureManipulatorController();
+    this.configureAuto();
   }
 
   private void configureLEDs() {
@@ -92,7 +95,6 @@ public class RobotContainer {
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
     this.flywheel.setDefaultCommand(this.flywheel.off());
-    this.pivot.setDefaultCommand(this.pivot.tuneControllers());
   }
 
   private void configureDriverController() {
@@ -113,10 +115,10 @@ public class RobotContainer {
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .onFalse(new Mate().onlyIf(this.sucker::noteDetected));
 
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .whileTrue(new OuttakeNote());
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .onFalse(this.retractor.moveToRetracted());
+    // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+    //     .whileTrue(new OuttakeNote());
+    // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+    //     .onFalse(this.retractor.moveToRetracted());
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(0.0));
     // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
@@ -128,8 +130,8 @@ public class RobotContainer {
 
     new Trigger(this.manipulatorController::getAButton).onTrue(new ScoreAmp());
     new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance());
-    new Trigger(this.manipulatorController::getXButton).whileTrue(ScoreSpeakerFixed.rev());
-    new Trigger(this.manipulatorController::getXButton).onFalse(ScoreSpeakerFixed.eject());
+    new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
+    new Trigger(this.manipulatorController::getXButton).onFalse(this.indexer.outtake());
   }
 
   private void configureAuto() {
@@ -139,6 +141,8 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return this.autoChooser.getSelected();
+    return AutoBuilder.followPath(PathPlannerPath.fromPathFile("Tune"));
+
+    // return this.autoChooser.getSelected();
   }
 }
