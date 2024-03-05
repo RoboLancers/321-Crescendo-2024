@@ -16,10 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-<<<<<<< HEAD
-=======
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
->>>>>>> df218703160da337de69a7377c0ad411cbaecd14
 import java.util.function.DoubleSupplier;
 import org.robolancers321.Constants;
 import org.robolancers321.Constants.PivotConstants;
@@ -225,13 +222,6 @@ public class Pivot extends SubsystemBase {
     return new SequentialCommandGroup(
         new InstantCommand(
             () ->
-<<<<<<< HEAD
-                this.setGoal(MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle))),
-        this.run(
-                () ->
-                    this.setGoal(
-                        MathUtil.clamp(angleDegSupplier.getAsDouble(), kMinAngle, kMaxAngle)))
-=======
                 this.setGoal(
                     MathUtil.clamp(
                         angleDegSupplier.getAsDouble(),
@@ -244,7 +234,6 @@ public class Pivot extends SubsystemBase {
                             angleDegSupplier.getAsDouble(),
                             PivotConstants.kMinAngle,
                             PivotConstants.kMaxAngle)))
->>>>>>> df218703160da337de69a7377c0ad411cbaecd14
             .until(this::atGoal));
   }
 

@@ -125,20 +125,12 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
-<<<<<<< HEAD
-  public Command yeetNoteAmp() {
-    return runOnce(
-        () -> {
-          this.goalRPM = FlywheelSetpoint.kAmp.rpm;
-        });
-=======
   public Command revAmp() {
     return runOnce(
             () -> {
               this.goalRPM = FlywheelConstants.FlywheelSetpoint.kAmp.rpm;
             })
         .alongWith(new WaitUntilCommand(this::isRevved));
->>>>>>> df218703160da337de69a7377c0ad411cbaecd14
   }
 
   public Command revSpeaker() {
@@ -149,20 +141,12 @@ public class Flywheel extends SubsystemBase {
         .alongWith(new WaitUntilCommand(this::isRevved));
   }
 
-<<<<<<< HEAD
-  public Command yeetNoteSpeakerFixed() {
-    return runOnce(
-        () -> {
-          this.goalRPM = FlywheelSetpoint.kSpeaker.rpm;
-        });
-=======
   public Command revSpeakerFromRPM(DoubleSupplier rpm) {
     return runOnce(
             () -> {
               this.goalRPM = rpm.getAsDouble();
             })
         .alongWith(new WaitUntilCommand(this::isRevved));
->>>>>>> df218703160da337de69a7377c0ad411cbaecd14
   }
 
   public Command tuneController() {

@@ -135,6 +135,7 @@ public class RobotContainer {
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
     this.autoChooser.addOption("3NB Sweep", new Auto3NBSweep());
     this.autoChooser.addOption("3NB Sweep Straight", new Auto3NBSweepStraight());
+    
   }
 
   public Command getAutonomousCommand() {

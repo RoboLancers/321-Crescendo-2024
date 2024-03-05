@@ -129,21 +129,11 @@ public class Indexer extends SubsystemBase {
         .withTimeout(1.0);
   }
 
-<<<<<<< HEAD
-  public Command acceptHandoff(BooleanSupplier beamBreakStateSupplier) {
-    return run(() -> this.setRPM(kHandoffRPM))
-        .until(beamBreakStateSupplier)
-        .andThen(
-            run(() -> this.setRPM(-0.1 * kHandoffRPM))
-                .until(() -> !beamBreakStateSupplier.getAsBoolean()))
-        .andThen(runOnce(() -> this.setRPM(0.0)));
-=======
   public Command shiftForward() {
     return setGoalRPM(IndexerConstants.kShiftForwardRPM)
         .alongWith(new WaitUntilCommand(this::jawnDetected))
         .andThen(this.off())
         .withTimeout(1.0);
->>>>>>> df218703160da337de69a7377c0ad411cbaecd14
   }
 
   public Command shiftBackward() {
@@ -153,19 +143,10 @@ public class Indexer extends SubsystemBase {
         .withTimeout(1.0);
   }
 
-<<<<<<< HEAD
-  public Command outtake(BooleanSupplier beamBreakStateSupplier) {
-    return new ParallelRaceGroup(
-        run(() -> this.setRPM(kOuttakeRPM)),
-        new SequentialCommandGroup(
-            new WaitUntilCommand(beamBreakStateSupplier),
-            new WaitUntilCommand(() -> !beamBreakStateSupplier.getAsBoolean())));
-=======
   public Command outtake() {
     return setGoalRPM(IndexerConstants.kOuttakeRPM)
         .alongWith(new WaitUntilCommand(this::jawnNotDetected).andThen(new WaitCommand(0.5)))
         .andThen(this.off());
->>>>>>> df218703160da337de69a7377c0ad411cbaecd14
   }
 
   public Command tuneController() {
