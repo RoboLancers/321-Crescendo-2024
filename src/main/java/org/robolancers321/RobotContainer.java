@@ -141,7 +141,6 @@ public class RobotContainer {
     this.autoChooser.addOption("3NMid", new Auto3NMid());
     this.autoChooser.addOption("4NTClose", new Auto4NTClose());
     this.autoChooser.addOption("4NTSweep", new Auto3NTSweep());
-
   }
 
   public Command getAutonomousCommand() {

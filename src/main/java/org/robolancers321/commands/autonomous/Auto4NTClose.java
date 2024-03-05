@@ -20,7 +20,7 @@ public class Auto4NTClose extends SequentialCommandGroup {
   private Indexer indexer;
   private Flywheel flywheel;
 
-  public Auto4NTClose () {
+  public Auto4NTClose() {
     this.drivetrain = Drivetrain.getInstance();
     this.retractor = Retractor.getInstance();
     this.sucker = Sucker.getInstance();

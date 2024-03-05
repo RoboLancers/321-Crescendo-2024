@@ -20,7 +20,7 @@ public class Auto3NTSweep extends SequentialCommandGroup {
   private Indexer indexer;
   private Flywheel flywheel;
 
-  public Auto3NTSweep () {
+  public Auto3NTSweep() {
     this.drivetrain = Drivetrain.getInstance();
     this.retractor = Retractor.getInstance();
     this.sucker = Sucker.getInstance();

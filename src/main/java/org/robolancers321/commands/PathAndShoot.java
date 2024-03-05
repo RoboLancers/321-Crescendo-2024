@@ -1,14 +1,13 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
-import org.robolancers321.subsystems.intake.Sucker;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import org.robolancers321.subsystems.intake.Sucker;
 
 public class PathAndShoot extends SequentialCommandGroup {
   private Sucker sucker;
@@ -23,7 +22,6 @@ public class PathAndShoot extends SequentialCommandGroup {
         new ConditionalCommand(
             new SequentialCommandGroup(new Mate(), new ScoreSpeakerFromDistance()),
             new InstantCommand(() -> {}),
-            this.sucker::noteDetected)
-        );
+            this.sucker::noteDetected));
   }
 }

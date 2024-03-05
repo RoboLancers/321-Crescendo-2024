@@ -29,7 +29,8 @@ public final class Constants {
     public static final double kNoteCameraMountPitch =
         0.0; // degrees w/r to the horizontal, above horizontal is positive
 
-    // TODO: fix this (if path following starts breaking, otherwise it works since our empirical tuning is based on this)
+    // TODO: fix this (if path following starts breaking, otherwise it works since our empirical
+    // tuning is based on this)
     public static final double kTrackWidthMeters = Units.inchesToMeters(17.5);
     public static final double kWheelBaseMeters = Units.inchesToMeters(17.5);
 
@@ -154,7 +155,8 @@ public final class Constants {
     public static final boolean kInvertMotor = false;
     public static final int kCurrentLimit = 75;
 
-    public static final double kRampUpRate = 10000000; // effectively infinite ramp up, keeping this for the infrastructure
+    public static final double kRampUpRate =
+        10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
     public static final double kFF = 0.00016;
     public static final double kToleranceRPM = 100.0;
