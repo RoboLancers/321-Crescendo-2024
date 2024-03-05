@@ -357,7 +357,7 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-    this.fuseVision();
+    // this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 

@@ -26,6 +26,8 @@ import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 public class RobotContainer {
   private Drivetrain drivetrain;
   private Retractor retractor;
@@ -89,6 +91,7 @@ public class RobotContainer {
   private void configureDefaultCommands() {
     this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
+
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
     this.flywheel.setDefaultCommand(this.flywheel.off());
@@ -138,6 +141,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return this.autoChooser.getSelected();
+    return AutoBuilder.buildAuto("straight");
+    // return this.autoChooser.getSelected();
   }
 }
