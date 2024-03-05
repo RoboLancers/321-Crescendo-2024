@@ -45,3 +45,4 @@ public class Intake {
     return new SequentialCommandGroup(this.retractor.moveToIntake(), this.sucker.out());
   }
 }
+

@@ -59,7 +59,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "Score Stage"
+                        "name": "Score From Distance"
                       }
                     }
                   ]
@@ -119,7 +119,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Score Stage"
+                  "name": "Score From Distance"
                 }
               }
             ]

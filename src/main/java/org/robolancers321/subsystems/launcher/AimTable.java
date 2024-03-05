@@ -1,84 +1,76 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.launcher;
 
-import static org.robolancers321.util.MathUtils.epsilonEquals;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.NavigableSet;
-import java.util.TreeSet;
+import org.robolancers321.Constants.AimConstants;
 
 public class AimTable {
-  public static class AimCharacteristic {
-    public final double angle;
-    public final double rpm;
+  // unit test
+  public static void main(String[] args) {
+    for (double x = 0.0; x < 10.0; x += 0.2) {
+      double pivotAngle = interpolatePivotAngle(x);
+      double flywheelRPM = interpolateFlywheelRPM(x);
 
-    public AimCharacteristic(double angle, double rpm) {
-      this.angle = angle;
-      this.rpm = rpm;
-    }
-  }
-
-  // TODO: tune
-  private static final LinkedHashMap<Double, AimCharacteristic> table =
-      new LinkedHashMap<>() {
-        {
-          put(0.0, new AimCharacteristic(0.0, 0.0));
-          put(1.0, new AimCharacteristic(0.0, 0.0));
-        }
-      };
-
-  private static double interpolate(
-      double lowKey, double lowValue, double highKey, double highValue, double x) {
-    double percent = (x - lowKey) / (highKey - lowKey);
-
-    return lowKey + percent * (highValue - lowValue);
-  }
-
-  private static final double kInterpolationCacheThreshold = 0.0;
-
-  private static AimCharacteristic calculateSpeakerAimCharacteristic(double distance) {
-    List<Double> keys = table.keySet().stream().sorted().toList();
-    double lowerBound = keys.get(0);
-    double upperBound = keys.get(keys.size() - 1);
-
-    if (distance < lowerBound) {
-      AimTable.AimCharacteristic lowerValue = table.get(lowerBound);
-
-      return new AimTable.AimCharacteristic(lowerValue.angle, lowerValue.rpm);
+      System.out.println(
+          "For distance "
+              + x
+              + ": \t\tpivot angle = "
+              + pivotAngle
+              + ", \t\tflywheel rpm = "
+              + flywheelRPM);
     }
 
-    if (distance > upperBound) {
-      AimTable.AimCharacteristic upperValue = table.get(upperBound);
-
-      return new AimTable.AimCharacteristic(upperValue.angle, upperValue.rpm);
-    }
-
-    NavigableSet<Double> values = new TreeSet<>(keys);
-    double lowKey = values.floor(distance);
-    double highKey = values.ceiling(distance);
-
-    return new AimCharacteristic(
-        interpolate(lowKey, table.get(lowKey).angle, highKey, table.get(highKey).angle, distance),
-        interpolate(lowKey, table.get(lowKey).rpm, highKey, table.get(highKey).rpm, distance));
+    System.out.println(
+        "For distance NaN: \t\tpivot angle = "
+            + interpolatePivotAngle(Double.NaN)
+            + ", \t\tflywheel rpm = "
+            + interpolateFlywheelRPM(Double.NaN));
+    System.out.println(
+        "For distance +Inf: \t\tpivot angle = "
+            + interpolatePivotAngle(Double.POSITIVE_INFINITY)
+            + ", \t\tflywheel rpm = "
+            + interpolateFlywheelRPM(Double.POSITIVE_INFINITY));
+    System.out.println(
+        "For distance -Inf: \t\tpivot angle = "
+            + interpolatePivotAngle(Double.NEGATIVE_INFINITY)
+            + ", \t\tflywheel rpm = "
+            + interpolateFlywheelRPM(Double.NEGATIVE_INFINITY));
+    System.out.println(
+        "For distance MaxVal: \t\tpivot angle = "
+            + interpolatePivotAngle(Double.MAX_VALUE)
+            + ", \t\tflywheel rpm = "
+            + interpolateFlywheelRPM(Double.MAX_VALUE));
+    System.out.println(
+        "For distance MinVal: \t\tpivot angle = "
+            + interpolatePivotAngle(Double.MIN_VALUE)
+            + ", \t\tflywheel rpm = "
+            + interpolateFlywheelRPM(Double.MIN_VALUE));
   }
 
-  private double lastDistance;
-  private AimCharacteristic lastAimCharacteristic;
+  public static double interpolatePivotAngle(double distance) {
+    if (Double.isNaN(distance) || distance < AimConstants.kMinDistance)
+      return interpolatePivotAngle(AimConstants.kMinDistance);
 
-  public AimTable() {
-    this.lastDistance = 0.0;
-    this.lastAimCharacteristic = new AimCharacteristic(0.0, 0.0);
+    if (distance > AimConstants.kMaxDistance)
+      return interpolatePivotAngle(AimConstants.kMaxDistance);
+
+    return AimConstants.PivotAngleCoefficients.kA
+            * Math.atan(
+                AimConstants.PivotAngleCoefficients.kB * distance
+                    + AimConstants.PivotAngleCoefficients.kC)
+        + AimConstants.PivotAngleCoefficients.kD;
   }
 
-  public void updateSpeakerAimCharacteristic(double distance) {
-    if (!epsilonEquals(this.lastDistance, distance, kInterpolationCacheThreshold)) {
-      this.lastDistance = distance;
-      this.lastAimCharacteristic = calculateSpeakerAimCharacteristic(distance);
-    }
-  }
+  public static double interpolateFlywheelRPM(double distance) {
+    if (Double.isNaN(distance) || distance < AimConstants.kMinDistance)
+      return interpolateFlywheelRPM(AimConstants.kMinDistance);
 
-  public AimCharacteristic getSpeakerAimCharacteristic() {
-    return this.lastAimCharacteristic;
+    if (distance > AimConstants.kMaxDistance)
+      return interpolateFlywheelRPM(AimConstants.kMaxDistance);
+
+    return AimConstants.FlywheelRPMCoefficients.kA
+            * Math.atan(
+                AimConstants.FlywheelRPMCoefficients.kB * distance
+                    + AimConstants.FlywheelRPMCoefficients.kC)
+        + AimConstants.FlywheelRPMCoefficients.kD;
   }
 }

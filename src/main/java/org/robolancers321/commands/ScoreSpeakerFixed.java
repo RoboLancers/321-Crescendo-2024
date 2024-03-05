@@ -1,29 +1,32 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import org.robolancers321.subsystems.intake.Intake;
-import org.robolancers321.subsystems.launcher.Launcher;
+import org.robolancers321.subsystems.intake.Sucker;
+import org.robolancers321.subsystems.launcher.Flywheel;
+import org.robolancers321.subsystems.launcher.Indexer;
+import org.robolancers321.subsystems.launcher.Pivot;
 
-public class ScoreSpeakerFixed extends SequentialCommandGroup {
-  private Intake intake;
-  private Launcher launcher;
+public class ScoreSpeakerFixed {
+  // assumes mating has finished
+  public static Command rev() {
+    Pivot pivot = Pivot.getInstance();
+    Flywheel flywheel = Flywheel.getInstance();
 
-  public ScoreSpeakerFixed() {
-    this.intake = Intake.getInstance();
-    this.launcher = Launcher.getInstance();
+    return new SequentialCommandGroup(
+        pivot.moveToRetracted(), flywheel.revSpeaker(), new RunCommand(() -> {}));
+  }
 
-    this.addCommands(
-        this.launcher.pivot.aimAtSpeakerFixed(),
-        this.launcher.flywheel.yeetNoteSpeakerFixed(),
-        new WaitCommand(1.5),
-        new ParallelRaceGroup(
-            this.launcher.indexer.outtake(() -> false),
-            this.intake.sucker.out(),
-            new WaitCommand(0.8)),
-        this.launcher.flywheel.off(),
-        this.launcher.pivot.moveToRetracted());
+  public static Command eject() {
+    Indexer indexer = Indexer.getInstance();
+    Sucker sucker = Sucker.getInstance();
+    Flywheel flywheel = Flywheel.getInstance();
+
+    return new SequentialCommandGroup(
+        new ParallelRaceGroup(indexer.acceptHandoff().andThen(indexer.outtake()), sucker.out()),
+        flywheel.off());
   }
 }

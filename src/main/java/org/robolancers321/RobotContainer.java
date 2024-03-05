@@ -1,108 +1,143 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.Mate;
+import org.robolancers321.commands.OuttakeNote;
+import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixed;
-import org.robolancers321.commands.ScoreStage;
-import org.robolancers321.subsystems.LED;
+import org.robolancers321.commands.ScoreSpeakerFixedAuto;
+import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.autonomous.Auto3NBSweep;
+import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
+import org.robolancers321.subsystems.LED.LED;
+import org.robolancers321.subsystems.LED.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
-import org.robolancers321.subsystems.intake.Intake;
-import org.robolancers321.subsystems.launcher.Launcher;
+import org.robolancers321.subsystems.intake.Retractor;
+import org.robolancers321.subsystems.intake.Sucker;
+import org.robolancers321.subsystems.launcher.Flywheel;
+import org.robolancers321.subsystems.launcher.Indexer;
+import org.robolancers321.subsystems.launcher.Pivot;
 
 public class RobotContainer {
-  Drivetrain drivetrain;
-  Intake intake;
-  Launcher launcher;
+  private Drivetrain drivetrain;
+  private Retractor retractor;
+  private Sucker sucker;
+  private Pivot pivot;
+  private Indexer indexer;
+  private Flywheel flywheel;
 
-  XboxController driverController;
-  XboxController manipulatorController;
+  private XboxController driverController;
+  private XboxController manipulatorController;
 
-  // SendableChooser<Command> autoChooser;
+  private SendableChooser<Command> autoChooser;
 
-  LED led = new LED();
-  AddressableLEDSim ledSim = new AddressableLEDSim(led.ledStrip);
+  private LED led;
+  private AddressableLEDSim ledSim;
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
-    this.intake = Intake.getInstance();
-    this.launcher = Launcher.getInstance();
+    this.retractor = Retractor.getInstance();
+    this.sucker = Sucker.getInstance();
+    this.pivot = Pivot.getInstance();
+    this.indexer = Indexer.getInstance();
+    this.flywheel = Flywheel.getInstance();
 
     this.driverController = new XboxController(0);
     this.manipulatorController = new XboxController(1);
 
-    // this.autoChooser = AutoBuilder.buildAutoChooser();
+    this.autoChooser = new SendableChooser<Command>();
 
-    this.configureBindings();
+    this.led = new LED();
+    this.ledSim = new AddressableLEDSim(led.ledStrip);
+
+    this.configureLEDs();
+    this.configureDefaultCommands();
+    this.configureDriverController();
+    this.configureManipulatorController();
     this.configureAuto();
   }
 
-  private void configureBindings() {
-    // TODO: register led bindings here
+  private void configureLEDs() {
+    // default
+    LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
 
-    // this.drivetrain.setDefaultCommand(this.drivetrain.tuneController(driverController));
+    // note in sucker
+    LED.registerSignal(
+        2, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
 
-    // this.intake.retractor.setDefaultCommand(this.intake.retractor.tuneControllers());
-    // this.intake.sucker.setDefaultCommand(this.intake.sucker.tuneController());
+    // flywheel is revving
+    LED.registerSignal(
+        3,
+        () -> (!this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0),
+        LED.solid(Section.FULL, new Color(255, 255, 255)));
 
-    // this.launcher.pivot.setDefaultCommand(this.launcher.pivot.tuneControllers());
-    // this.launcher.indexer.setDefaultCommand(this.launcher.indexer.tuneController());
-    // this.launcher.flywheel.setDefaultCommand(this.launcher.flywheel.tuneController());
+    // flywheel is revved
+    LED.registerSignal(
+        4,
+        () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0),
+        LED.solid(Section.FULL, new Color(0, 255, 0)));
+  }
 
-    this.intake.sucker.setDefaultCommand(this.intake.sucker.off());
-    this.launcher.indexer.setDefaultCommand(this.launcher.indexer.off());
-    this.launcher.flywheel.setDefaultCommand(this.launcher.flywheel.off());
-
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(this.intake.deployIntake());
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .onFalse(this.intake.retractor.moveToRetracted());
-
-    new Trigger(this.driverController::getRightBumper).whileTrue(this.intake.sucker.in());
-
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .whileTrue(this.intake.outtakeNote());
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .onFalse(this.intake.retractor.moveToRetracted());
-
-    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFixed());
-    new Trigger(this.manipulatorController::getXButton)
-        .onTrue(new Mate().andThen(this.launcher.scoreAmp().raceWith(this.intake.sucker.off())));
-
-    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8)
-        .onTrue(this.launcher.pivot.aimAtAmp());
-    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
-        .onTrue(this.launcher.pivot.moveToRetracted());
-
+  private void configureDefaultCommands() {
     this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
+    this.sucker.setDefaultCommand(this.sucker.off());
+    this.indexer.setDefaultCommand(this.indexer.off());
+    this.flywheel.setDefaultCommand(this.flywheel.off());
+  }
+
+  private void configureDriverController() {
+    // TODO: i think we keep this just in case for teleop
     new Trigger(
             () -> this.driverController.getLeftBumper() && this.driverController.getRightBumper())
         .onTrue(this.drivetrain.zeroYaw());
+
+    // TODO: technically we can just pull the bumper state off of the controller inside teleop
+    // command but maybe this offers more control programmatically
+    new Trigger(this.driverController::getRightBumper)
+        .whileTrue(new InstantCommand(() -> this.drivetrain.slowMode = true));
+    new Trigger(this.driverController::getRightBumper)
+        .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
+
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .whileTrue(new IntakeNote());
+    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+        .onFalse(new Mate().onlyIf(this.sucker::noteDetected));
+
+    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+        .whileTrue(new OuttakeNote());
+    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+        .onFalse(this.retractor.moveToRetracted());
+
+    new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(0.0));
+    // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
+  }
+
+  private void configureManipulatorController() {
+    // TODO: do we give manipulator option to force mate?
+    // new Trigger(this.manipulatorController::getBButton).onTrue(new Mate());
+
+    new Trigger(this.manipulatorController::getAButton).onTrue(new ScoreAmp());
+    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance());
+    new Trigger(this.manipulatorController::getXButton).whileTrue(ScoreSpeakerFixed.rev());
+    new Trigger(this.manipulatorController::getXButton).onFalse(ScoreSpeakerFixed.eject());
   }
 
   private void configureAuto() {
-    NamedCommands.registerCommand("Drivetrain Off", this.drivetrain.stop());
-
-    NamedCommands.registerCommand("Score Speaker Fixed", new ScoreSpeakerFixed());
-    NamedCommands.registerCommand("Score Stage", new ScoreStage());
-    // NamedCommands.registerCommand("Score Top", (. . .));
-
-    NamedCommands.registerCommand("Deploy Intake", this.intake.deployIntake());
-    NamedCommands.registerCommand("Retract Intake", this.intake.retractor.moveToRetracted());
-
-    // this.autoChooser.addOption("Do Nothing", new InstantCommand());
+    this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
+    this.autoChooser.addOption("3NB Sweep", new Auto3NBSweep());
+    this.autoChooser.addOption("3NB Sweep Straight", new Auto3NBSweepStraight());
   }
 
   public Command getAutonomousCommand() {
-    // Command auto = new PathPlannerAuto("tuning");
-
-    // return this.drivetrain.zeroYaw().andThen(auto);
-    return AutoBuilder.buildAuto("3NB");
+    return this.autoChooser.getSelected();
   }
 }

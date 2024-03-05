@@ -16,10 +16,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.robolancers321.Constants.SwerveModuleConstants;
+import org.robolancers321.util.VirtualSubsystem;
 
-public class SwerveModule {
+public class SwerveModule extends VirtualSubsystem {
   /*
    * Singletons
    */
@@ -61,42 +62,21 @@ public class SwerveModule {
   }
 
   /*
-   * Constants
-   */
-
-  private static final CANcoderConfiguration kCANCoderConfig = new CANcoderConfiguration();
-
-  private static final double kWheelRadiusMeters = Units.inchesToMeters(2.0);
-  private static final double kGearRatio = 6.12;
-  private static final double kDrivePositionConversionFactor =
-      2 * Math.PI * kWheelRadiusMeters / kGearRatio;
-  private static final double kDriveVelocityConversionFactor =
-      2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
-  private static final double kTurnPositionConversionFactor = 7.0 / 150.0;
-
-  private static final double kDriveP = 0.00;
-  private static final double kDriveI = 0.00;
-  private static final double kDriveD = 0.00;
-  private static final double kDriveFF = 0.198;
-
-  private static final double kTurnP = 0.50;
-  private static final double kTurnI = 0.00;
-  private static final double kTurnD = 0.005;
-
-  /*
    * Implementation
    */
 
-  private String id;
+  private final String id;
 
-  private CANSparkMax driveMotor;
-  private CANSparkMax turnMotor;
+  private final CANSparkMax driveMotor;
+  private final CANSparkMax turnMotor;
 
-  private RelativeEncoder driveEncoder;
-  private CANcoder turnEncoder;
+  private final RelativeEncoder driveEncoder;
+  private final CANcoder turnEncoder;
 
-  private SparkPIDController driveController;
-  private PIDController turnController;
+  private final SparkPIDController driveController;
+  private final PIDController turnController;
+
+  private SwerveModuleState commandedState = new SwerveModuleState();
 
   private SwerveModule(
       String id,
@@ -109,28 +89,40 @@ public class SwerveModule {
       double turnEncoderOffset) {
     this.id = id;
 
+    this.driveMotor = new CANSparkMax(driveMotorPort, MotorType.kBrushless);
+    this.driveEncoder = this.driveMotor.getEncoder();
+    this.driveController = this.driveMotor.getPIDController();
     this.configDrive(driveMotorPort, invertDriveMotor);
+
+    this.turnMotor = new CANSparkMax(turnMotorPort, MotorType.kBrushless);
+    this.turnEncoder = new CANcoder(turnEncoderPort);
+    this.turnController =
+        new PIDController(
+            SwerveModuleConstants.kTurnP,
+            SwerveModuleConstants.kTurnI,
+            SwerveModuleConstants.kTurnD);
     this.configTurn(
         turnMotorPort, turnEncoderPort, invertTurnMotor, invertTurnEncoder, turnEncoderOffset);
+
+    this.commandedState = new SwerveModuleState();
   }
 
   private void configDrive(int driveMotorPort, boolean invertDriveMotor) {
-    this.driveMotor = new CANSparkMax(driveMotorPort, MotorType.kBrushless);
     this.driveMotor.setInverted(invertDriveMotor);
     this.driveMotor.setIdleMode(IdleMode.kBrake);
     this.driveMotor.setSmartCurrentLimit(40);
     this.driveMotor.enableVoltageCompensation(12);
 
-    this.driveEncoder = this.driveMotor.getEncoder();
     this.driveEncoder.setPosition(0.0);
-    this.driveEncoder.setPositionConversionFactor(kDrivePositionConversionFactor);
-    this.driveEncoder.setVelocityConversionFactor(kDriveVelocityConversionFactor);
+    this.driveEncoder.setPositionConversionFactor(
+        SwerveModuleConstants.kDrivePositionConversionFactor);
+    this.driveEncoder.setVelocityConversionFactor(
+        SwerveModuleConstants.kDriveVelocityConversionFactor);
 
-    this.driveController = this.driveMotor.getPIDController();
-    this.driveController.setP(kDriveP);
-    this.driveController.setI(kDriveI);
-    this.driveController.setD(kDriveD);
-    this.driveController.setFF(kDriveFF);
+    this.driveController.setP(SwerveModuleConstants.kDriveP);
+    this.driveController.setI(SwerveModuleConstants.kDriveI);
+    this.driveController.setD(SwerveModuleConstants.kDriveD);
+    this.driveController.setFF(SwerveModuleConstants.kDriveFF);
 
     this.driveMotor.burnFlash();
   }
@@ -141,15 +133,12 @@ public class SwerveModule {
       boolean invertTurnMotor,
       boolean invertTurnEncoder,
       double turnEncoderOffset) {
-
-    this.turnMotor = new CANSparkMax(turnMotorPort, MotorType.kBrushless);
     this.turnMotor.setInverted(invertTurnMotor);
     this.turnMotor.setIdleMode(IdleMode.kBrake);
     this.turnMotor.setSmartCurrentLimit(40);
     this.turnMotor.enableVoltageCompensation(12);
 
-    this.turnEncoder = new CANcoder(turnEncoderPort);
-    CANcoderConfiguration config = kCANCoderConfig;
+    CANcoderConfiguration config = SwerveModuleConstants.kCANCoderConfig;
     config.MagnetSensor.withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf);
     config.MagnetSensor.withMagnetOffset(turnEncoderOffset);
     config.MagnetSensor.withSensorDirection(
@@ -158,7 +147,6 @@ public class SwerveModule {
             : SensorDirectionValue.CounterClockwise_Positive);
     this.turnEncoder.getConfigurator().apply(config);
 
-    this.turnController = new PIDController(kTurnP, kTurnI, kTurnD);
     this.turnController.enableContinuousInput(-Math.PI, Math.PI);
 
     this.turnMotor.burnFlash();
@@ -199,19 +187,8 @@ public class SwerveModule {
   }
 
   protected void update(SwerveModuleState desiredState) {
-    SwerveModuleState optimized =
+    this.commandedState =
         SwerveModuleState.optimize(desiredState, Rotation2d.fromRadians(this.getTurnAngleRad()));
-
-    SmartDashboard.putNumber(this.id + " ref angle", optimized.angle.getDegrees());
-
-    this.driveController.setReference(optimized.speedMetersPerSecond, ControlType.kVelocity);
-
-    this.turnController.setSetpoint(optimized.angle.getRadians());
-
-    double turnOutput =
-        MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0);
-
-    this.turnMotor.set(turnOutput);
   }
 
   protected void doSendables() {
@@ -223,34 +200,57 @@ public class SwerveModule {
 
   protected static void initTuning() {
     SmartDashboard.putNumber(
-        "module drive kp", SmartDashboard.getNumber("module drive kp", kDriveP));
+        "module drive kp",
+        SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP));
     SmartDashboard.putNumber(
-        "module drive ki", SmartDashboard.getNumber("module drive ki", kDriveI));
+        "module drive ki",
+        SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI));
     SmartDashboard.putNumber(
-        "module drive kd", SmartDashboard.getNumber("module drive kd", kDriveD));
+        "module drive kd",
+        SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD));
     SmartDashboard.putNumber(
-        "module drive kff", SmartDashboard.getNumber("module drive kff", kDriveFF));
+        "module drive kff",
+        SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF));
 
-    SmartDashboard.putNumber("module turn kp", SmartDashboard.getNumber("module turn kp", kTurnP));
-    SmartDashboard.putNumber("module turn ki", SmartDashboard.getNumber("module turn ki", kTurnI));
-    SmartDashboard.putNumber("module turn kd", SmartDashboard.getNumber("module turn kd", kTurnD));
+    SmartDashboard.putNumber(
+        "module turn kp", SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP));
+    SmartDashboard.putNumber(
+        "module turn ki", SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI));
+    SmartDashboard.putNumber(
+        "module turn kd", SmartDashboard.getNumber("module turn kd", SwerveModuleConstants.kTurnD));
   }
 
   protected void tune() {
-    double tunedDriveP = SmartDashboard.getNumber("module drive kp", kDriveP);
-    double tunedDriveI = SmartDashboard.getNumber("module drive ki", kDriveI);
-    double tunedDriveD = SmartDashboard.getNumber("module drive kd", kDriveD);
-    double tunedDriveFF = SmartDashboard.getNumber("module drive kff", kDriveFF);
+    double tunedDriveP = SmartDashboard.getNumber("module drive kp", SwerveModuleConstants.kDriveP);
+    double tunedDriveI = SmartDashboard.getNumber("module drive ki", SwerveModuleConstants.kDriveI);
+    double tunedDriveD = SmartDashboard.getNumber("module drive kd", SwerveModuleConstants.kDriveD);
+    double tunedDriveFF =
+        SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF);
 
     this.driveController.setP(tunedDriveP);
     this.driveController.setI(tunedDriveI);
     this.driveController.setD(tunedDriveD);
     this.driveController.setFF(tunedDriveFF);
 
-    double tunedTurnP = SmartDashboard.getNumber("module turn kp", kTurnP);
-    double tunedTurnI = SmartDashboard.getNumber("module turn ki", kTurnI);
-    double tunedTurnD = SmartDashboard.getNumber("module turn kd", kTurnD);
+    double tunedTurnP = SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP);
+    double tunedTurnI = SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI);
+    double tunedTurnD = SmartDashboard.getNumber("module turn kd", SwerveModuleConstants.kTurnD);
 
     this.turnController.setPID(tunedTurnP, tunedTurnI, tunedTurnD);
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber(this.id + " ref angle", this.commandedState.angle.getDegrees());
+
+    this.driveController.setReference(
+        this.commandedState.speedMetersPerSecond, ControlType.kVelocity);
+
+    this.turnController.setSetpoint(this.commandedState.angle.getRadians());
+
+    double turnOutput =
+        MathUtil.clamp(this.turnController.calculate(this.getTurnAngleRad()), -1.0, 1.0);
+
+    this.turnMotor.set(turnOutput);
   }
 }
