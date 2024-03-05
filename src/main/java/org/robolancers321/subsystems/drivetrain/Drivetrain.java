@@ -8,16 +8,25 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+
+import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -252,8 +261,18 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
+    double bestDistance = this.mainCamera.getLatestResult().getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+
+    // !!!!!! TODO: if vision starts getting funky this is why
+    // TODO: tune this
+    // TODO: use offset to have base line for how much we distrust vision, then use coefficient to scale distrust based on distance squared
+    double translationStandardDeviation = bestDistance * bestDistance;
+    double rotationStandardDeviation = bestDistance * bestDistance;
+
+    Matrix<N3, N1> standardDeviation = VecBuilder.fill(translationStandardDeviation, translationStandardDeviation, rotationStandardDeviation);
+
     this.odometry.addVisionMeasurement(
-        visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
+        visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds, standardDeviation);
   }
 
   private Translation2d getSpeakerPosition() {
@@ -357,7 +376,7 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-    // this.fuseVision();
+    this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 

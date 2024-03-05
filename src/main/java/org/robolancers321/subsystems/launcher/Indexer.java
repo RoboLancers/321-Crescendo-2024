@@ -143,6 +143,10 @@ public class Indexer extends SubsystemBase {
         .withTimeout(1.0);
   }
 
+  public Command shift(){
+    return this.shiftForward().andThen(this.shiftBackward());
+  }
+
   public Command outtake() {
     return setGoalRPM(IndexerConstants.kOuttakeRPM)
         .alongWith(new WaitUntilCommand(this::jawnNotDetected).andThen(new WaitCommand(0.5)))

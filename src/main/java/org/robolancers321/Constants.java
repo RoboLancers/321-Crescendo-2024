@@ -29,9 +29,8 @@ public final class Constants {
     public static final double kNoteCameraMountPitch =
         0.0; // degrees w/r to the horizontal, above horizontal is positive
 
-    // TODO: fix this (if path following starts breaking, otherwise it works since our empirical tuning is based on this)
-    public static final double kTrackWidthMeters = Units.inchesToMeters(17.5); 
-    public static final double kWheelBaseMeters = Units.inchesToMeters(17.5);
+    public static final double kTrackWidthMeters = Units.inchesToMeters(22.0);
+    public static final double kWheelBaseMeters = Units.inchesToMeters(26.0);
 
     public static final double kMaxSpeedMetersPerSecond = 4.0;
     public static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
@@ -40,7 +39,7 @@ public final class Constants {
     public static final double kMaxTeleopRotationPercent = 1.0;
 
     public static final PathConstraints kAutoConstraints =
-        new PathConstraints(4.0, 0.5, 270 * Math.PI / 180, 360 * Math.PI / 180);
+        new PathConstraints(4.0, 3, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
     public static final SwerveDriveKinematics kSwerveKinematics =
         new SwerveDriveKinematics(
@@ -52,12 +51,12 @@ public final class Constants {
 
     public static double kSecondOrderKinematicsDt = 0.2;
 
-    public static final double kTranslationP = 5.0; //0.5
+    public static final double kTranslationP = 1.15; //4.0
     public static final double kTranslationI = 0.0;
     public static final double kTranslationD = 0.0; 
 
     // corrects heading during path planner
-    public static final double kRotationP = 2.16; //4.0
+    public static final double kRotationP = 2.16; //8.5
     public static final double kRotationI = 0.0;
     public static final double kRotationD = 0.0;
 
@@ -157,11 +156,11 @@ public final class Constants {
     public static final double kRampUpRate = 10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
     public static final double kFF = 0.00016;
-    public static final double kToleranceRPM = 100.0;
+    public static final double kToleranceRPM = 80.0;
 
     public enum FlywheelSetpoint {
       kAmp(1000.0),
-      kSpeaker(5200.0);
+      kSpeaker(3000.0);
 
       public final double rpm;
 
@@ -173,7 +172,7 @@ public final class Constants {
 
   public static final class IndexerConstants {
     public static final int kMotorPort = 16;
-    public static final int kBeamBreakPort = 7;
+    public static final int kBeamBreakPort = 9;
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 60;
@@ -182,7 +181,7 @@ public final class Constants {
 
     public static final double kHandoffRPM = 3000;
     public static final double kShiftForwardRPM = 600;
-    public static final double kShiftBackwardRPM = -300;
+    public static final double kShiftBackwardRPM = -200;
     public static final double kOuttakeRPM = 3000;
   }
 
@@ -198,20 +197,20 @@ public final class Constants {
     public static final float kMinAngle = 0.0f;
     public static final float kMaxAngle = 90.0f;
 
-    public static final double kP = 0.05; // 0.03
+    public static final double kP = 0.04; // 0.03
     public static final double kI = 0.0;
-    public static final double kD = 0.00;
+    public static final double kD = 0.0; // 0.02;
 
     public static final double kS = 0.0;
     public static final double kG = 0.0;
-    public static final double kV = 0.06; // 0.35
+    public static final double kV = 0.0; // 0.35
 
-    public static final double kMaxVelocityDeg = 150;
-    public static final double kMaxAccelerationDeg = 1500;
+    public static final double kMaxVelocityDeg = 240;
+    public static final double kMaxAccelerationDeg = 360;
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
-    public static final double kToleranceDeg = 3.0;
+    public static final double kToleranceDeg = 2.0;
 
     public enum PivotSetpoint {
       kRetracted(15.0),

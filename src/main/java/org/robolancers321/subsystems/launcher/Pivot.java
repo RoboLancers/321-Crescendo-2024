@@ -76,8 +76,8 @@ public class Pivot extends SubsystemBase {
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20); // abs encoder position
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20); // abs encoder velocity
 
-    // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) PivotConstants.kMaxAngle);
-    // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) PivotConstants.kMinAngle);
+    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) PivotConstants.kMaxAngle);
+    this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) PivotConstants.kMinAngle);
     // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, true);
     // this.motor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, true);
 
