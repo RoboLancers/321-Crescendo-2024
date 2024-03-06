@@ -16,8 +16,8 @@ public class AutoPickupNote extends ParallelRaceGroup {
             new SequentialCommandGroup(
                 this.drivetrain.turnToNote(),
                 new SequentialCommandGroup(
-                    this.drivetrain.driveCommand(() -> 0.1, () -> 0.0, () -> 0.0, () -> false).onlyWhile(this.drivetrain::seesNote),
-                    this.drivetrain.driveCommand(() -> 0.1, () -> 0.0, () -> 0.0, () -> false).withTimeout(0.5)
+                    this.drivetrain.driveCommand(0.1, 0.0, 0.0, false).onlyWhile(this.drivetrain::seesNote),
+                    this.drivetrain.driveCommand(0.1, 0.0, 0.0, false).withTimeout(0.5)
                 ).onlyIf(this.drivetrain::seesNote)
             )
         );

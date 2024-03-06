@@ -445,6 +445,10 @@ public class Drivetrain extends SubsystemBase {
     return run(() -> this.drive(throttleSupplier.getAsDouble(), strafeSupplier.getAsDouble(), omegaSupplier.getAsDouble(), fieldRelativeSupplier.getAsBoolean()));
   }
 
+  public Command driveCommand(double throttle, double strafe, double omega, boolean fieldRelative){
+    return this.driveCommand(() -> throttle, () -> strafe, () -> omega, () -> fieldRelative);
+  }
+
   public Command turnToAngle(double angle) {
     return runOnce(() -> this.headingController.setSetpoint(angle))
         .andThen(
