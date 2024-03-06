@@ -5,29 +5,28 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 
-public class PathAndShoot extends SequentialCommandGroup {
+public class PathAndMate extends SequentialCommandGroup {
   private Sucker sucker;
   private Retractor retractor;
 
-  public PathAndShoot(String pathName) {
+  public PathAndMate(String pathName) {
     this.sucker = Sucker.getInstance();
     this.retractor = Retractor.getInstance();
 
     this.addCommands(
-        new ParallelRaceGroup(
+        new ParallelCommandGroup(
             AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(pathName)),
-            new IntakeNote()),
-        new ConditionalCommand(
-            new SequentialCommandGroup(new Mate(), new ScoreSpeakerFromDistance()),
-            new InstantCommand(
-                () -> {
-                  retractor.moveToMating();
-                }),
-            this.sucker::noteDetected));
+            new ConditionalCommand(
+                new Mate(),
+                new InstantCommand(
+                    () -> {
+                      retractor.moveToMating();
+                    }),
+                this.sucker::noteDetected)));
   }
 }

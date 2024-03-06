@@ -15,7 +15,7 @@ import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
 
-public class Auto3NTClose extends SequentialCommandGroup {
+public class Auto4NBSkip extends SequentialCommandGroup {
   private Drivetrain drivetrain;
   private Retractor retractor;
   private Sucker sucker;
@@ -23,7 +23,7 @@ public class Auto3NTClose extends SequentialCommandGroup {
   private Indexer indexer;
   private Flywheel flywheel;
 
-  public Auto3NTClose() {
+  public Auto4NBSkip() {
     this.drivetrain = Drivetrain.getInstance();
     this.retractor = Retractor.getInstance();
     this.sucker = Sucker.getInstance();
@@ -36,9 +36,12 @@ public class Auto3NTClose extends SequentialCommandGroup {
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
         new ScoreSpeakerFixedAuto(),
-        new PathAndShoot("3NT-Close.1"),
-        new PathAndIntake("3NT-Close.2"),
-        new PathAndMate("3NT-Close.3"),
-        new ScoreSpeakerFromDistance());
+        new PathAndIntake("4NB-Skip.1"),
+        new PathAndMate("4NT-Skip.2"),
+        new ScoreSpeakerFromDistance(),
+        new PathAndIntake("4NT-Skip.3"),
+        new PathAndMate("4NT-Skip.4"),
+        new ScoreSpeakerFromDistance(),
+        new PathAndShoot("4NT-Skip.5"));
   }
 }

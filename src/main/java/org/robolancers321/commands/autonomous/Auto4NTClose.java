@@ -3,8 +3,11 @@ package org.robolancers321.commands.autonomous;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import org.robolancers321.commands.PathAndIntake;
+import org.robolancers321.commands.PathAndMate;
 import org.robolancers321.commands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
+import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -33,10 +36,12 @@ public class Auto4NTClose extends SequentialCommandGroup {
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
         new ScoreSpeakerFixedAuto(),
-        new PathAndShoot("4NTClose.1"),
-        new PathAndShoot("4NTClose.2"),
-        new PathAndShoot("4NTClose.3"),
-        new PathAndShoot("4NTClose.4"),
-        new PathAndShoot("4NTClose.5"));
+        new PathAndShoot("4NT-Close.1"),
+        new PathAndIntake("4NT-Close.2"),
+        new PathAndMate("4NT-Close.3"),
+        new ScoreSpeakerFromDistance(),
+        new PathAndIntake("4NT-Close.4"),
+        new PathAndMate("4NT-Close.5"),
+        new ScoreSpeakerFromDistance());
   }
 }
