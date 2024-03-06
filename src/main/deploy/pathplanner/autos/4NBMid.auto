@@ -1,0 +1,171 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.8085346817970276,
+      "y": 4.440213680267334
+    },
+    "rotation": -56.97613751898411
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "4NBMid1st.1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Deploy Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "4NBMid1st.2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Retract Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Drivetrain Off"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score From Distance"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "4NBMid1st.3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Deploy Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "4NBMid1st.4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Retract Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Drivetrain Off"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score From Distance"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "4NBMid1st.5"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Deploy Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Drivetrain Off"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score From Distance"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": true
+}

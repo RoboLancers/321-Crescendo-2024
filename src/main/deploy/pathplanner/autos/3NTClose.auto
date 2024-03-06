@@ -1,0 +1,127 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.735096275806427,
+      "y": 6.688129901885986
+    },
+    "rotation": 59.03626515463288
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "3NTClose.1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Deploy Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Drivetrain Off"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Retract Intake"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Score From Distance"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "3NTClose.2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Deploy Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "3NTClose.3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Retract Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Drivetrain Off"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score From Distance"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": true
+}

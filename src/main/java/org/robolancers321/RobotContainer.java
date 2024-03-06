@@ -15,10 +15,13 @@ import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixed;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.autonomous.Auto3NBClose;
 import org.robolancers321.commands.autonomous.Auto3NBSweep;
 import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
 import org.robolancers321.commands.autonomous.Auto3NMid;
+import org.robolancers321.commands.autonomous.Auto3NTClose;
 import org.robolancers321.commands.autonomous.Auto3NTSweep;
+import org.robolancers321.commands.autonomous.Auto4NBMid;
 import org.robolancers321.commands.autonomous.Auto4NTClose;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
@@ -138,9 +141,12 @@ public class RobotContainer {
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
     this.autoChooser.addOption("3NB Sweep", new Auto3NBSweep());
     this.autoChooser.addOption("3NB Sweep Straight", new Auto3NBSweepStraight());
+    this.autoChooser.addOption("3NBClose", new Auto3NBClose());
     this.autoChooser.addOption("3NMid", new Auto3NMid());
     this.autoChooser.addOption("4NTClose", new Auto4NTClose());
-    this.autoChooser.addOption("4NTSweep", new Auto3NTSweep());
+    this.autoChooser.addOption("3NTSweep", new Auto3NTSweep());
+    this.autoChooser.addOption("3NTClose", new Auto3NTClose());
+    this.autoChooser.addOption("4NBMid", new Auto4NBMid());
   }
 
   public Command getAutonomousCommand() {
