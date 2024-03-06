@@ -136,7 +136,7 @@ public final class Constants {
     public static final int kTouchSensorPort = 5;
 
     public static final boolean kInvertMotor = true;
-    public static final int kCurrentLimit = 60;
+    public static final int kCurrentLimit = 40;
 
     public static final double kInSpeed = 1.0;
     public static final double kOutSpeed = -1.0;
