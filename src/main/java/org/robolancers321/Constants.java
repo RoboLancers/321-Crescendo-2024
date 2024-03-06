@@ -138,8 +138,8 @@ public final class Constants {
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 60;
 
-    public static final double kInSpeed = 0.4;
-    public static final double kOutSpeed = -0.4;
+    public static final double kInSpeed = 1.0;
+    public static final double kOutSpeed = -1.0;
 
     // public static final double kFF = 0.00017;
 
@@ -175,13 +175,13 @@ public final class Constants {
     public static final int kBeamBreakPort = 9;
 
     public static final boolean kInvertMotor = true;
-    public static final int kCurrentLimit = 60;
+    public static final int kCurrentLimit = 40;
 
     public static final double kFF = 0.000153;
 
     public static final double kHandoffRPM = 3000;
     public static final double kShiftForwardRPM = 600;
-    public static final double kShiftBackwardRPM = -200;
+    public static final double kShiftBackwardRPM = -300;
     public static final double kOuttakeRPM = 3000;
   }
 

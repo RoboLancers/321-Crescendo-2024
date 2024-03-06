@@ -3,6 +3,7 @@ package org.robolancers321;
 
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.Mate;
+import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
@@ -118,10 +119,10 @@ public class RobotContainer {
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .onFalse(new Mate().onlyIf(() -> true));
 
-    // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-    //     .whileTrue(new OuttakeNote());
-    // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-    //     .onFalse(this.retractor.moveToRetracted());
+    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+        .whileTrue(new OuttakeNote());
+    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
+        .onFalse(this.retractor.moveToRetracted());
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(0.0));
     // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
@@ -144,8 +145,8 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("NoTeamBottom"));
+    // return AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("3NM"));
 
-    // return this.autoChooser.getSelected();
+    return this.autoChooser.getSelected();
   }
 }
