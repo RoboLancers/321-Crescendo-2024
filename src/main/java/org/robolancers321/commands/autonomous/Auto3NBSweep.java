@@ -7,10 +7,9 @@ import org.robolancers321.commands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 
-
 public class Auto3NBSweep extends SequentialCommandGroup {
   private Drivetrain drivetrain;
-  
+
   public Auto3NBSweep() {
     this.drivetrain = Drivetrain.getInstance();
     ;

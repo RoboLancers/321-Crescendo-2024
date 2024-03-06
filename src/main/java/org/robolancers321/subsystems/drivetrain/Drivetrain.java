@@ -8,13 +8,9 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
-
-import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -32,7 +28,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -258,7 +253,7 @@ public class Drivetrain extends SubsystemBase {
     this.updateModules(states);
   }
 
-  public boolean seesTag(){
+  public boolean seesTag() {
     return this.mainCamera.getLatestResult().hasTargets();
   }
 
@@ -267,18 +262,29 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
-    double bestDistance = this.mainCamera.getLatestResult().getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+    double bestDistance =
+        this.mainCamera
+            .getLatestResult()
+            .getBestTarget()
+            .getBestCameraToTarget()
+            .getTranslation()
+            .getDistance(new Translation3d());
 
     // !!!!!! TODO: if vision starts getting funky this is why
     // TODO: tune this
-    // TODO: use offset to have base line for how much we distrust vision, then use coefficient to scale distrust based on distance squared
+    // TODO: use offset to have base line for how much we distrust vision, then use coefficient to
+    // scale distrust based on distance squared
     double translationStandardDeviation = bestDistance * bestDistance;
     double rotationStandardDeviation = bestDistance * bestDistance;
 
-    Matrix<N3, N1> standardDeviation = VecBuilder.fill(translationStandardDeviation, translationStandardDeviation, rotationStandardDeviation);
+    Matrix<N3, N1> standardDeviation =
+        VecBuilder.fill(
+            translationStandardDeviation, translationStandardDeviation, rotationStandardDeviation);
 
     this.odometry.addVisionMeasurement(
-        visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds, standardDeviation);
+        visionEstimate.get().estimatedPose.toPose2d(),
+        visionEstimate.get().timestampSeconds,
+        standardDeviation);
   }
 
   private Translation2d getSpeakerPosition() {
@@ -302,7 +308,7 @@ public class Drivetrain extends SubsystemBase {
     return this.getPose().getTranslation().getDistance(speakerLocation);
   }
 
-  public boolean seesNote(){
+  public boolean seesNote() {
     return this.noteCamera.getLatestResult().hasTargets();
   }
 
@@ -441,11 +447,21 @@ public class Drivetrain extends SubsystemBase {
         .finallyDo(this::stop);
   }
 
-  public Command driveCommand(DoubleSupplier throttleSupplier, DoubleSupplier strafeSupplier, DoubleSupplier omegaSupplier, BooleanSupplier fieldRelativeSupplier){
-    return run(() -> this.drive(throttleSupplier.getAsDouble(), strafeSupplier.getAsDouble(), omegaSupplier.getAsDouble(), fieldRelativeSupplier.getAsBoolean()));
+  public Command driveCommand(
+      DoubleSupplier throttleSupplier,
+      DoubleSupplier strafeSupplier,
+      DoubleSupplier omegaSupplier,
+      BooleanSupplier fieldRelativeSupplier) {
+    return run(
+        () ->
+            this.drive(
+                throttleSupplier.getAsDouble(),
+                strafeSupplier.getAsDouble(),
+                omegaSupplier.getAsDouble(),
+                fieldRelativeSupplier.getAsBoolean()));
   }
 
-  public Command driveCommand(double throttle, double strafe, double omega, boolean fieldRelative){
+  public Command driveCommand(double throttle, double strafe, double omega, boolean fieldRelative) {
     return this.driveCommand(() -> throttle, () -> strafe, () -> omega, () -> fieldRelative);
   }
 

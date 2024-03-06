@@ -143,7 +143,7 @@ public class Indexer extends SubsystemBase {
         .withTimeout(1.0);
   }
 
-  public Command shift(){
+  public Command shift() {
     return this.shiftForward().andThen(this.shiftBackward());
   }
 

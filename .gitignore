@@ -75,6 +75,8 @@ hs_err_pid*
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
+src\main\java\org\robolancers321\BuildConstants.java
+
 ### macOS ###
 # General
 .DS_Store

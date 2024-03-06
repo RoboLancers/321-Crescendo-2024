@@ -57,7 +57,7 @@ public class Sucker extends SubsystemBase {
     return this.encoder.getVelocity();
   }
 
-  public boolean noteDetected(){
+  public boolean noteDetected() {
     return !this.touchSensor.get();
   }
 

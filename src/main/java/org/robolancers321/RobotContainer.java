@@ -1,6 +1,16 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.robolancers321.commands.AutoPickupNote;
+import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
@@ -18,17 +28,6 @@ import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -70,29 +69,34 @@ public class RobotContainer {
   }
 
   private void configureLEDs() {
-    // default
+    // default, meteor red
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
 
-    // note in sucker
+    // note in sucker, blink orange
     LED.registerSignal(
-        2, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
+        2, this.sucker::noteDetected, LED.strobe(Section.FULL, new Color(180, 30, 0)));
 
-    // flywheel is revving
+    // flywheel is revving, solid white
     LED.registerSignal(
         3,
         () -> (!this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0),
         LED.solid(Section.FULL, new Color(255, 255, 255)));
 
-    // flywheel is revved
+    // flywheel is revved, blink green
     LED.registerSignal(
         4,
         () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0),
-        LED.solid(Section.FULL, new Color(0, 255, 0)));
+        LED.strobe(Section.FULL, new Color(0, 255, 0)));
+
+    // running auto pickup, solid purple
+    LED.registerSignal(
+        5,
+        () -> CommandScheduler.getInstance().requiring(drivetrain).getName() == "AutoPickupNote",
+        LED.solid(Section.FULL, new Color(50, 10, 60)));
   }
 
   private void configureDefaultCommands() {
     this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
-
 
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
@@ -124,8 +128,10 @@ public class RobotContainer {
     new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
         .onFalse(this.retractor.moveToRetracted());
 
-    new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(0.0));
+    new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
+    new Trigger(this.driverController::getBButton).onTrue(new AutoPickupNote());
     // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
+    new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
   private void configureManipulatorController() {

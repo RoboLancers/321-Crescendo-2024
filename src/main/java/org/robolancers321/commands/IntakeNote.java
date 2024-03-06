@@ -2,8 +2,6 @@
 package org.robolancers321.commands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 
@@ -16,6 +14,7 @@ public class IntakeNote extends ParallelCommandGroup {
     this.sucker = Sucker.getInstance();
 
     this.addCommands(retractor.moveToIntake(), sucker.in());
-    // this.addCommands(retractor.moveToIntake(), sucker.in(), new WaitUntilCommand(this.sucker::noteDetected));
+    // this.addCommands(retractor.moveToIntake(), sucker.in(), new
+    // WaitUntilCommand(this.sucker::noteDetected));
   }
 }

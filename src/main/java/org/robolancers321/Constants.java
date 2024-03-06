@@ -51,12 +51,12 @@ public final class Constants {
 
     public static double kSecondOrderKinematicsDt = 0.2;
 
-    public static final double kTranslationP = 1.15; //4.0
+    public static final double kTranslationP = 1.15; // 4.0
     public static final double kTranslationI = 0.0;
-    public static final double kTranslationD = 0.0; 
+    public static final double kTranslationD = 0.0;
 
     // corrects heading during path planner
-    public static final double kRotationP = 2.16; //8.5
+    public static final double kRotationP = 2.16; // 8.5
     public static final double kRotationI = 0.0;
     public static final double kRotationD = 0.0;
 
@@ -82,7 +82,7 @@ public final class Constants {
     public static final double kDriveP = 0.00;
     public static final double kDriveI = 0.00;
     public static final double kDriveD = 0.00;
-    public static final double kDriveFF = 0.198; //0.198
+    public static final double kDriveFF = 0.198; // 0.198
 
     public static final double kTurnP = 0.50;
     public static final double kTurnI = 0.00;
@@ -153,7 +153,8 @@ public final class Constants {
     public static final boolean kInvertMotor = false;
     public static final int kCurrentLimit = 75;
 
-    public static final double kRampUpRate = 10000000; // effectively infinite ramp up, keeping this for the infrastructure
+    public static final double kRampUpRate =
+        10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
     public static final double kFF = 0.00016;
     public static final double kToleranceRPM = 80.0;

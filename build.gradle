@@ -110,10 +110,8 @@ spotless {
         }
 
         toggleOffOn()
-        googleJavaFormat().reflowLongStrings()
-        removeUnusedImports()
+        googleJavaFormat()
         trimTrailingWhitespace()
-        endWithNewline()
 
 
         licenseHeader '/* (C) Robolancers 2024 */'
