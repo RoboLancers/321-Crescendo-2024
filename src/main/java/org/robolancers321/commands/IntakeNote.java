@@ -15,6 +15,7 @@ public class IntakeNote extends ParallelCommandGroup {
     this.retractor = Retractor.getInstance();
     this.sucker = Sucker.getInstance();
 
-    this.addCommands(retractor.moveToIntake(), sucker.in(), new WaitUntilCommand(this.sucker::noteDetected));
+    this.addCommands(retractor.moveToIntake(), sucker.in());
+    // this.addCommands(retractor.moveToIntake(), sucker.in(), new WaitUntilCommand(this.sucker::noteDetected));
   }
 }

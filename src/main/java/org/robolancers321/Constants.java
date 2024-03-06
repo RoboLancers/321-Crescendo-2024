@@ -99,7 +99,7 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = -18f;
+    public static final float kMinAngle = -15f;
     public static final float kMaxAngle = 160.0f;
 
     public static final double kP = 0.0065;
@@ -107,7 +107,7 @@ public final class Constants {
     public static final double kD = 0.0001;
 
     public static final double kS = 0.000;
-    public static final double kG = 0.0155;
+    public static final double kG = 0.03; // 0.04? // 0.0155;
     public static final double kV = 0.000;
 
     public static final double kMaxVelocityDeg = 180.0;
@@ -118,7 +118,7 @@ public final class Constants {
     public enum RetractorSetpoint {
       kRetracted(160),
       kMating(160),
-      kClearFromLauncher(110),
+      kClearFromLauncher(70),
       kIntake(-14),
       kOuttake(20.0);
 
@@ -135,11 +135,11 @@ public final class Constants {
 
     public static final int kTouchSensorPort = 5;
 
-    public static final boolean kInvertMotor = false;
+    public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 60;
 
-    public static final double kInSpeed = 0.8;
-    public static final double kOutSpeed = -0.8;
+    public static final double kInSpeed = 0.4;
+    public static final double kOutSpeed = -0.4;
 
     // public static final double kFF = 0.00017;
 

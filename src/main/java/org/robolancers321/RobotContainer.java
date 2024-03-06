@@ -112,8 +112,10 @@ public class RobotContainer {
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNote());
+    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+    //     .onFalse(new Mate().onlyIf(this.sucker::noteDetected));
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .onFalse(new Mate().onlyIf(this.sucker::noteDetected));
+        .onFalse(new Mate().onlyIf(() -> true));
 
     // new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
     //     .whileTrue(new OuttakeNote());
