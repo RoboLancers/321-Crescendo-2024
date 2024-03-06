@@ -32,14 +32,14 @@ public final class Constants {
     public static final double kTrackWidthMeters = Units.inchesToMeters(22.0);
     public static final double kWheelBaseMeters = Units.inchesToMeters(26.0);
 
-    public static final double kMaxSpeedMetersPerSecond = 5.0;
+    public static final double kMaxSpeedMetersPerSecond = 4.0;
     public static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
     public static final double kMaxTeleopSpeedPercent = 1.0;
     public static final double kMaxTeleopRotationPercent = 1.0;
 
     public static final PathConstraints kAutoConstraints =
-        new PathConstraints(4.0, 1.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
+        new PathConstraints(4.0, 3, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
     public static final SwerveDriveKinematics kSwerveKinematics =
         new SwerveDriveKinematics(
@@ -51,12 +51,12 @@ public final class Constants {
 
     public static double kSecondOrderKinematicsDt = 0.2;
 
-    public static final double kTranslationP = 4.0;
+    public static final double kTranslationP = 1.15; //4.0
     public static final double kTranslationI = 0.0;
-    public static final double kTranslationD = 0.0;
+    public static final double kTranslationD = 0.0; 
 
     // corrects heading during path planner
-    public static final double kRotationP = 8.5;
+    public static final double kRotationP = 2.16; //8.5
     public static final double kRotationI = 0.0;
     public static final double kRotationD = 0.0;
 
@@ -82,7 +82,7 @@ public final class Constants {
     public static final double kDriveP = 0.00;
     public static final double kDriveI = 0.00;
     public static final double kDriveD = 0.00;
-    public static final double kDriveFF = 0.198;
+    public static final double kDriveFF = 0.198; //0.198
 
     public static final double kTurnP = 0.50;
     public static final double kTurnI = 0.00;
@@ -172,7 +172,7 @@ public final class Constants {
 
   public static final class IndexerConstants {
     public static final int kMotorPort = 16;
-    public static final int kBeamBreakPort = 7;
+    public static final int kBeamBreakPort = 9;
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 60;

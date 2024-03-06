@@ -92,6 +92,7 @@ public class RobotContainer {
   private void configureDefaultCommands() {
     this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
 
+
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
     this.flywheel.setDefaultCommand(this.flywheel.off());
@@ -143,7 +144,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return AutoBuilder.followPath(PathPlannerPath.fromPathFile("Tune"));
+    return AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("NoTeamBottom"));
 
     // return this.autoChooser.getSelected();
   }
