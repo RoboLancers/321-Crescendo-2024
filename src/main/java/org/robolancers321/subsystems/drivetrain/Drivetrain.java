@@ -32,8 +32,10 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -256,6 +258,10 @@ public class Drivetrain extends SubsystemBase {
     this.updateModules(states);
   }
 
+  public boolean seesTag(){
+    return this.mainCamera.getLatestResult().hasTargets();
+  }
+
   private void fuseVision() {
     Optional<EstimatedRobotPose> visionEstimate = visionEstimator.update();
 
@@ -279,7 +285,7 @@ public class Drivetrain extends SubsystemBase {
     return MyAlliance.isRed() ? new Translation2d(16.53, 5.55) : new Translation2d(0.0, 5.55);
   }
 
-  public double getAngleToSpeaker() {
+  private double getAngleToSpeaker() {
     Translation2d speakerLocation = this.getSpeakerPosition();
 
     return -180
@@ -296,7 +302,11 @@ public class Drivetrain extends SubsystemBase {
     return this.getPose().getTranslation().getDistance(speakerLocation);
   }
 
-  public double getNoteAngle() {
+  public boolean seesNote(){
+    return this.noteCamera.getLatestResult().hasTargets();
+  }
+
+  private double getNoteAngle() {
     PhotonPipelineResult latestResult = this.noteCamera.getLatestResult();
 
     if (!latestResult.hasTargets()) return 0.0;
@@ -429,6 +439,10 @@ public class Drivetrain extends SubsystemBase {
           this.drive(strafeVec.getX(), strafeVec.getY(), omega, true);
         })
         .finallyDo(this::stop);
+  }
+
+  public Command driveCommand(DoubleSupplier throttleSupplier, DoubleSupplier strafeSupplier, DoubleSupplier omegaSupplier, BooleanSupplier fieldRelativeSupplier){
+    return run(() -> this.drive(throttleSupplier.getAsDouble(), strafeSupplier.getAsDouble(), omegaSupplier.getAsDouble(), fieldRelativeSupplier.getAsBoolean()));
   }
 
   public Command turnToAngle(double angle) {
