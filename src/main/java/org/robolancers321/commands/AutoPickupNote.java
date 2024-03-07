@@ -10,7 +10,7 @@ import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 
-public class AutoPickupNote extends ParallelRaceGroup {
+public class AutoPickupNote extends SequentialCommandGroup {
   private Drivetrain drivetrain;
   private Retractor retractor;
   private Sucker sucker;
@@ -21,23 +21,27 @@ public class AutoPickupNote extends ParallelRaceGroup {
     this.sucker = Sucker.getInstance();
 
     this.addCommands(
-        this.sucker.in(),
-        new SequentialCommandGroup(
-            this.retractor.moveToIntake(),
-            new WaitCommand(0.2),
-            new ConditionalCommand(
-                new SequentialCommandGroup(
-                    this.drivetrain.turnToNote(),
-                    this.drivetrain
-                        .driveCommand(0.0, 2.0, 0.0, false)
-                        .until(() -> !this.drivetrain.seesNote())
-                        .withTimeout(1.5),
-                    this.drivetrain
-                        .driveCommand(0.0, 2.0, 0.0, false)
-                        .until(this.sucker::noteDetected)
-                        .withTimeout(1.0)),
-                new InstantCommand(),
-                this.drivetrain::seesNote),
-            this.sucker.offInstantly()));
+        new ParallelRaceGroup(
+            this.sucker.in(),
+            new SequentialCommandGroup(
+                this.retractor.moveToIntake(),
+                new WaitCommand(0.2),
+                new ConditionalCommand(
+                    new SequentialCommandGroup(
+                        this.drivetrain.turnToNote(),
+                        this.drivetrain
+                            .driveCommand(0.0, 2.0, 0.0, false)
+                            .until(() -> !this.drivetrain.seesNote())
+                            .withTimeout(1.5),
+                        this.drivetrain
+                            .driveCommand(0.0, 2.0, 0.0, false)
+                            .until(this.sucker::noteDetected)
+                            .withTimeout(1.0)),
+                    new InstantCommand(),
+                    this.drivetrain::seesNote)
+            )
+        ),
+        this.sucker.offInstantly()
+    );
   }
 }
