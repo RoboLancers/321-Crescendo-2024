@@ -7,12 +7,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import org.robolancers321.Constants.RetractorConstants;
+import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNote;
@@ -75,20 +73,30 @@ public class RobotContainer {
     // default, meteor red
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
 
+    // sees note, blink orange
+    LED.registerSignal(
+        2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(180, 30, 0)));
+
     // note in sucker, solid orange
     LED.registerSignal(
-        2, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
 
     // flywheel is revving, solid white
     LED.registerSignal(
-        3,
-        () -> (!this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 2000),
+        4,
+        () ->
+            (!this.flywheel.isRevved()
+                && this.flywheel.getGoalRPM()
+                    > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
         LED.solid(Section.FULL, new Color(255, 255, 255)));
 
     // flywheel is revved, blink green
     LED.registerSignal(
-        4,
-        () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 2000),
+        5,
+        () ->
+            (this.flywheel.isRevved()
+                && this.flywheel.getGoalRPM()
+                    > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
         LED.strobe(Section.FULL, new Color(0, 255, 0)));
   }
 
@@ -129,18 +137,26 @@ public class RobotContainer {
   }
 
   private void configureManipulatorController() {
-    new Trigger(this.manipulatorController::getAButton).onTrue(new ScoreAmp().finallyDo(() -> {
-      CommandScheduler.getInstance().schedule(new ParallelCommandGroup(
-        this.retractor.moveToRetracted(),
-        this.pivot.moveToRetracted()
-      ));
-    }));
-    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance().finallyDo(() -> {
-      CommandScheduler.getInstance().schedule(new ParallelCommandGroup(
-        this.retractor.moveToRetracted(),
-        this.pivot.moveToRetracted()
-      ));
-    }));
+    new Trigger(this.manipulatorController::getAButton)
+        .onTrue(
+            new ScoreAmp()
+                .finallyDo(
+                    () -> {
+                      CommandScheduler.getInstance()
+                          .schedule(
+                              new ParallelCommandGroup(
+                                  this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
+                    }));
+    new Trigger(this.manipulatorController::getYButton)
+        .onTrue(
+            new ScoreSpeakerFromDistance()
+                .finallyDo(
+                    () -> {
+                      CommandScheduler.getInstance()
+                          .schedule(
+                              new ParallelCommandGroup(
+                                  this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
+                    }));
     new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
     new Trigger(this.manipulatorController::getXButton)
         .onFalse(

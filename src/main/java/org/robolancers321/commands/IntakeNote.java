@@ -2,7 +2,6 @@
 package org.robolancers321.commands;
 
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import org.robolancers321.subsystems.intake.Retractor;
@@ -20,8 +19,7 @@ public class IntakeNote extends SequentialCommandGroup {
         new ParallelDeadlineGroup(
             new WaitUntilCommand(this.sucker::noteDetected),
             this.retractor.moveToIntake(),
-            this.sucker.in()
-        ),
+            this.sucker.in()),
         this.sucker.offInstantly(),
         this.retractor.moveToMating());
   }

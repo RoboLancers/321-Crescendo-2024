@@ -304,7 +304,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public boolean seesNote() {
-    return this.noteCamera.getLatestResult().hasTargets() && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
+    return this.noteCamera.getLatestResult().hasTargets()
+        && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
   }
 
   private double getNoteAngle() {

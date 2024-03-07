@@ -65,7 +65,7 @@ public final class Constants {
     public static final double kHeadingI = 0.0;
     public static final double kHeadingD = 0.01; // 0.01?
 
-    public static final double kHeadingTolerance = 1.0;
+    public static final double kHeadingTolerance = 2.0;
   }
 
   public static final class SwerveModuleConstants {
@@ -157,7 +157,7 @@ public final class Constants {
         10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
     public static final double kFF = 0.00016;
-    public static final double kToleranceRPM = 80.0;
+    public static final double kToleranceRPM = 120.0;
 
     public enum FlywheelSetpoint {
       kAcceptHandoff(300),

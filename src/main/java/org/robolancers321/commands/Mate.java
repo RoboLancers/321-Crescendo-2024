@@ -29,7 +29,6 @@ public class Mate extends SequentialCommandGroup {
         new ParallelDeadlineGroup(
             this.indexer.acceptHandoff(), this.sucker.out(), this.flywheel.acceptHandoff()),
         this.indexer.off(),
-        this.flywheel.off()
-    );
+        this.flywheel.off());
   }
 }
