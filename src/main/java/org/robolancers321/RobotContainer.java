@@ -148,7 +148,7 @@ public class RobotContainer {
         .onFalse(this.retractor.moveToRetracted());
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
-    new Trigger(this.driverController::getBButton).onTrue(new AutoPickupNote());
+    new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
