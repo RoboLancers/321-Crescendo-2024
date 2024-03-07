@@ -1,27 +1,39 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import org.robolancers321.subsystems.drivetrain.Drivetrain;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
-public class AutoPickupNote extends ParallelRaceGroup {
+import org.robolancers321.subsystems.drivetrain.Drivetrain;
+import org.robolancers321.subsystems.intake.Retractor;
+import org.robolancers321.subsystems.intake.Sucker;
+
+public class AutoPickupNote extends SequentialCommandGroup {
   private Drivetrain drivetrain;
+  private Retractor retractor;
+  private Sucker sucker;
 
   public AutoPickupNote() {
     this.drivetrain = Drivetrain.getInstance();
-
-    this.setName("AutoPickupNote");
+    this.retractor = Retractor.getInstance();
+    this.sucker = Sucker.getInstance();
 
     this.addCommands(
-        new IntakeNote(),
+      this.retractor.moveToIntake(),
+      new ParallelRaceGroup(
+        this.sucker.in(),
         new SequentialCommandGroup(
-            this.drivetrain.turnToNote(),
-            new SequentialCommandGroup(
-                    this.drivetrain
-                        .driveCommand(0.1, 0.0, 0.0, false)
-                        .onlyWhile(this.drivetrain::seesNote),
-                    this.drivetrain.driveCommand(0.1, 0.0, 0.0, false).withTimeout(0.5))
-                .onlyIf(this.drivetrain::seesNote)));
+          new WaitCommand(0.5),
+          this.drivetrain.turnToNote(),
+          this.drivetrain.driveCommand(0.0, 2.0, 0.0, false).until(() -> !this.drivetrain.seesNote()),
+          this.drivetrain.driveCommand(0.0, 2.0, 0.0, false).until(this.sucker::noteDetected).withTimeout(1.0)
+        )
+      ),
+      this.sucker.offInstantly()
+    );
   }
 }

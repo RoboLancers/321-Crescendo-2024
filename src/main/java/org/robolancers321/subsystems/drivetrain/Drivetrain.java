@@ -9,20 +9,15 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -133,7 +128,7 @@ public class Drivetrain extends SubsystemBase {
         DrivetrainConstants.kHeadingI,
         DrivetrainConstants.kHeadingD);
     this.headingController.enableContinuousInput(-180.0, 180.0);
-    this.headingController.setTolerance(3.0);
+    this.headingController.setTolerance(1.5);
   }
 
   private void configurePathPlanner() {
@@ -262,29 +257,29 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
-    double bestDistance =
-        this.mainCamera
-            .getLatestResult()
-            .getBestTarget()
-            .getBestCameraToTarget()
-            .getTranslation()
-            .getDistance(new Translation3d());
+    // double bestDistance =
+    //     this.mainCamera
+    //         .getLatestResult()
+    //         .getBestTarget()
+    //         .getBestCameraToTarget()
+    //         .getTranslation()
+    //         .getDistance(new Translation3d());
 
-    // !!!!!! TODO: if vision starts getting funky this is why
-    // TODO: tune this
-    // TODO: use offset to have base line for how much we distrust vision, then use coefficient to
-    // scale distrust based on distance squared
-    double translationStandardDeviation = bestDistance * bestDistance;
-    double rotationStandardDeviation = bestDistance * bestDistance;
+    // // !!!!!! TODO: if vision starts getting funky this is why
+    // // TODO: tune this
+    // // TODO: use offset to have base line for how much we distrust vision, then use coefficient
+    // to
+    // // scale distrust based on distance squared
+    // double translationStandardDeviation = bestDistance * bestDistance;
+    // double rotationStandardDeviation = bestDistance * bestDistance;
 
-    Matrix<N3, N1> standardDeviation =
-        VecBuilder.fill(
-            translationStandardDeviation, translationStandardDeviation, rotationStandardDeviation);
+    // Matrix<N3, N1> standardDeviation =
+    //     VecBuilder.fill(
+    //         translationStandardDeviation, translationStandardDeviation,
+    // rotationStandardDeviation);
 
     this.odometry.addVisionMeasurement(
-        visionEstimate.get().estimatedPose.toPose2d(),
-        visionEstimate.get().timestampSeconds,
-        standardDeviation);
+        visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
   }
 
   private Translation2d getSpeakerPosition() {
@@ -309,7 +304,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public boolean seesNote() {
-    return this.noteCamera.getLatestResult().hasTargets();
+    return this.noteCamera.getLatestResult().hasTargets() && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
   }
 
   private double getNoteAngle() {
@@ -319,7 +314,9 @@ public class Drivetrain extends SubsystemBase {
 
     PhotonTrackedTarget bestTarget = latestResult.getBestTarget();
 
-    return -bestTarget.getYaw();
+    if (Math.abs(bestTarget.getYaw()) > 15.0) return 0.0;
+
+    return -0.6 * bestTarget.getYaw();
   }
 
   // private Translation2d getRelativeNoteLocation() {
@@ -383,10 +380,8 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("distance to speaker", this.getDistanceToSpeaker());
     SmartDashboard.putNumber("angle to speaker", this.getAngleToSpeaker());
 
-    // Translation2d note = this.getRelativeNoteLocation();
-
-    // SmartDashboard.putNumber("note x offset", note.getX());
-    // SmartDashboard.putNumber("note z offset", note.getY());
+    SmartDashboard.putBoolean("sees note", this.seesNote());
+    SmartDashboard.putNumber("angle to note", this.getNoteAngle());
   }
 
   @Override

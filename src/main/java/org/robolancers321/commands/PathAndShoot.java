@@ -17,7 +17,6 @@ public class PathAndShoot extends SequentialCommandGroup {
         new ParallelRaceGroup(
             AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(pathName)),
             new IntakeNote()),
-        new SequentialCommandGroup(new Mate(), new ScoreSpeakerFromDistance())
-            .onlyIf(this.sucker::noteDetected));
+        new ScoreSpeakerFromDistance().onlyIf(this.sucker::noteDetected));
   }
 }

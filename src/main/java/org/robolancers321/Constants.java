@@ -100,7 +100,7 @@ public final class Constants {
     public static final double kGearRatio = 360.0;
 
     public static final float kMinAngle = -15f;
-    public static final float kMaxAngle = 160.0f;
+    public static final float kMaxAngle = 155.0f;
 
     public static final double kP = 0.0065;
     public static final double kI = 0.000;
@@ -113,13 +113,13 @@ public final class Constants {
     public static final double kMaxVelocityDeg = 180.0;
     public static final double kMaxAccelerationDeg = 540.0;
 
-    public static final double kToleranceDeg = 3.0;
+    public static final double kToleranceDeg = 5.0;
 
     public enum RetractorSetpoint {
-      kRetracted(160),
-      kMating(160),
+      kRetracted(155),
+      kMating(154),
       kClearFromLauncher(70),
-      kIntake(-14),
+      kIntake(-12),
       kOuttake(20.0);
 
       public final double angle;
@@ -160,8 +160,10 @@ public final class Constants {
     public static final double kToleranceRPM = 80.0;
 
     public enum FlywheelSetpoint {
-      kAmp(1000.0),
-      kSpeaker(3000.0);
+      kAcceptHandoff(300),
+      kShiftBackward(-1000),
+      kAmp(1500.0),
+      kSpeaker(2500.0);
 
       public final double rpm;
 
@@ -173,7 +175,9 @@ public final class Constants {
 
   public static final class IndexerConstants {
     public static final int kMotorPort = 16;
-    public static final int kBeamBreakPort = 9;
+
+    public static final int kEntranceBeamBreakPort = 9;
+    public static final int kExitBeamBreakPort = 0;
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 40;
@@ -181,8 +185,8 @@ public final class Constants {
     public static final double kFF = 0.000153;
 
     public static final double kHandoffRPM = 3000;
-    public static final double kShiftForwardRPM = 600;
-    public static final double kShiftBackwardRPM = -300;
+    public static final double kShiftBackFromExitRPM = -300;
+    public static final double kShiftBackFromEntranceRPM = -150;
     public static final double kOuttakeRPM = 3000;
   }
 
@@ -206,16 +210,16 @@ public final class Constants {
     public static final double kG = 0.0;
     public static final double kV = 0.0; // 0.35
 
-    public static final double kMaxVelocityDeg = 240;
-    public static final double kMaxAccelerationDeg = 360;
+    public static final double kMaxVelocityDeg = 150;
+    public static final double kMaxAccelerationDeg = 1500;
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
     public static final double kToleranceDeg = 2.0;
 
     public enum PivotSetpoint {
-      kRetracted(15.0),
-      kMating(0.0),
+      kRetracted(0.0),
+      kMating(15.0),
       kAmp(90.0),
       kSpeaker(0.0);
 

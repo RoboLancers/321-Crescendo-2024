@@ -71,23 +71,37 @@ public class Sucker extends SubsystemBase {
     this.doSendables();
   }
 
-  private Command setSpeed(double speed) {
-    return run(() -> this.motor.set(speed));
-  }
-
   public Command off() {
-    return setSpeed(0.0);
+    return run(
+        () -> {
+          this.motor.set(0.0);
+        });
   }
 
   public Command offInstantly() {
-    return runOnce(() -> this.motor.set(0.0));
+    return runOnce(
+        () -> {
+          this.motor.set(0.0);
+        });
   }
 
   public Command in() {
-    return setSpeed(SuckerConstants.kInSpeed).finallyDo(() -> this.motor.set(0));
+    return run(() -> {
+          this.motor.set(SuckerConstants.kInSpeed);
+        })
+        .finallyDo(
+            () -> {
+              this.motor.set(0.0);
+            });
   }
 
   public Command out() {
-    return setSpeed(SuckerConstants.kOutSpeed).finallyDo(() -> this.motor.set(0));
+    return run(() -> {
+          this.motor.set(SuckerConstants.kOutSpeed);
+        })
+        .finallyDo(
+            () -> {
+              this.motor.set(0.0);
+            });
   }
 }

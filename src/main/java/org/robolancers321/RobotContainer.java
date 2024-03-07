@@ -7,12 +7,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNote;
-import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
@@ -72,27 +75,21 @@ public class RobotContainer {
     // default, meteor red
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
 
-    // note in sucker, blink orange
+    // note in sucker, solid orange
     LED.registerSignal(
-        2, this.sucker::noteDetected, LED.strobe(Section.FULL, new Color(180, 30, 0)));
+        2, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
 
     // flywheel is revving, solid white
     LED.registerSignal(
         3,
-        () -> (!this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0),
+        () -> (!this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 2000),
         LED.solid(Section.FULL, new Color(255, 255, 255)));
 
     // flywheel is revved, blink green
     LED.registerSignal(
         4,
-        () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 0),
+        () -> (this.flywheel.isRevved() && this.flywheel.getGoalRPM() > 2000),
         LED.strobe(Section.FULL, new Color(0, 255, 0)));
-
-    // running auto pickup, solid purple
-    LED.registerSignal(
-        5,
-        () -> CommandScheduler.getInstance().requiring(drivetrain).getName() == "AutoPickupNote",
-        LED.solid(Section.FULL, new Color(50, 10, 60)));
   }
 
   private void configureDefaultCommands() {
@@ -118,10 +115,8 @@ public class RobotContainer {
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNote());
-    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-    //     .onFalse(new Mate().onlyIf(this.sucker::noteDetected));
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .onFalse(new Mate().onlyIf(() -> true));
+        .onFalse(this.retractor.moveToRetracted());
 
     new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
         .whileTrue(new OuttakeNote());
@@ -130,18 +125,29 @@ public class RobotContainer {
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
     new Trigger(this.driverController::getBButton).onTrue(new AutoPickupNote());
-    // new Trigger(this.driverController::getXButton).whileTrue(this.drivetrain.turnToNote());
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
   private void configureManipulatorController() {
-    // TODO: do we give manipulator option to force mate?
-    // new Trigger(this.manipulatorController::getBButton).onTrue(new Mate());
-
-    new Trigger(this.manipulatorController::getAButton).onTrue(new ScoreAmp());
-    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance());
+    new Trigger(this.manipulatorController::getAButton).onTrue(new ScoreAmp().finallyDo(() -> {
+      CommandScheduler.getInstance().schedule(new ParallelCommandGroup(
+        this.retractor.moveToRetracted(),
+        this.pivot.moveToRetracted()
+      ));
+    }));
+    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance().finallyDo(() -> {
+      CommandScheduler.getInstance().schedule(new ParallelCommandGroup(
+        this.retractor.moveToRetracted(),
+        this.pivot.moveToRetracted()
+      ));
+    }));
     new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
-    new Trigger(this.manipulatorController::getXButton).onFalse(this.indexer.outtake());
+    new Trigger(this.manipulatorController::getXButton)
+        .onFalse(
+            this.indexer
+                .outtake()
+                .raceWith(this.sucker.out())
+                .alongWith(new InstantCommand(() -> {}, this.flywheel)));
   }
 
   private void configureAuto() {

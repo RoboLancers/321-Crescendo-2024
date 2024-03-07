@@ -125,6 +125,20 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
+  public Command acceptHandoff() {
+    return runOnce(
+        () -> {
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm;
+        });
+  }
+
+  public Command shiftBackward() {
+    return runOnce(
+        () -> {
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackward.rpm;
+        });
+  }
+
   public Command revAmp() {
     return runOnce(
             () -> {

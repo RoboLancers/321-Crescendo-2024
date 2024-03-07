@@ -14,7 +14,11 @@ public class Shift extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
 
     this.addCommands(
-        this.indexer.shiftForward(),
-        this.indexer.shiftBackward().raceWith(this.flywheel.revSpeakerFromRPM(() -> -300)));
+        this.flywheel.shiftBackward(),
+        this.indexer.shiftBackFromExit(),
+        this.flywheel.off(),
+        this.indexer.shiftBackFromEntrance(),
+        this.indexer.off(),
+        this.flywheel.off());
   }
 }
