@@ -12,7 +12,6 @@ public class Auto3NBSweep extends SequentialCommandGroup {
 
   public Auto3NBSweep() {
     this.drivetrain = Drivetrain.getInstance();
-    ;
 
     this.addCommands(
         // TODO: test this

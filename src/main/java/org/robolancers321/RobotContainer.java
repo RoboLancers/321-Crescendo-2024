@@ -108,6 +108,22 @@ public class RobotContainer {
     this.flywheel.setDefaultCommand(this.flywheel.off());
   }
 
+  /*
+   * Press Bumpers Together: zero gyro
+   * 
+   * Hold Right Bumper: toggle slow mode
+   * 
+   * Hold Right Trigger: deploy intake
+   * Release Right Trigger: retract intake
+   * 
+   * Hold Left Trigger: deploy outtake
+   * Release Left Trigger: retract intake
+   * 
+   * Press A Button: snap to amp angle
+   * Press B Button: auto pickup note
+   * Press X Button: emergency cancel
+   * 
+   */
   private void configureDriverController() {
     // TODO: i think we keep this just in case for teleop
     new Trigger(
@@ -136,6 +152,15 @@ public class RobotContainer {
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
+  /*
+   * Press A Button: score amp
+   * 
+   * Press Y Button: score speaker from distance
+   * 
+   * Hold X Button: rev for fixed speaker shot
+   * Release X Button: eject for fixed speaker shot
+   * 
+   */
   private void configureManipulatorController() {
     new Trigger(this.manipulatorController::getAButton)
         .onTrue(
