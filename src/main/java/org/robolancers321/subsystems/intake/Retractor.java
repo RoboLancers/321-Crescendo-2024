@@ -180,7 +180,8 @@ public class Retractor extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("retractor target position (deg)", this.getPositionDeg());
   }
 
-  private void tune() {
+  private void 
+  tune() {
     double tunedP = SmartDashboard.getNumber("retractor kp", RetractorConstants.kP);
     double tunedI = SmartDashboard.getNumber("retractor ki", RetractorConstants.kI);
     double tunedD = SmartDashboard.getNumber("retractor kd", RetractorConstants.kD);

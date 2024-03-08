@@ -39,7 +39,7 @@ public final class Constants {
     public static final double kMaxTeleopRotationPercent = 1.0;
 
     public static final PathConstraints kAutoConstraints =
-        new PathConstraints(4.0, 3, 270 * Math.PI / 180, 360 * Math.PI / 180);
+        new PathConstraints(4.0, 3.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
     public static final SwerveDriveKinematics kSwerveKinematics =
         new SwerveDriveKinematics(
@@ -99,10 +99,10 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = -15f;
+    public static final float kMinAngle = -18f;
     public static final float kMaxAngle = 155.0f;
 
-    public static final double kP = 0.0065;
+    public static final double kP = 0.008; //0.0065
     public static final double kI = 0.000;
     public static final double kD = 0.0001;
 
@@ -110,8 +110,8 @@ public final class Constants {
     public static final double kG = 0.03; // 0.04? // 0.0155;
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 180.0;
-    public static final double kMaxAccelerationDeg = 540.0;
+    public static final double kMaxVelocityDeg = 400.0; //180
+    public static final double kMaxAccelerationDeg = 2000.0; //540
 
     public static final double kToleranceDeg = 5.0;
 
@@ -119,7 +119,7 @@ public final class Constants {
       kRetracted(155),
       kMating(154),
       kClearFromLauncher(70),
-      kIntake(-15),
+      kIntake(-18),
       kOuttake(20.0);
 
       public final double angle;
@@ -151,7 +151,7 @@ public final class Constants {
     public static final int kMotorPort = 17;
 
     public static final boolean kInvertMotor = false;
-    public static final int kCurrentLimit = 60;
+    public static final int kCurrentLimit = 75;
 
     public static final double kRampUpRate =
         10000000; // effectively infinite ramp up, keeping this for the infrastructure
@@ -211,7 +211,7 @@ public final class Constants {
     public static final double kV = 0.0; // 0.35
 
     public static final double kMaxVelocityDeg = 160;
-    public static final double kMaxAccelerationDeg = 2000;
+    public static final double kMaxAccelerationDeg = 1500;
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
