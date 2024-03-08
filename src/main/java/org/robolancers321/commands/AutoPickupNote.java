@@ -28,13 +28,14 @@ public class AutoPickupNote extends SequentialCommandGroup {
                 new WaitCommand(0.2),
                 new ConditionalCommand(
                     new SequentialCommandGroup(
-                        this.drivetrain.turnToNote(),
+                        // this.drivetrain.turnToNote(),
+                        // this.drivetrain
+                        //     .driveCommand(0.0, 2.0, 0.0, false)
+                        //     .until(() -> !this.drivetrain.seesNote())
+                        //     .withTimeout(1.5),
+                        this.drivetrain.driveIntoNote(),
                         this.drivetrain
-                            .driveCommand(0.0, 2.0, 0.0, false)
-                            .until(() -> !this.drivetrain.seesNote())
-                            .withTimeout(1.5),
-                        this.drivetrain
-                            .driveCommand(0.0, 2.0, 0.0, false)
+                            .driveCommand(0.0, 2.5, 0.0, false)
                             .until(this.sucker::noteDetected)
                             .withTimeout(1.0)),
                     new InstantCommand(),

@@ -65,7 +65,7 @@ public final class Constants {
     public static final double kHeadingI = 0.0;
     public static final double kHeadingD = 0.01; // 0.01?
 
-    public static final double kHeadingTolerance = 3.0;
+    public static final double kHeadingTolerance = 1.5;
   }
 
   public static final class SwerveModuleConstants {
@@ -156,12 +156,12 @@ public final class Constants {
     public static final double kRampUpRate =
         10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
-    public static final double kFF = 0.00016;
-    public static final double kToleranceRPM = 120.0;
+    public static final double kFF = 0.0001502;
+    public static final double kToleranceRPM = 60.0;
 
     public enum FlywheelSetpoint {
       kAcceptHandoff(300),
-      kShiftBackward(-1000),
+      kShiftBackward(-2000),
       kAmp(1500.0),
       kSpeaker(2500.0);
 
@@ -185,8 +185,8 @@ public final class Constants {
     public static final double kFF = 0.000153;
 
     public static final double kHandoffRPM = 3000;
-    public static final double kShiftBackFromExitRPM = -300;
-    public static final double kShiftBackFromEntranceRPM = -75; //150
+    public static final double kShiftBackFromExitRPM = -200;
+    public static final double kShiftBackFromEntranceRPM = -50; //150
     public static final double kOuttakeRPM = 3000;
   }
 
