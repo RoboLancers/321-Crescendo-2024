@@ -63,13 +63,11 @@ public class RobotContainer {
     this.led = new LED();
     this.ledSim = new AddressableLEDSim(led.ledStrip);
 
-    this.flywheel.setDefaultCommand(this.flywheel.tuneController());
-
     this.configureLEDs();
-    // this.configureDefaultCommands();
-    // this.configureDriverController();
-    // this.configureManipulatorController();
-    // this.configureAuto();
+    this.configureDefaultCommands();
+    this.configureDriverController();
+    this.configureManipulatorController();
+    this.configureAuto();
   }
 
   private void configureLEDs() {
