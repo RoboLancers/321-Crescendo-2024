@@ -73,6 +73,8 @@ public class RobotContainer {
   private void configureLEDs() {
     // default, meteor red
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
+    // LED.registerSignal(1, () -> true, LED.wave(Section.FULL, new Color(28, 169, 201), new Color(49,140,231)));
+
 
     // sees note, blink orange
     LED.registerSignal(

@@ -91,8 +91,9 @@ public class Flywheel extends SubsystemBase {
   private void doSendables() {
     SmartDashboard.putNumber("flywheel rpm", this.getRPM());
     SmartDashboard.putNumber("flywheel voltage", this.motor.getBusVoltage());
-    SmartDashboard.putNumber("flywheel current", this.motor.getOutputCurrent());
+    SmartDashboard.putNumber("flywheel current (amps)", this.motor.getOutputCurrent());
     SmartDashboard.putBoolean("flywheel isRevved", this.isRevved());
+
 
     SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }

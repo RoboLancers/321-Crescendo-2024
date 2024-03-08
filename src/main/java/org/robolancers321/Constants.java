@@ -151,7 +151,7 @@ public final class Constants {
     public static final int kMotorPort = 17;
 
     public static final boolean kInvertMotor = false;
-    public static final int kCurrentLimit = 75;
+    public static final int kCurrentLimit = 60;
 
     public static final double kRampUpRate =
         10000000; // effectively infinite ramp up, keeping this for the infrastructure
@@ -207,11 +207,11 @@ public final class Constants {
     public static final double kD = 0.0; // 0.02;
 
     public static final double kS = 0.0;
-    public static final double kG = 0.0;
+    public static final double kG = 0.023;
     public static final double kV = 0.0; // 0.35
 
-    public static final double kMaxVelocityDeg = 150;
-    public static final double kMaxAccelerationDeg = 1500;
+    public static final double kMaxVelocityDeg = 160;
+    public static final double kMaxAccelerationDeg = 2000;
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
