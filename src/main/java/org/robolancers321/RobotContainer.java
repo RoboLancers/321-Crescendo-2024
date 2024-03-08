@@ -14,6 +14,7 @@ import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNote;
+import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
@@ -138,7 +139,7 @@ public class RobotContainer {
         .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(new IntakeNote());
+        .whileTrue(new IntakeNoteManual());
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .onFalse(this.retractor.moveToRetracted());
 
@@ -189,6 +190,9 @@ public class RobotContainer {
                 .outtake()
                 .raceWith(this.sucker.out())
                 .alongWith(new InstantCommand(() -> {}, this.flywheel)));
+
+    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
+    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8).onTrue(this.pivot.moveToRetracted());
   }
 
   private void configureAuto() {

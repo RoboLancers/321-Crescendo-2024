@@ -119,7 +119,7 @@ public final class Constants {
       kRetracted(155),
       kMating(154),
       kClearFromLauncher(70),
-      kIntake(-12),
+      kIntake(-15),
       kOuttake(20.0);
 
       public final double angle;
@@ -186,7 +186,7 @@ public final class Constants {
 
     public static final double kHandoffRPM = 3000;
     public static final double kShiftBackFromExitRPM = -300;
-    public static final double kShiftBackFromEntranceRPM = -150;
+    public static final double kShiftBackFromEntranceRPM = -75; //150
     public static final double kOuttakeRPM = 3000;
   }
 

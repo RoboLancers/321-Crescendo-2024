@@ -145,6 +145,7 @@ public class Retractor extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
     SmartDashboard.putNumber("retractor velocity (deg)", this.m_controller.getGoal().position);
     SmartDashboard.putNumber("retractor mp goal (deg)", this.getVelocityDeg());
+    SmartDashboard.putNumber("retractor position actual", this.encoder.getPosition());
   }
 
   @Override

@@ -408,7 +408,8 @@ public class Drivetrain extends SubsystemBase {
     return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
   }
 
-  public Command teleopDrive(XboxController controller, boolean fieldCentric) {
+  public Command 
+  teleopDrive(XboxController controller, boolean fieldCentric) {
     return run(() -> {
           double multiplier = controller.getRightBumper() ? 0.4 : 1.0;
 
