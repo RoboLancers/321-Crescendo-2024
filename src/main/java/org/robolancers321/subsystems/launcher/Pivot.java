@@ -15,6 +15,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
@@ -71,8 +72,8 @@ public class Pivot extends SubsystemBase {
     this.motor.setSmartCurrentLimit(PivotConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
 
-    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 65535); // analog sensor
-    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 65535); // alternate encoder
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 10000); // analog sensor
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 10000); // alternate encoder
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20); // abs encoder position
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20); // abs encoder velocity
 
@@ -132,7 +133,7 @@ public class Pivot extends SubsystemBase {
   protected void useOutput(TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
         this.feedforwardController.calculate(
-            setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+            (setpoint.position - 40) * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
 
     SmartDashboard.putNumber("pivot position setpoint mp (deg)", setpoint.position);
     SmartDashboard.putNumber("pivot velocity setpoint mp (deg)", setpoint.velocity);
@@ -153,8 +154,6 @@ public class Pivot extends SubsystemBase {
   public void doSendables() {
     SmartDashboard.putBoolean("pivot at goal", this.atGoal());
     SmartDashboard.putNumber("pivot position (deg)", this.getPositionDeg());
-    SmartDashboard.putNumber("pivot mp setpoint pos (deg)", this.previousReference.position);
-    SmartDashboard.putNumber("pivot mp setpoint vel (deg)", this.previousReference.velocity);
     SmartDashboard.putNumber("pivot velocity (deg)", this.getVelocityDeg());
     SmartDashboard.putNumber("pivot relative encoder position", this.relativeEncoder.getPosition());
   }

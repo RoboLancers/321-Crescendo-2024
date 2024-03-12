@@ -30,7 +30,7 @@ public class LED extends VirtualSubsystem {
   // TODO: move this into constants
 
   public static final int kLEDPWMPort = 9;
-  public static final int kLEDStripLength = 25;
+  public static final int kLEDStripLength = 14;
 
   private static final double kStrobeDuration = 0.2;
   private static final double kBreathDuration = 1.0;
@@ -369,10 +369,10 @@ public class LED extends VirtualSubsystem {
   private static void setPixelHeatColor(AddressableLEDBuffer buffer, int pixel, int temperature) {
     if (temperature > 170) { // hottest: white
       buffer.setRGB(pixel, 255, 255, temperature);
-    } else if (temperature > 85) { // middle: orange & yellow
-      buffer.setRGB(pixel, 255, (int) (temperature * 1.3), 0);
+    } else if (temperature > 60) { // middle: orange & yellow
+      buffer.setRGB(pixel, 255, (int) (temperature), 0);
     } else { // lowest: red
-      buffer.setRGB(pixel, temperature * 3, 0, 0);
+      buffer.setRGB(pixel, temperature * 2, 0, 0);
     }
   }
 

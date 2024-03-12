@@ -35,6 +35,7 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
             this.flywheel.revSpeakerFromRPM(
                 () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))),
         this.indexer.outtake(),
-        this.indexer.off());
+        this.indexer.off(),
+        this.flywheel.off());
   }
 }

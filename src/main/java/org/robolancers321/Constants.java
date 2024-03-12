@@ -39,7 +39,7 @@ public final class Constants {
     public static final double kMaxTeleopRotationPercent = 1.0;
 
     public static final PathConstraints kAutoConstraints =
-        new PathConstraints(4.0, 3, 270 * Math.PI / 180, 360 * Math.PI / 180);
+        new PathConstraints(4.0, 3.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
     public static final SwerveDriveKinematics kSwerveKinematics =
         new SwerveDriveKinematics(
@@ -65,7 +65,7 @@ public final class Constants {
     public static final double kHeadingI = 0.0;
     public static final double kHeadingD = 0.01; // 0.01?
 
-    public static final double kHeadingTolerance = 3.0;
+    public static final double kHeadingTolerance = 1.5;
   }
 
   public static final class SwerveModuleConstants {
@@ -99,10 +99,10 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = -15f;
+    public static final float kMinAngle = -18f;
     public static final float kMaxAngle = 155.0f;
 
-    public static final double kP = 0.0065;
+    public static final double kP = 0.008; //0.0065
     public static final double kI = 0.000;
     public static final double kD = 0.0001;
 
@@ -110,8 +110,8 @@ public final class Constants {
     public static final double kG = 0.03; // 0.04? // 0.0155;
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 180.0;
-    public static final double kMaxAccelerationDeg = 540.0;
+    public static final double kMaxVelocityDeg = 400.0; //180
+    public static final double kMaxAccelerationDeg = 2000.0; //540
 
     public static final double kToleranceDeg = 5.0;
 
@@ -119,7 +119,7 @@ public final class Constants {
       kRetracted(155),
       kMating(154),
       kClearFromLauncher(70),
-      kIntake(-12),
+      kIntake(-18),
       kOuttake(20.0);
 
       public final double angle;
@@ -156,12 +156,12 @@ public final class Constants {
     public static final double kRampUpRate =
         10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
-    public static final double kFF = 0.00016;
-    public static final double kToleranceRPM = 120.0;
+    public static final double kFF = 0.0001502;
+    public static final double kToleranceRPM = 60.0;
 
     public enum FlywheelSetpoint {
       kAcceptHandoff(300),
-      kShiftBackward(-1000),
+      kShiftBackward(-2000),
       kAmp(1500.0),
       kSpeaker(2500.0);
 
@@ -185,8 +185,8 @@ public final class Constants {
     public static final double kFF = 0.000153;
 
     public static final double kHandoffRPM = 3000;
-    public static final double kShiftBackFromExitRPM = -300;
-    public static final double kShiftBackFromEntranceRPM = -150;
+    public static final double kShiftBackFromExitRPM = -200;
+    public static final double kShiftBackFromEntranceRPM = -50; //150
     public static final double kOuttakeRPM = 3000;
   }
 
@@ -207,10 +207,10 @@ public final class Constants {
     public static final double kD = 0.0; // 0.02;
 
     public static final double kS = 0.0;
-    public static final double kG = 0.0;
+    public static final double kG = 0.023;
     public static final double kV = 0.0; // 0.35
 
-    public static final double kMaxVelocityDeg = 150;
+    public static final double kMaxVelocityDeg = 160;
     public static final double kMaxAccelerationDeg = 1500;
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);

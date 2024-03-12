@@ -24,7 +24,7 @@ public class ScoreSpeakerFixedTeleop extends ParallelCommandGroup {
 
     this.addCommands(
         flywheel.revSpeaker(),
-        pivot.moveToAngle(PivotConstants.PivotSetpoint.kSpeaker.angle),
+        pivot.aimAtSpeakerFixed(),
         Commands.idle());
   }
 }

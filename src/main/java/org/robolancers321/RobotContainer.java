@@ -4,23 +4,35 @@ package org.robolancers321;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNote;
+import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
-import org.robolancers321.commands.autonomous.Auto3NBSweep;
-import org.robolancers321.commands.autonomous.Auto3NBSweepStraight;
+import org.robolancers321.commands.autonomous.Auto3NBClose;
+import org.robolancers321.commands.autonomous.Auto3NMClose;
+import org.robolancers321.commands.autonomous.Auto3NTClose;
+import org.robolancers321.commands.autonomous.Auto4NBSkip;
+import org.robolancers321.commands.autonomous.Auto4NBSweep;
+import org.robolancers321.commands.autonomous.Auto4NBSweepStraight;
+import org.robolancers321.commands.autonomous.Auto4NMSweep;
+import org.robolancers321.commands.autonomous.Auto4NMSweepFender;
+import org.robolancers321.commands.autonomous.Auto4NMSweepFenderStraight;
+import org.robolancers321.commands.autonomous.Auto4NTClose;
+import org.robolancers321.commands.autonomous.Auto4NTSweep;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -29,6 +41,9 @@ import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -72,6 +87,12 @@ public class RobotContainer {
   private void configureLEDs() {
     // default, meteor red
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
+
+    // green water
+    // LED.registerSignal(1, () -> true, LED.wave(Section.FULL, new Color(109, 199, 201), new Color(49,164,176)));
+
+    //blue water
+    // LED.registerSignal(1, () -> true, LED.wave(Section.FULL, new Color(85, 196, 232), new Color(3,147,202)));
 
     // sees note, blink orange
     LED.registerSignal(
@@ -138,7 +159,7 @@ public class RobotContainer {
         .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(new IntakeNote());
+        .whileTrue(new IntakeNoteManual());
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .onFalse(this.retractor.moveToRetracted());
 
@@ -153,7 +174,8 @@ public class RobotContainer {
   }
 
   /*
-   * Press A Button: score amp
+   * Hold A Button: rev for score amp
+   * Release A Button: eject for score amp
    * 
    * Press Y Button: score speaker from distance
    * 
@@ -162,16 +184,11 @@ public class RobotContainer {
    * 
    */
   private void configureManipulatorController() {
-    new Trigger(this.manipulatorController::getAButton)
-        .onTrue(
-            new ScoreAmp()
-                .finallyDo(
-                    () -> {
-                      CommandScheduler.getInstance()
-                          .schedule(
-                              new ParallelCommandGroup(
-                                  this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
-                    }));
+    new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
+    new Trigger(this.manipulatorController::getAButton).onFalse(this.indexer.outtake().alongWith(new InstantCommand(() -> {}, this.flywheel)).andThen(
+        new ParallelCommandGroup(this.retractor.moveToRetracted(), this.pivot.moveToRetracted())
+    ));
+
     new Trigger(this.manipulatorController::getYButton)
         .onTrue(
             new ScoreSpeakerFromDistance()
@@ -182,6 +199,7 @@ public class RobotContainer {
                               new ParallelCommandGroup(
                                   this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
                     }));
+
     new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
     new Trigger(this.manipulatorController::getXButton)
         .onFalse(
@@ -189,16 +207,40 @@ public class RobotContainer {
                 .outtake()
                 .raceWith(this.sucker.out())
                 .alongWith(new InstantCommand(() -> {}, this.flywheel)));
+
+    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
+    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8).onTrue(this.pivot.moveToRetracted());
   }
 
   private void configureAuto() {
+    /*
+    Sweep - pickup front 3 notes with curves
+    Sweep straight - pickup front 3 notes with straight line
+    Close - pickup front note first
+    Skip - pickup center note first then go back for front note
+     */
+
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
-    this.autoChooser.addOption("3NB Sweep", new Auto3NBSweep());
-    this.autoChooser.addOption("3NB Sweep Straight", new Auto3NBSweepStraight());
+
+    this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
+    this.autoChooser.addOption("4NT Close", new Auto4NTClose());
+    this.autoChooser.addOption("3NT Close", new Auto3NTClose());
+
+    this.autoChooser.addOption("4NM Sweep", new Auto4NMSweep());
+    this.autoChooser.addOption("3NM Close", new Auto3NMClose());
+    this.autoChooser.addOption("4NM Sweep Fender", new Auto4NMSweepFender());
+    this.autoChooser.addOption("4NM Sweep Fender Straight", new Auto4NMSweepFenderStraight());
+
+    this.autoChooser.addOption("4NB Sweep", new Auto4NBSweep());
+    this.autoChooser.addOption("4NB Skip", new Auto4NBSkip());
+    this.autoChooser.addOption("3NB Sweep Straight", new Auto4NBSweepStraight());
+    this.autoChooser.addOption("3NB Close", new Auto3NBClose());
+
+    SmartDashboard.putData(autoChooser);
   }
 
   public Command getAutonomousCommand() {
-    // return AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("3NM"));
+    // return AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("4NMSweep"));
 
     return this.autoChooser.getSelected();
   }

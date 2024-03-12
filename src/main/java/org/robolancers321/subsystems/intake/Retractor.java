@@ -143,8 +143,8 @@ public class Retractor extends ProfiledPIDSubsystem {
   private void doSendables() {
     SmartDashboard.putBoolean("retractor at goal", this.atGoal());
     SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
-    SmartDashboard.putNumber("retractor velocity (deg)", this.m_controller.getGoal().position);
     SmartDashboard.putNumber("retractor mp goal (deg)", this.getVelocityDeg());
+    SmartDashboard.putNumber("retractor position actual", this.encoder.getPosition());
   }
 
   @Override
@@ -180,7 +180,8 @@ public class Retractor extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("retractor target position (deg)", this.getPositionDeg());
   }
 
-  private void tune() {
+  private void 
+  tune() {
     double tunedP = SmartDashboard.getNumber("retractor kp", RetractorConstants.kP);
     double tunedI = SmartDashboard.getNumber("retractor ki", RetractorConstants.kI);
     double tunedD = SmartDashboard.getNumber("retractor kd", RetractorConstants.kD);

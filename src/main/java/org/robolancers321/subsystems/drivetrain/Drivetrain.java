@@ -18,6 +18,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -34,6 +35,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.robolancers321.Constants.DrivetrainConstants;
+import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.util.MyAlliance;
 
 public class Drivetrain extends SubsystemBase {
@@ -304,8 +306,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public boolean seesNote() {
-    return this.noteCamera.getLatestResult().hasTargets()
-        && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
+    return this.noteCamera.getLatestResult().hasTargets();
+        // && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
   }
 
   private double getNoteAngle() {
@@ -315,9 +317,9 @@ public class Drivetrain extends SubsystemBase {
 
     PhotonTrackedTarget bestTarget = latestResult.getBestTarget();
 
-    if (Math.abs(bestTarget.getYaw()) > 15.0) return 0.0;
+    // if (Math.abs(bestTarget.getYaw()) > 15.0) return 0.0;
 
-    return -0.6 * bestTarget.getYaw();
+    return -0.5 * bestTarget.getYaw();
   }
 
   // private Translation2d getRelativeNoteLocation() {
@@ -329,8 +331,8 @@ public class Drivetrain extends SubsystemBase {
 
   //   // TODO: plus or minus mount pitch?
   //   double dz =
-  //       kNoteCameraMountHeight
-  //           / Math.tan((-bestTarget.getPitch() + kNoteCameraMountPitch) * Math.PI / 180.0);
+  //        Units.inchesToMeters(10)
+  //           / Math.tan((-bestTarget.getPitch() + 24) * Math.PI / 180.0);
   //   double dx = dz * Math.tan(bestTarget.getYaw() * Math.PI / 180.0);
 
   //   return new Translation2d(dx, dz);
@@ -383,6 +385,11 @@ public class Drivetrain extends SubsystemBase {
 
     SmartDashboard.putBoolean("sees note", this.seesNote());
     SmartDashboard.putNumber("angle to note", this.getNoteAngle());
+
+    // Translation2d notePose = this.getRelativeNoteLocation();
+
+    // SmartDashboard.putNumber("note pose x", notePose.getX());
+    // SmartDashboard.putNumber("note pose y", notePose.getY());
   }
 
   @Override
@@ -408,7 +415,8 @@ public class Drivetrain extends SubsystemBase {
     return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
   }
 
-  public Command teleopDrive(XboxController controller, boolean fieldCentric) {
+  public Command 
+  teleopDrive(XboxController controller, boolean fieldCentric) {
     return run(() -> {
           double multiplier = controller.getRightBumper() ? 0.4 : 1.0;
 
@@ -471,6 +479,14 @@ public class Drivetrain extends SubsystemBase {
                   this.drive(0.0, 0.0, headingControllerOutput, true);
                 })
                 .until(this.headingController::atSetpoint));
+  }
+
+  public Command driveIntoNote(){
+    return run(() -> {
+      double headingControllerOutput = -this.headingController.calculate(this.getNoteAngle(), 0.0);
+
+      this.drive(0.0, 1.5, headingControllerOutput, false);
+    }).until(() -> !this.seesNote()).withTimeout(1.5);
   }
 
   private Command turnToAngle(DoubleSupplier angleSupplier) {
