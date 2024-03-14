@@ -9,19 +9,17 @@ import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Pivot;
 
-public class IntakeNoteManual extends SequentialCommandGroup {
-  private Retractor retractor;
-  private Sucker sucker;
+public class IntakeNoteManual extends ParallelCommandGroup {
+    private Retractor retractor;
+    private Sucker sucker;
 
-  public IntakeNoteManual() {
-    this.retractor = Retractor.getInstance();
-    this.sucker = Sucker.getInstance();
+    public IntakeNoteManual() {
+        this.retractor = Retractor.getInstance();
+        this.sucker = Sucker.getInstance();
 
-    this.addCommands(
-        new ParallelCommandGroup(
-            this.retractor.moveToIntake(),
-            this.sucker.in()
-            )
-    );
-  }
+        this.addCommands(
+          this.retractor.moveToIntake(),
+          this.sucker.in()
+        );
+    }
 }

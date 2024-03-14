@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import org.robolancers321.Constants.IndexerConstants;
 
+import java.util.function.DoubleSupplier;
+
 public class Indexer extends SubsystemBase {
   /*
    * Singleton
@@ -166,6 +168,17 @@ public class Indexer extends SubsystemBase {
             new WaitUntilCommand(this::entranceBeamBroken)
                 .andThen(new WaitUntilCommand(this::exitBeamBroken)))
         .withTimeout(1.0);
+  }
+
+  public Command outtakeWithRPM(DoubleSupplier rpmSupplier) {
+    return this.runOnce(
+                    () -> {
+                      this.goalRPM = rpmSupplier.getAsDouble();
+                    })
+            .alongWith(
+                    new WaitUntilCommand(this::entranceBeamBroken)
+                            .andThen(new WaitUntilCommand(this::exitBeamBroken)))
+            .withTimeout(1.0);
   }
 
   public Command tuneController() {

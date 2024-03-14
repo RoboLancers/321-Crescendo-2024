@@ -227,7 +227,7 @@ public class Retractor extends ProfiledPIDSubsystem {
             .until(this::atGoal));
   }
 
-  private Command moveToAngle(double angleDeg) {
+  public Command moveToAngle(double angleDeg) {
     return this.moveToAngle(() -> angleDeg);
   }
 
@@ -237,6 +237,10 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   public Command moveToMating() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kMating.angle);
+  }
+
+  public Command moveToPassthrough(DoubleSupplier pivotAngle) {
+    return this.moveToAngle(RetractorConstants.kMaxAngle - pivotAngle.getAsDouble());
   }
 
   public Command moveToClearFromLauncher() {

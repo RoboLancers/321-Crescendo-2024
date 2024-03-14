@@ -13,15 +13,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
-import org.robolancers321.commands.AutoPickupNote;
-import org.robolancers321.commands.EmergencyCancel;
-import org.robolancers321.commands.IntakeNote;
-import org.robolancers321.commands.IntakeNoteManual;
-import org.robolancers321.commands.OuttakeNote;
-import org.robolancers321.commands.ScoreAmp;
-import org.robolancers321.commands.ScoreSpeakerFixedAuto;
-import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
-import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.*;
 import org.robolancers321.commands.autonomous.Auto3NBClose;
 import org.robolancers321.commands.autonomous.Auto3NMClose;
 import org.robolancers321.commands.autonomous.Auto3NTClose;
@@ -191,7 +183,7 @@ public class RobotContainer {
 
     new Trigger(this.manipulatorController::getYButton)
         .onTrue(
-            new ScoreSpeakerFromDistance()
+            new ScorePassthrough()
                 .finallyDo(
                     () -> {
                       CommandScheduler.getInstance()

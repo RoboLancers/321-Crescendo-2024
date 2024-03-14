@@ -153,6 +153,7 @@ public class Pivot extends SubsystemBase {
 
   public void doSendables() {
     SmartDashboard.putBoolean("pivot at goal", this.atGoal());
+    SmartDashboard.putNumber("pivot goal position (deg)", this.goalReference.position);
     SmartDashboard.putNumber("pivot position (deg)", this.getPositionDeg());
     SmartDashboard.putNumber("pivot velocity (deg)", this.getVelocityDeg());
     SmartDashboard.putNumber("pivot relative encoder position", this.relativeEncoder.getPosition());
