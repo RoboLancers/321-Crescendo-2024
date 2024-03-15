@@ -154,7 +154,7 @@ public class Indexer extends SubsystemBase {
             () -> {
               this.goalRPM = IndexerConstants.kHandoffRPM;
             })
-        .alongWith((new WaitUntilCommand(this::exitBeamBroken).andThen(new WaitCommand(0.2))).withTimeout(2.0));
+        .alongWith((new WaitUntilCommand(this::exitBeamBroken).andThen(new WaitCommand(0.1))).withTimeout(1.0));
   }
 
   public Command outtake() {

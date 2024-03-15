@@ -37,7 +37,10 @@ public class AutoPickupNote extends SequentialCommandGroup {
                         this.drivetrain
                             .driveCommand(0.0, 2.5, 0.0, false)
                             .until(this.sucker::noteDetected)
-                            .withTimeout(1.0)),
+                            .withTimeout(1.0),
+                        this.drivetrain.stop(),
+                        this.retractor.moveToMating()
+                    ),
                     new InstantCommand(),
                     this.drivetrain::seesNote)
             )
