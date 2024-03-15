@@ -30,7 +30,7 @@ public class LED extends VirtualSubsystem {
   // TODO: move this into constants
 
   public static final int kLEDPWMPort = 9;
-  public static final int kLEDStripLength = 14;
+  public static final int kLEDStripLength = 69;
 
   private static final double kStrobeDuration = 0.2;
   private static final double kBreathDuration = 1.0;
@@ -41,15 +41,14 @@ public class LED extends VirtualSubsystem {
   private static final double kWaveDuration = 3.0;
   private static final double kStripeDuration = 0.5;
 
-  private static final int kWavefrontSpeed = 10;
-  private static final int kFadeSpeed = 1600;
-  private static final double kFadeProbability = 0.25;
-  private static final int kWavefrontSeparation = 10;
+  private static final int kWavefrontSpeed = 28;
+  private static final int kFadeSpeed = 1400;
+  private static final double kFadeProbability = 0.21;
+  private static final int kWavefrontSeparation = 42;
   private static final int kWavefrontLength = 1;
 
   public static final rgb[] kDefaultMeteorColors = {
-    new rgb(250, 0, 0),
-    // new rgb(250, 200, 0),
+    new rgb(255, 30, 0)
   };
 
   public static final rgb[] kNoteMeteorColors = {

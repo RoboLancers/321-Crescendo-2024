@@ -89,7 +89,8 @@ public class Retractor extends ProfiledPIDSubsystem {
   }
 
   private void configureController() {
-    super.m_controller.enableContinuousInput(-180.0, 180.0);
+    // super.m_controller.enableContinuousInput(-180.0, 180.0);
+    super.m_controller.disableContinuousInput();
     super.m_controller.setTolerance(RetractorConstants.kToleranceDeg);
     super.m_controller.setGoal(this.getPositionDeg());
 

@@ -259,27 +259,6 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
-    // double bestDistance =
-    //     this.mainCamera
-    //         .getLatestResult()
-    //         .getBestTarget()
-    //         .getBestCameraToTarget()
-    //         .getTranslation()
-    //         .getDistance(new Translation3d());
-
-    // // !!!!!! TODO: if vision starts getting funky this is why
-    // // TODO: tune this
-    // // TODO: use offset to have base line for how much we distrust vision, then use coefficient
-    // to
-    // // scale distrust based on distance squared
-    // double translationStandardDeviation = bestDistance * bestDistance;
-    // double rotationStandardDeviation = bestDistance * bestDistance;
-
-    // Matrix<N3, N1> standardDeviation =
-    //     VecBuilder.fill(
-    //         translationStandardDeviation, translationStandardDeviation,
-    // rotationStandardDeviation);
-
     this.odometry.addVisionMeasurement(
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
   }
@@ -291,12 +270,16 @@ public class Drivetrain extends SubsystemBase {
   private double getAngleToSpeaker() {
     Translation2d speakerLocation = this.getSpeakerPosition();
 
-    return -180
+    double angle = -180
         + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
         + this.getYawDeg();
+        
+    if (!MyAlliance.isRed()) return angle;
 
-    // TODO: is it worth using this.getPose().getRotation() instead? i think we trust gyro over
-    // vision when it comes to angle
+    double x = Math.cos(angle * Math.PI / 180);
+    double y = Math.sin(angle * Math.PI / 180);
+
+    return -Math.atan2(y, -x) * 180 / Math.PI;
   }
 
   public double getDistanceToSpeaker() {
