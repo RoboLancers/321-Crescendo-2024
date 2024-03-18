@@ -6,13 +6,14 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.robolancers321.util.TunableConstant;
+import org.robolancers321.Constants.ClimberConstants;
 
 public class Climber extends SubsystemBase {
   /*
@@ -26,33 +27,6 @@ public class Climber extends SubsystemBase {
 
     return instance;
   }
-
-  /*
-   * Constants
-   */
-
-  private static final int kLeftClimberPort = 0;
-  private static final int kLeftLimitSwitchPort = 0;
-  private static final boolean kLeftClimberInverted = false;
-
-  private static final int kRightClimberPort = 0;
-  private static final int kRightLimitSwitchPort = 1;
-  private static final boolean kRightClimberInverted = false;
-
-  private static final int kCurrentLimit = 40;
-  private static final float kMaxSoftLimit = 1;
-  private static final float kMinSoftLimit = 0;
-  private static final double kMetersPerRot = 1;
-  private static final double kRPMToMPS = kMetersPerRot / 60.0;
-
-  private static final TunableConstant kP = new TunableConstant("kP", 0);
-  private static final TunableConstant kI = new TunableConstant("kI", 0);
-  private static final TunableConstant kD = new TunableConstant("kD", 0);
-
-  private static final double kErrorTolerance = 0.1;
-
-  // used to zero the climber at a safe speed
-  private static final double kDownwardZeroingSpeed = -0.2;
 
   /*
    * Implementation
@@ -71,17 +45,21 @@ public class Climber extends SubsystemBase {
   private final DigitalInput rightLimitSwitch;
 
   private Climber() {
-    this.leftClimberMotor = new CANSparkMax(kLeftClimberPort, MotorType.kBrushless);
-    this.rightClimberMotor = new CANSparkMax(kRightClimberPort, MotorType.kBrushless);
+    this.leftClimberMotor =
+        new CANSparkMax(ClimberConstants.kLeftClimberPort, MotorType.kBrushless);
+    this.rightClimberMotor =
+        new CANSparkMax(ClimberConstants.kRightClimberPort, MotorType.kBrushless);
 
     this.leftClimberEncoder = leftClimberMotor.getEncoder();
     this.rightClimberEncoder = rightClimberMotor.getEncoder();
 
-    this.leftClimberPID = new PIDController(kP.get(), kI.get(), kD.get());
-    this.rightClimberPID = new PIDController(kP.get(), kI.get(), kD.get());
+    this.leftClimberPID =
+        new PIDController(ClimberConstants.kP, ClimberConstants.kI, ClimberConstants.kD);
+    this.rightClimberPID =
+        new PIDController(ClimberConstants.kP, ClimberConstants.kI, ClimberConstants.kD);
 
-    this.leftLimitSwitch = new DigitalInput(kLeftLimitSwitchPort);
-    this.rightLimitSwitch = new DigitalInput(kRightLimitSwitchPort);
+    this.leftLimitSwitch = new DigitalInput(ClimberConstants.kLeftLimitSwitchPort);
+    this.rightLimitSwitch = new DigitalInput(ClimberConstants.kRightLimitSwitchPort);
 
     configMotors();
     configEncoders();
@@ -90,30 +68,31 @@ public class Climber extends SubsystemBase {
 
   // TODO: soft limits
   private void configMotors() {
-    leftClimberMotor.setInverted(kLeftClimberInverted);
+    leftClimberMotor.setInverted(ClimberConstants.kLeftClimberInverted);
     leftClimberMotor.setIdleMode(IdleMode.kBrake);
-    leftClimberMotor.setSmartCurrentLimit(kCurrentLimit);
+    leftClimberMotor.setSmartCurrentLimit(ClimberConstants.kCurrentLimit);
     leftClimberMotor.enableVoltageCompensation(12.0);
-    leftClimberMotor.setSoftLimit(SoftLimitDirection.kForward, kMaxSoftLimit);
-    leftClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, kMinSoftLimit);
+    leftClimberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kMaxSoftLimit);
+    leftClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, ClimberConstants.kMinSoftLimit);
+    // leftClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    // leftClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
-    rightClimberMotor.setInverted(kRightClimberInverted);
+    rightClimberMotor.setInverted(ClimberConstants.kRightClimberInverted);
     rightClimberMotor.setIdleMode(IdleMode.kBrake);
-    rightClimberMotor.setSmartCurrentLimit(kCurrentLimit);
+    rightClimberMotor.setSmartCurrentLimit(ClimberConstants.kCurrentLimit);
     rightClimberMotor.enableVoltageCompensation(12.0);
-    rightClimberMotor.setSoftLimit(SoftLimitDirection.kForward, kMaxSoftLimit);
-    rightClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, kMinSoftLimit);
+    rightClimberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kMaxSoftLimit);
+    rightClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, ClimberConstants.kMinSoftLimit);
+    // rightClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    // rightClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
     // leftClimberMotor.burnFlash();
     // rightClimberMotor.burnFlash();
   }
 
   private void configEncoders() {
-    leftClimberEncoder.setPositionConversionFactor(kMetersPerRot);
-    rightClimberEncoder.setPositionConversionFactor(kMetersPerRot);
-
-    leftClimberEncoder.setVelocityConversionFactor(kRPMToMPS);
-    rightClimberEncoder.setVelocityConversionFactor(kRPMToMPS);
+    leftClimberEncoder.setPositionConversionFactor(ClimberConstants.kMetersPerRot);
+    rightClimberEncoder.setPositionConversionFactor(ClimberConstants.kMetersPerRot);
 
     resetEncoders();
   }
@@ -132,8 +111,8 @@ public class Climber extends SubsystemBase {
   }
 
   private void configController() {
-    this.leftClimberPID.setTolerance(kErrorTolerance);
-    this.rightClimberPID.setTolerance(kErrorTolerance);
+    this.leftClimberPID.setTolerance(ClimberConstants.kErrorTolerance);
+    this.rightClimberPID.setTolerance(ClimberConstants.kErrorTolerance);
   }
 
   private double getLeftClimberPosition() {
@@ -142,14 +121,6 @@ public class Climber extends SubsystemBase {
 
   private double getRightClimberPosition() {
     return rightClimberEncoder.getPosition();
-  }
-
-  private double getLeftClimberVelocity() {
-    return leftClimberEncoder.getVelocity();
-  }
-
-  private double getRightClimberVelocity() {
-    return rightClimberEncoder.getVelocity();
   }
 
   private void setLeftClimberSetpoint(double setpoint) {
@@ -185,15 +156,38 @@ public class Climber extends SubsystemBase {
         "climberRight PIDOutput", rightClimberPID.calculate(getRightClimberPosition()));
   }
 
-  private void tuneClimbers() {
-    leftClimberPID.setPID(kP.get(), kI.get(), kD.get());
-    rightClimberPID.setPID(kP.get(), kI.get(), kD.get());
+  private void initTuning() {
+    SmartDashboard.putNumber(
+        "climber kP", SmartDashboard.getNumber("climber kP", ClimberConstants.kP));
+    SmartDashboard.putNumber(
+        "climber kI", SmartDashboard.getNumber("climber kI", ClimberConstants.kI));
+    SmartDashboard.putNumber(
+        "climber kD", SmartDashboard.getNumber("climber kD", ClimberConstants.kD));
+
+    SmartDashboard.putNumber("climber target position (deg)", 0);
+  }
+
+  private void tune() {
+    double tunedP = SmartDashboard.getNumber("climber kP", ClimberConstants.kP);
+    double tunedI = SmartDashboard.getNumber("climber kI", ClimberConstants.kI);
+    double tunedD = SmartDashboard.getNumber("climber kD", ClimberConstants.kD);
+
+    leftClimberPID.setPID(tunedP, tunedI, tunedD);
+    rightClimberPID.setPID(tunedP, tunedI, tunedD);
+
+    double setpoint =
+        MathUtil.clamp(
+            SmartDashboard.getNumber("climber target position (deg)", 0),
+            ClimberConstants.kMinSoftLimit,
+            ClimberConstants.kMaxSoftLimit);
+
+    setRightClimberSetpoint(setpoint);
+    setLeftClimberSetpoint(setpoint);
   }
 
   @Override
   public void periodic() {
     doSendables();
-    // tuneClimbers();
   }
 
   public Command leftUp(double setpoint) {
@@ -223,7 +217,7 @@ public class Climber extends SubsystemBase {
   }
 
   public Command zeroLeft() {
-    return run(() -> setLeftPower(kDownwardZeroingSpeed))
+    return run(() -> setLeftPower(ClimberConstants.kDownwardZeroingSpeed))
         .until(leftLimitSwitch::get)
         .finallyDo(
             () -> {
@@ -233,7 +227,7 @@ public class Climber extends SubsystemBase {
   }
 
   public Command zeroRight() {
-    return run(() -> setRightPower(kDownwardZeroingSpeed))
+    return run(() -> setRightPower(ClimberConstants.kDownwardZeroingSpeed))
         .until(rightLimitSwitch::get)
         .finallyDo(
             () -> {
@@ -244,8 +238,8 @@ public class Climber extends SubsystemBase {
 
   public Command zeroBoth() {
     return run(() -> {
-          if (!leftLimitSwitch.get()) setLeftPower(kDownwardZeroingSpeed);
-          if (!rightLimitSwitch.get()) setRightPower(kDownwardZeroingSpeed);
+          if (!leftLimitSwitch.get()) setLeftPower(ClimberConstants.kDownwardZeroingSpeed);
+          if (!rightLimitSwitch.get()) setRightPower(ClimberConstants.kDownwardZeroingSpeed);
         })
         .until(() -> leftLimitSwitch.get() && rightLimitSwitch.get())
         .finallyDo(
@@ -254,5 +248,11 @@ public class Climber extends SubsystemBase {
               setLeftPower(0);
               resetEncoders();
             });
+  }
+
+  public Command tuneControllers() {
+    this.initTuning();
+
+    return run(this::tune);
   }
 }
