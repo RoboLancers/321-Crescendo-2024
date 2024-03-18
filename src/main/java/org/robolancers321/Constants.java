@@ -288,14 +288,15 @@ public final class Constants {
     public static final double kDownwardZeroingSpeed = -0.2;
 
     public enum ClimberSetpoint {
-    kRetracted(0),
-    kTrap(0),
-    kFullExtend(0);
+      kRetracted(0),
+      kTrap(0),
+      kFullExtend(0);
 
-    public final double position;
+      public final double position;
 
-    ClimberSetpoint(double position) {
-      this.position = position;
+      ClimberSetpoint(double position) {
+        this.position = position;
+      }
     }
   }
 }
