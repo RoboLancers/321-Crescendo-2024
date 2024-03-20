@@ -104,7 +104,7 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   public double getPositionDeg() {
     return MathUtil.clamp(
-        this.encoder.getPosition() > 180
+        this.encoder.getPosition() > 270
             ? this.encoder.getPosition() - 360.0
             : this.encoder.getPosition(),
         RetractorConstants.kMinAngle,
@@ -238,10 +238,6 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   public Command moveToMating() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kMating.angle);
-  }
-
-  public Command moveToClearFromLauncher() {
-    return this.moveToAngle(RetractorConstants.RetractorSetpoint.kClearFromLauncher.angle);
   }
 
   public Command moveToIntake() {

@@ -42,13 +42,13 @@ public class LED extends VirtualSubsystem {
   private static final double kStripeDuration = 0.5;
 
   private static final int kWavefrontSpeed = 28;
-  private static final int kFadeSpeed = 1400;
-  private static final double kFadeProbability = 0.21;
+  private static final int kFadeSpeed = 900;
+  private static final double kFadeProbability = 0.34;
   private static final int kWavefrontSeparation = 42;
-  private static final int kWavefrontLength = 1;
+  private static final int kWavefrontLength = 2;
 
   public static final rgb[] kDefaultMeteorColors = {
-    new rgb(255, 30, 0)
+    new rgb(255, 40, 0)
   };
 
   public static final rgb[] kNoteMeteorColors = {

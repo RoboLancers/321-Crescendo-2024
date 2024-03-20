@@ -10,18 +10,22 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
+import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.IntakeNoteManual;
+import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.Shift;
 import org.robolancers321.commands.autonomous.Auto3NBClose;
 import org.robolancers321.commands.autonomous.Auto3NMClose;
 import org.robolancers321.commands.autonomous.Auto3NTClose;
@@ -38,6 +42,7 @@ import org.robolancers321.subsystems.LED.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
+import org.robolancers321.subsystems.launcher.AimTable;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
@@ -88,34 +93,28 @@ public class RobotContainer {
     // default, meteor red
     LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
 
-    // green water
-    // LED.registerSignal(1, () -> true, LED.wave(Section.FULL, new Color(109, 199, 201), new Color(49,164,176)));
-
-    //blue water
-    // LED.registerSignal(1, () -> true, LED.wave(Section.FULL, new Color(85, 196, 232), new Color(3,147,202)));
-
     // sees note, blink orange
     LED.registerSignal(
         2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(180, 30, 0)));
 
-    // note in sucker, solid orange
+    // note in sucker, solid white
     LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(180, 30, 0)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, Color.kWhite));
 
-    // flywheel is revving, solid white
+    // flywheel is revving, solid yellow
     LED.registerSignal(
         4,
         () ->
             (!this.flywheel.isRevved()
                 && this.flywheel.getGoalRPM()
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
-        LED.solid(Section.FULL, new Color(255, 255, 255)));
+        LED.solid(Section.FULL, new Color(255, 255, 0)));
 
     // flywheel is revved, blink green
     LED.registerSignal(
         5,
         () ->
-            (this.flywheel.isRevved()
+            (this.pivot.atGoal() && this.flywheel.isRevved()
                 && this.flywheel.getGoalRPM()
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
         LED.strobe(Section.FULL, new Color(0, 255, 0)));
@@ -126,7 +125,23 @@ public class RobotContainer {
 
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
-    this.flywheel.setDefaultCommand(this.flywheel.off());
+
+    this.flywheel.setDefaultCommand(this.flywheel.revSpeakerFromRPM(() -> {
+        if (this.indexer.entranceBeamNotBroken()) return 0.0;
+
+        if (this.drivetrain.getDistanceToSpeaker() < 4.0) return Math.min(0.7 * AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()), 2000);
+
+        return 0.0;
+    }));
+
+    this.retractor.setDefaultCommand(this.retractor.moveToRetracted());
+    this.pivot.setDefaultCommand(this.pivot.aimAtSpeaker(() -> {
+        if (this.indexer.entranceBeamNotBroken()) return PivotConstants.PivotSetpoint.kRetracted.angle;
+
+        if (this.drivetrain.getDistanceToSpeaker() < 4.0) return AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker());
+
+        return PivotConstants.PivotSetpoint.kRetracted.angle;
+    }));
   }
 
   /*
@@ -161,12 +176,10 @@ public class RobotContainer {
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNoteManual());
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .onFalse(this.retractor.moveToRetracted());
+        .onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
 
     new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
         .whileTrue(new OuttakeNote());
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .onFalse(this.retractor.moveToRetracted());
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
     new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());

@@ -136,25 +136,37 @@ public class Indexer extends SubsystemBase {
   public Command shiftBackFromExit() {
     return runOnce(
             () -> {
+              System.out.println("shift back from exit");
+
               this.goalRPM = IndexerConstants.kShiftBackFromExitRPM;
             })
-        .alongWith(new WaitUntilCommand(this::exitBeamNotBroken).withTimeout(1.0));
+        .alongWith(new WaitUntilCommand(this::exitBeamBroken).andThen(new WaitUntilCommand(this::exitBeamNotBroken)).withTimeout(1.0));
   }
 
-  public Command shiftBackFromEntrance() {
+  public Command shiftForwardToEntrance() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kShiftBackFromEntranceRPM;
+              System.out.println("shift forward to entrance");
+
+              this.goalRPM = IndexerConstants.kShiftForwardFromEntranceRPM;
             })
-        .alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
+        .alongWith(new WaitUntilCommand(this::entranceBeamBroken).withTimeout(1.0));
   }
 
   public Command acceptHandoff() {
-    return runOnce(
-            () -> {
-              this.goalRPM = IndexerConstants.kHandoffRPM;
-            })
-        .alongWith((new WaitUntilCommand(this::exitBeamBroken).andThen(new WaitCommand(0.1))).withTimeout(1.0));
+    return runOnce(() -> {
+      System.out.println("accept handoff");
+
+      this.goalRPM = IndexerConstants.kHandoffRPM;
+    }).alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
+  }
+
+  public Command shiftFromHandoffForward() {
+    return runOnce(() -> {
+      System.out.println("shift from handoff forward");
+
+      this.goalRPM = IndexerConstants.kHandoffRPM;
+    }).alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
   }
 
   public Command outtake() {
@@ -163,8 +175,8 @@ public class Indexer extends SubsystemBase {
               this.goalRPM = IndexerConstants.kOuttakeRPM;
             })
         .alongWith(
-            new WaitUntilCommand(this::entranceBeamBroken)
-                .andThen(new WaitUntilCommand(this::exitBeamBroken)))
+            new WaitUntilCommand(this::exitBeamBroken)
+                .andThen(new WaitUntilCommand(this::exitBeamNotBroken)).andThen(new WaitCommand(0.1)))
         .withTimeout(1.0);
   }
 

@@ -25,10 +25,8 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
     this.drivetrain = Drivetrain.getInstance();
 
     this.addCommands(
-        new ParallelCommandGroup(
-            new SequentialCommandGroup(this.drivetrain.turnToSpeaker(), this.drivetrain.stop()),
-            new SequentialCommandGroup(
-                new Mate(), this.retractor.moveToClearFromLauncher(), new Shift())),
+        this.drivetrain.turnToSpeaker(),
+        this.drivetrain.stop(),
         new ParallelCommandGroup(
             this.pivot.aimAtSpeaker(
                 () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),

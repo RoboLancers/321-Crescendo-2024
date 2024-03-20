@@ -99,28 +99,27 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = -18f;
-    public static final float kMaxAngle = 155.0f;
+    public static final float kMinAngle = -7f;
+    public static final float kMaxAngle = 176.0f;
 
     public static final double kP = 0.008; //0.0065
     public static final double kI = 0.000;
     public static final double kD = 0.0001;
 
     public static final double kS = 0.000;
-    public static final double kG = 0.03; // 0.04? // 0.0155;
+    public static final double kG = 0.037; // 0.04? // 0.0155;
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 400.0; //180
-    public static final double kMaxAccelerationDeg = 2000.0; //540
+    public static final double kMaxVelocityDeg = 160; // 400.0; //180
+    public static final double kMaxAccelerationDeg = 600.0; //2000
 
     public static final double kToleranceDeg = 5.0;
 
     public enum RetractorSetpoint {
-      kRetracted(155),
-      kMating(154),
-      kClearFromLauncher(70),
-      kIntake(-18),
-      kOuttake(20.0);
+      kRetracted(176),
+      kMating(165),
+      kIntake(-5),
+      kOuttake(45.0);
 
       public final double angle;
 
@@ -160,7 +159,8 @@ public final class Constants {
     public static final double kToleranceRPM = 60.0;
 
     public enum FlywheelSetpoint {
-      kAcceptHandoff(300),
+      kAcceptHandoff(300), // this is super finicky
+      kShiftForward(100),
       kShiftBackward(-2000),
       kAmp(1500.0),
       kSpeaker(2500.0);
@@ -184,9 +184,9 @@ public final class Constants {
 
     public static final double kFF = 0.000153;
 
-    public static final double kHandoffRPM = 3000;
-    public static final double kShiftBackFromExitRPM = -200;
-    public static final double kShiftBackFromEntranceRPM = -50; //150
+    public static final double kHandoffRPM = 5000;
+    public static final double kShiftBackFromExitRPM = -350;
+    public static final double kShiftForwardFromEntranceRPM = 200;
     public static final double kOuttakeRPM = 3000;
   }
 
@@ -199,8 +199,8 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = 0.0f;
-    public static final float kMaxAngle = 90.0f;
+    public static final float kMinAngle = -19f;
+    public static final float kMaxAngle = 75f;
 
     public static final double kP = 0.04; // 0.03
     public static final double kI = 0.0;
@@ -215,13 +215,13 @@ public final class Constants {
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
-    public static final double kToleranceDeg = 2.0;
+    public static final double kToleranceDeg = 1.0;
 
     public enum PivotSetpoint {
-      kRetracted(0.0),
-      kMating(15.0),
-      kAmp(90.0),
-      kSpeaker(0.0);
+      kRetracted(-9.0),
+      kMating(-19.0),
+      kAmp(75.0),
+      kSpeaker(-16.0);
 
       public final double angle;
 
