@@ -70,8 +70,8 @@ public class Pivot extends SubsystemBase {
     this.motor.setSmartCurrentLimit(PivotConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
 
-    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 10000); // analog sensor
-    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 10000); // alternate encoder
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 30000); // analog sensor
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 30000); // alternate encoder
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20); // abs encoder position
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20); // abs encoder velocity
 

@@ -53,11 +53,11 @@ public class AimTable {
     if (distance > AimConstants.kMaxDistance)
       return interpolatePivotAngle(AimConstants.kMaxDistance);
 
-    return (AimConstants.PivotAngleCoefficients.kA
+    return AimConstants.PivotAngleCoefficients.kA
             * Math.atan(
                 AimConstants.PivotAngleCoefficients.kB * distance
                     + AimConstants.PivotAngleCoefficients.kC)
-        + AimConstants.PivotAngleCoefficients.kD) - 19;
+        + AimConstants.PivotAngleCoefficients.kD;
   }
 
   public static double interpolateFlywheelRPM(double distance) {

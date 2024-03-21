@@ -1,6 +1,7 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -24,14 +25,22 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
     this.drivetrain = Drivetrain.getInstance();
 
+    SmartDashboard.putNumber("tuning pivot angle", 0);
+    SmartDashboard.putNumber("tuning flywheel rpm", 0);
+
     this.addCommands(
         this.drivetrain.turnToSpeaker(),
         this.drivetrain.stop(),
         new ParallelCommandGroup(
+          // this.pivot.aimAtSpeaker(
+          //       () -> SmartDashboard.getNumber("tuning pivot angle", 0)),
+          //   this.flywheel.revSpeakerFromRPM(
+          //       () -> SmartDashboard.getNumber("tuning flywheel rpm", 0))
             this.pivot.aimAtSpeaker(
                 () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),
             this.flywheel.revSpeakerFromRPM(
-                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))),
+                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))
+        ),
         this.indexer.outtake(),
         this.indexer.off(),
         this.flywheel.off());

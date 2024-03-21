@@ -23,10 +23,8 @@ public class PathAndAutoPickup extends SequentialCommandGroup {
     this.sucker = Sucker.getInstance();
 
     this.addCommands(
-        new ParallelRaceGroup(
-            AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(pathName)),
-            new AutoPickupNote()
-        )
+      AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(pathName)),
+      new AutoPickupNote()
     );
   }
 }

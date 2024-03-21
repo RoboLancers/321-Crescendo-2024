@@ -117,7 +117,7 @@ public final class Constants {
 
     public enum RetractorSetpoint {
       kRetracted(182),                                                                                                                                                                                                                                                          
-      kMating(173),
+      kMating(169),
       kIntake(-6),
       kOuttake(45.0);
 
@@ -234,21 +234,31 @@ public final class Constants {
   }
 
   public static final class AimConstants {
-    public static final double kMinDistance = 1.4;
+    public static final double kMinDistance = 1.3;
     public static final double kMaxDistance = 5.4;
 
     public static final class PivotAngleCoefficients {
-      public static final double kA = -22.6139;
-      public static final double kB = -0.826057;
-      public static final double kC = 1.66209;
-      public static final double kD = 12.2049;
+      public static final double kA = 22.0871;
+      public static final double kB = 0.909774;
+      public static final double kC = -1.47466;
+      public static final double kD = -10.4318;
+
+      // public static final double kA = -22.6139;
+      // public static final double kB = -0.826057;
+      // public static final double kC = 1.66209;
+      // public static final double kD = 12.2049;
     }
 
     public static final class FlywheelRPMCoefficients {
-      public static final double kA = -1004.55;
-      public static final double kB = -0.884096;
-      public static final double kC = 2.93695;
-      public static final double kD = 3477.5;
+      public static final double kA = 294.705;
+      public static final double kB = 1.60814;
+      public static final double kC = -3.7283;
+      public static final double kD = 2777.62;
+
+      // public static final double kA = -1004.55;
+      // public static final double kB = -0.884096;
+      // public static final double kC = 2.93695;
+      // public static final double kD = 3477.5;
     }
   }
 }

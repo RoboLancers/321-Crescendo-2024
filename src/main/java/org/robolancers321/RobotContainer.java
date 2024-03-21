@@ -8,8 +8,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -176,19 +178,23 @@ public class RobotContainer {
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNoteManual());
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
+
+    // for auto handoff, putting it on a button instead is safer so fender shot is still viable
+    // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
+    //     .onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
 
     new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
         .whileTrue(new OuttakeNote());
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
     new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());
-    new Trigger(this.driverController::getBButton).onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
+    
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
   /*
+   * Press B Button: handoff
+   * 
    * Hold A Button: rev for score amp
    * Release A Button: eject for score amp
    * 
@@ -199,29 +205,16 @@ public class RobotContainer {
    * 
    */
   private void configureManipulatorController() {
+    new Trigger(this.manipulatorController::getBButton).onTrue((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
+
     new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
-    new Trigger(this.manipulatorController::getAButton).onFalse(this.indexer.outtake().alongWith(new InstantCommand(() -> {}, this.flywheel)).andThen(
-        new ParallelCommandGroup(this.retractor.moveToRetracted(), this.pivot.moveToRetracted())
-    ));
+    new Trigger(this.manipulatorController::getAButton).onFalse(this.indexer.outtake().raceWith(Commands.idle(this.pivot, this.flywheel)));
 
     new Trigger(this.manipulatorController::getYButton)
-        .onTrue(
-            new ScoreSpeakerFromDistance()
-                .finallyDo(
-                    () -> {
-                      CommandScheduler.getInstance()
-                          .schedule(
-                              new ParallelCommandGroup(
-                                  this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
-                    }));
+        .onTrue(new ScoreSpeakerFromDistance());
 
     new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
-    new Trigger(this.manipulatorController::getXButton)
-        .onFalse(
-            this.indexer
-                .outtake()
-                .raceWith(this.sucker.out())
-                .alongWith(new InstantCommand(() -> {}, this.flywheel)));
+    new Trigger(this.manipulatorController::getXButton).onFalse(new ParallelDeadlineGroup(this.indexer.outtake(), this.sucker.out(), Commands.idle(this.pivot, this.flywheel)));
 
     new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
     new Trigger(() -> this.manipulatorController.getLeftY() > 0.8).onTrue(this.pivot.moveToRetracted());

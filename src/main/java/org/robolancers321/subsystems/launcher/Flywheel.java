@@ -4,6 +4,8 @@ package org.robolancers321.subsystems.launcher;
 import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,6 +56,11 @@ public class Flywheel extends SubsystemBase {
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(FlywheelConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
+
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 30000);
   }
 
   private void configureEncoder() {

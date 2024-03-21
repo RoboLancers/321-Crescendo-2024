@@ -1,9 +1,11 @@
 package org.robolancers321.commands.autonomous;
 
 import org.robolancers321.commands.AutoPickupNote;
+import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.PathAndIntake;
 import org.robolancers321.commands.PathAndRetract;
+import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -17,6 +19,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
@@ -28,6 +32,21 @@ public class Auto4NMSweepFenderStraightAutoPickup extends SequentialCommandGroup
   private Indexer indexer;
   private Flywheel flywheel;
 
+  private PathConstraints pathfinderConstraints = new PathConstraints(3.0, 2.0, 2 * Math.PI, Math.PI);
+  // ideal(ish) points
+  // private Pose2d start = new Pose2d(1.50, 5.59, Rotation2d.fromRadians(0));
+  // private Pose2d bottomNote = new Pose2d(1.74, 5.08, Rotation2d.fromRadians(-0.71));
+  // private Pose2d middleNote = new Pose2d(1.46, 5.54, Rotation2d.fromRadians(0));
+  // private Pose2d topNote = new Pose2d(1.87, 6.06, Rotation2d.fromRadians(0.52));
+
+  // in shop
+  private Pose2d start = new Pose2d(1.40, 5.52, Rotation2d.fromDegrees(0));
+  private Pose2d bottomNote = new Pose2d(1.5, 4.48, Rotation2d.fromDegrees(-16));
+  private Pose2d middleNote = new Pose2d(1.64, 5.29, Rotation2d.fromDegrees(-8.6));
+  private Pose2d topNote = new Pose2d(2.11, 5.7, Rotation2d.fromDegrees(7));
+
+  // comp points (TODO)
+
   public Auto4NMSweepFenderStraightAutoPickup() {
     this.drivetrain = Drivetrain.getInstance();
     this.retractor = Retractor.getInstance();
@@ -36,36 +55,30 @@ public class Auto4NMSweepFenderStraightAutoPickup extends SequentialCommandGroup
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
 
+    this.pathfinderConstraints = new PathConstraints(2.0, 2.0, 2 * Math.PI, Math.PI);
+
     this.addCommands(
-        // TODO: test this
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
+        new ScoreSpeakerFixedAuto(),
 
-        new PathAndIntake("4NM-SweepFenderStraightAutoPickup.1"),
+        AutoBuilder.pathfindToPoseFlipped(this.bottomNote, this.pathfinderConstraints, 1.5).raceWith(new IntakeNote()),
         new AutoPickupNote(),
-        AutoBuilder.pathfindThenFollowPath(
-            PathPlannerPath.fromChoreoTrajectory("4NM-SweepFenderStraightAutoPickup.2"),
-            new PathConstraints(3.0, 2.0, 3.0, 1.5))
-        .alongWith((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected)),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
+        AutoBuilder.pathfindToPoseFlipped(this.start, this.pathfinderConstraints)
+          .alongWith(this.retractor.moveToMating()).alongWith(this.flywheel.revSpeaker()),
+        new ScoreSpeakerFixedAuto().onlyIf(this.sucker::noteDetected),
 
-        new PathAndIntake("4NM-SweepFenderStraightAutoPickup.3"),
+        AutoBuilder.pathfindToPoseFlipped(this.middleNote, this.pathfinderConstraints, 1.5).raceWith(new IntakeNote()),
         new AutoPickupNote(),
-        AutoBuilder.pathfindThenFollowPath(
-            PathPlannerPath.fromChoreoTrajectory("4NM-SweepFenderStraightAutoPickup.4"),
-            new PathConstraints(3.0, 2.0, 3.0, 1.5))
-        .alongWith((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected)),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
+        AutoBuilder.pathfindToPoseFlipped(this.start, this.pathfinderConstraints)
+          .alongWith(this.retractor.moveToMating()).alongWith(this.flywheel.revSpeaker()),
+        new ScoreSpeakerFixedAuto().onlyIf(this.sucker::noteDetected),
 
-        new PathAndIntake("4NM-SweepFenderStraightAutoPickup.5"),
+        AutoBuilder.pathfindToPoseFlipped(this.topNote, this.pathfinderConstraints, 1.5).raceWith(new IntakeNote()),
         new AutoPickupNote(),
-        AutoBuilder.pathfindThenFollowPath(
-            PathPlannerPath.fromChoreoTrajectory("4NM-SweepFenderStraightAutoPickup.6"),
-            new PathConstraints(3.0, 2.0, 3.0, 1.5))
-        .alongWith((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected)),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken)
-
-        );
+        AutoBuilder.pathfindToPoseFlipped(this.start, this.pathfinderConstraints)
+          .alongWith(this.retractor.moveToMating()).alongWith(this.flywheel.revSpeaker()),
+        new ScoreSpeakerFixedAuto()
+      );
   }
 }

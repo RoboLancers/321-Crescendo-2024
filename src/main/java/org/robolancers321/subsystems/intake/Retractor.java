@@ -67,8 +67,12 @@ public class Retractor extends ProfiledPIDSubsystem {
     this.motor.setInverted(RetractorConstants.kInvertMotor);
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(RetractorConstants.kCurrentLimit);
-    this.motor.enableVoltageCompensation(12);
+    this.motor.enableVoltageCompensation(12); 
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 30000);
+
 
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);

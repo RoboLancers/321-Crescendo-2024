@@ -22,9 +22,7 @@ public class ScoreAmp extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
 
     this.addCommands(
-        new Mate(),
         this.pivot.aimAtAmp(),
-        new Shift(),
         this.flywheel.revAmp(),
         Commands.idle()
       );
