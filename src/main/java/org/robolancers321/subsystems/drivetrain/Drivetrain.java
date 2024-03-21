@@ -36,6 +36,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.robolancers321.Constants.DrivetrainConstants;
 import org.robolancers321.subsystems.intake.Sucker;
+import org.robolancers321.util.MathUtils;
 import org.robolancers321.util.MyAlliance;
 
 public class Drivetrain extends SubsystemBase {
@@ -406,7 +407,7 @@ public class Drivetrain extends SubsystemBase {
           double omega =
               -DrivetrainConstants.kMaxTeleopRotationPercent
                   * DrivetrainConstants.kMaxOmegaRadiansPerSecond
-                  * MathUtil.applyDeadband(controller.getRightX(), 0.05)
+                  * MathUtil.applyDeadband(MathUtils.squareKeepSign(controller.getRightX()), 0.05)
                   * multiplier;
 
           // TODO: uncomment for aim assist
@@ -421,11 +422,11 @@ public class Drivetrain extends SubsystemBase {
               new Translation2d(
                       DrivetrainConstants.kMaxTeleopSpeedPercent
                           * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                          * MathUtil.applyDeadband(-controller.getLeftY(), 0.05)
+                          * MathUtil.applyDeadband(-MathUtils.squareKeepSign(controller.getLeftY()), 0.05)
                           * multiplier,
                       DrivetrainConstants.kMaxTeleopSpeedPercent
                           * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                          * MathUtil.applyDeadband(controller.getLeftX(), 0.05)
+                          * MathUtil.applyDeadband(MathUtils.squareKeepSign(controller.getLeftX()), 0.05)
                           * multiplier)
                   .rotateBy(Rotation2d.fromDegrees(90.0));
 
@@ -469,7 +470,7 @@ public class Drivetrain extends SubsystemBase {
       double headingControllerOutput = -this.headingController.calculate(this.getNoteAngle(), 0.0);
 
       this.drive(0.0, 1.5, headingControllerOutput, false);
-    }).until(() -> !this.seesNote()).withTimeout(1.5);
+    }).until(() -> !this.seesNote()).withTimeout(2.5);
   }
 
   private Command turnToAngle(DoubleSupplier angleSupplier) {
@@ -490,7 +491,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command turnToSpeaker() {
-    return this.turnToAngle(this::getAngleToSpeaker);
+    return this.turnToAngle(this::getAngleToSpeaker).withTimeout(1.0);
   }
 
   public Command tuneModules() {

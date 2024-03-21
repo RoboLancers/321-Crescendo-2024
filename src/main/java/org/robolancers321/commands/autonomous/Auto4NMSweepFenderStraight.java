@@ -4,10 +4,13 @@ package org.robolancers321.commands.autonomous;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
+import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.PathAndIntake;
 import org.robolancers321.commands.PathAndRetract;
 import org.robolancers321.commands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
+import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.Shift;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -35,16 +38,20 @@ public class Auto4NMSweepFenderStraight extends SequentialCommandGroup {
         // TODO: test this
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
-        new ScoreSpeakerFixedAuto(),
+        // new ScoreSpeakerFixedAuto(),
+        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
         new PathAndIntake("4NM-SweepFenderStraight.1"),
         new PathAndRetract("4NM-SweepFenderStraight.2"),
-        new ScoreSpeakerFixedAuto(),
+        // new ScoreSpeakerFixedAuto(),
+        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
         new PathAndIntake("4NM-SweepFenderStraight.3"),
         new PathAndRetract("4NM-SweepFenderStraight.4"),
-        new ScoreSpeakerFixedAuto(),
+        // new ScoreSpeakerFixedAuto(),
+        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
         new PathAndIntake("4NM-SweepFenderStraight.5"),
         new PathAndRetract("4NM-SweepFenderStraight.6"),
-        new ScoreSpeakerFixedAuto()
+        // new ScoreSpeakerFixedAuto()
+        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken)
         );
   }
 }

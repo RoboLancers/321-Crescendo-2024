@@ -35,6 +35,7 @@ import org.robolancers321.commands.autonomous.Auto4NBSweepStraight;
 import org.robolancers321.commands.autonomous.Auto4NMSweep;
 import org.robolancers321.commands.autonomous.Auto4NMSweepFender;
 import org.robolancers321.commands.autonomous.Auto4NMSweepFenderStraight;
+import org.robolancers321.commands.autonomous.Auto4NMSweepFenderStraightAutoPickup;
 import org.robolancers321.commands.autonomous.Auto4NTClose;
 import org.robolancers321.commands.autonomous.Auto4NTSweep;
 import org.robolancers321.subsystems.LED.LED;
@@ -183,6 +184,7 @@ public class RobotContainer {
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
     new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());
+    new Trigger(this.driverController::getBButton).onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
@@ -243,6 +245,7 @@ public class RobotContainer {
     this.autoChooser.addOption("3NM Close", new Auto3NMClose());
     this.autoChooser.addOption("4NM Sweep Fender", new Auto4NMSweepFender());
     this.autoChooser.addOption("4NM Sweep Fender Straight", new Auto4NMSweepFenderStraight());
+    this.autoChooser.addOption("4NM Sweep Fender Straight Auto Pickup", new Auto4NMSweepFenderStraightAutoPickup());
 
     this.autoChooser.addOption("4NB Sweep", new Auto4NBSweep());
     this.autoChooser.addOption("4NB Skip", new Auto4NBSkip());

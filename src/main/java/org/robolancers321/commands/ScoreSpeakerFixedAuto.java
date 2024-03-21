@@ -1,6 +1,7 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.intake.Retractor;
@@ -25,7 +26,11 @@ public class ScoreSpeakerFixedAuto extends SequentialCommandGroup {
     this.sucker = Sucker.getInstance();
 
     this.addCommands(
-        this.flywheel.revSpeaker(),
+        new ParallelCommandGroup(
+          this.flywheel.revSpeaker(),
+          this.retractor.moveToMating(),
+          this.pivot.moveToMating()
+        ),
         new ParallelDeadlineGroup(this.indexer.acceptHandoff(), this.sucker.out()),
         this.indexer.off() // ,
         // stay revved during auto

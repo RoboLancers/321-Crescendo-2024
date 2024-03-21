@@ -139,10 +139,17 @@ public class Flywheel extends SubsystemBase {
     });
   }
 
-  public Command shiftBackward() {
+  public Command shiftBackwardFast() {
     return runOnce(
         () -> {
-          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackward.rpm;
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackwardFast.rpm;
+        });
+  }
+
+  public Command shiftBackwardSlow() {
+    return runOnce(
+        () -> {
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackwardSlow.rpm;
         });
   }
 

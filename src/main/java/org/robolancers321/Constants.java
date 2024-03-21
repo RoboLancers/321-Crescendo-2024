@@ -32,7 +32,7 @@ public final class Constants {
     public static final double kTrackWidthMeters = Units.inchesToMeters(22.0);
     public static final double kWheelBaseMeters = Units.inchesToMeters(26.0);
 
-    public static final double kMaxSpeedMetersPerSecond = 4.0;
+    public static final double kMaxSpeedMetersPerSecond = 5.0;
     public static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
     public static final double kMaxTeleopSpeedPercent = 1.0;
@@ -100,7 +100,7 @@ public final class Constants {
     public static final double kGearRatio = 360.0;
 
     public static final float kMinAngle = -7f;
-    public static final float kMaxAngle = 176.0f;
+    public static final float kMaxAngle = 182.0f;
 
     public static final double kP = 0.008; //0.0065
     public static final double kI = 0.000;
@@ -110,15 +110,15 @@ public final class Constants {
     public static final double kG = 0.037; // 0.04? // 0.0155;
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 160; // 400.0; //180
-    public static final double kMaxAccelerationDeg = 600.0; //2000
+    public static final double kMaxVelocityDeg = 120; // 400.0; //180
+    public static final double kMaxAccelerationDeg = 500.0; //2000
 
     public static final double kToleranceDeg = 5.0;
 
     public enum RetractorSetpoint {
-      kRetracted(176),
-      kMating(165),
-      kIntake(-5),
+      kRetracted(182),                                                                                                                                                                                                                                                          
+      kMating(173),
+      kIntake(-6),
       kOuttake(45.0);
 
       public final double angle;
@@ -159,9 +159,10 @@ public final class Constants {
     public static final double kToleranceRPM = 60.0;
 
     public enum FlywheelSetpoint {
-      kAcceptHandoff(300), // this is super finicky
-      kShiftForward(100),
-      kShiftBackward(-2000),
+      kAcceptHandoff(150), // this is super finicky
+      kShiftForward(50),
+      kShiftBackwardFast(-4000),
+      kShiftBackwardSlow(-1000),
       kAmp(1500.0),
       kSpeaker(2500.0);
 
@@ -176,16 +177,17 @@ public final class Constants {
   public static final class IndexerConstants {
     public static final int kMotorPort = 16;
 
-    public static final int kEntranceBeamBreakPort = 9;
-    public static final int kExitBeamBreakPort = 0;
+    public static final int kEntranceBeamBreakPort = 7;
+    public static final int kExitBeamBreakPort = 9;
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 40;
 
     public static final double kFF = 0.000153;
 
-    public static final double kHandoffRPM = 5000;
-    public static final double kShiftBackFromExitRPM = -350;
+    public static final double kHandoffRPM = 2000;
+    public static final double kShiftBackFromExitRPM = -600;
+    public static final double kShiftBackToEntranceRPM = -100;
     public static final double kShiftForwardFromEntranceRPM = 200;
     public static final double kOuttakeRPM = 3000;
   }
@@ -218,7 +220,7 @@ public final class Constants {
     public static final double kToleranceDeg = 1.0;
 
     public enum PivotSetpoint {
-      kRetracted(-9.0),
+      kRetracted(-13.0),
       kMating(-19.0),
       kAmp(75.0),
       kSpeaker(-16.0);

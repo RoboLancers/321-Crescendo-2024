@@ -13,14 +13,17 @@ import org.robolancers321.subsystems.intake.Sucker;
 
 public class PathAndRetract extends SequentialCommandGroup {
   private Retractor retractor;
+  private Sucker sucker;
 
   public PathAndRetract(String pathName) {
     this.retractor = Retractor.getInstance();
+    this.sucker = Sucker.getInstance();
 
     this.addCommands(
         new ParallelCommandGroup(
             AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory(pathName)),
-            this.retractor.moveToRetracted()
-        ));
+            (new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected)
+          )
+        );
   }
 }

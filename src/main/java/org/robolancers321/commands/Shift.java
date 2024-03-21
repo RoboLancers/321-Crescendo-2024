@@ -14,9 +14,10 @@ public class Shift extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
 
     this.addCommands(
-        this.flywheel.shiftBackward(),
+        this.flywheel.shiftBackwardFast(),
         this.indexer.shiftBackFromExit(),
-        this.flywheel.off(),
+        this.flywheel.shiftBackwardSlow(),
+        this.indexer.shiftBackToEntrance(),
         this.indexer.shiftForwardToEntrance(),
         this.indexer.off(),
         this.flywheel.off());
