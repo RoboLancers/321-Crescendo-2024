@@ -18,7 +18,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -35,7 +34,6 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.robolancers321.Constants.DrivetrainConstants;
-import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.util.MathUtils;
 import org.robolancers321.util.MyAlliance;
 
@@ -271,10 +269,11 @@ public class Drivetrain extends SubsystemBase {
   private double getAngleToSpeaker() {
     Translation2d speakerLocation = this.getSpeakerPosition();
 
-    double angle = -180
-        + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
-        + this.getYawDeg();
-        
+    double angle =
+        -180
+            + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
+            + this.getYawDeg();
+
     if (!MyAlliance.isRed()) return angle;
 
     double x = Math.cos(angle * Math.PI / 180);
@@ -291,7 +290,7 @@ public class Drivetrain extends SubsystemBase {
 
   public boolean seesNote() {
     return this.noteCamera.getLatestResult().hasTargets();
-        // && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
+    // && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
   }
 
   private double getNoteAngle() {
@@ -399,8 +398,7 @@ public class Drivetrain extends SubsystemBase {
     return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
   }
 
-  public Command 
-  teleopDrive(XboxController controller, boolean fieldCentric) {
+  public Command teleopDrive(XboxController controller, boolean fieldCentric) {
     return run(() -> {
           double multiplier = controller.getRightBumper() ? 0.4 : 1.0;
 
@@ -422,11 +420,13 @@ public class Drivetrain extends SubsystemBase {
               new Translation2d(
                       DrivetrainConstants.kMaxTeleopSpeedPercent
                           * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                          * MathUtil.applyDeadband(-MathUtils.squareKeepSign(controller.getLeftY()), 0.05)
+                          * MathUtil.applyDeadband(
+                              -MathUtils.squareKeepSign(controller.getLeftY()), 0.05)
                           * multiplier,
                       DrivetrainConstants.kMaxTeleopSpeedPercent
                           * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                          * MathUtil.applyDeadband(MathUtils.squareKeepSign(controller.getLeftX()), 0.05)
+                          * MathUtil.applyDeadband(
+                              MathUtils.squareKeepSign(controller.getLeftX()), 0.05)
                           * multiplier)
                   .rotateBy(Rotation2d.fromDegrees(90.0));
 
@@ -465,12 +465,15 @@ public class Drivetrain extends SubsystemBase {
                 .until(this.headingController::atSetpoint));
   }
 
-  public Command driveIntoNote(){
+  public Command driveIntoNote() {
     return run(() -> {
-      double headingControllerOutput = -this.headingController.calculate(this.getNoteAngle(), 0.0);
+          double headingControllerOutput =
+              -this.headingController.calculate(this.getNoteAngle(), 0.0);
 
-      this.drive(0.0, 1.5, headingControllerOutput, false);
-    }).until(() -> !this.seesNote()).withTimeout(2.5);
+          this.drive(0.0, 1.5, headingControllerOutput, false);
+        })
+        .until(() -> !this.seesNote())
+        .withTimeout(2.5);
   }
 
   private Command turnToAngle(DoubleSupplier angleSupplier) {

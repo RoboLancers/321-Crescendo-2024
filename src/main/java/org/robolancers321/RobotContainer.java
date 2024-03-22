@@ -7,19 +7,30 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.commands.AutoPickupNote;
+import org.robolancers321.commands.ChoreoAutos.Auto3NBClose;
+import org.robolancers321.commands.ChoreoAutos.Auto3NMClose;
+import org.robolancers321.commands.ChoreoAutos.Auto3NTClose;
+import org.robolancers321.commands.ChoreoAutos.Auto4NBSkip;
+import org.robolancers321.commands.ChoreoAutos.Auto4NBSweep;
+import org.robolancers321.commands.ChoreoAutos.Auto4NBSweepStraight;
+import org.robolancers321.commands.ChoreoAutos.Auto4NMSweep;
+import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFender;
+import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFenderStraight;
+import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFenderStraightAutoPickup;
+import org.robolancers321.commands.ChoreoAutos.Auto4NTClose;
+import org.robolancers321.commands.ChoreoAutos.Auto4NTSweep;
+import org.robolancers321.commands.PPAutos.Close2B;
+import org.robolancers321.commands.PPAutos.Close3M;
+import org.robolancers321.commands.PPAutos.Close4T;
+import org.robolancers321.commands.PPAutos.SweepStraight4M;
 import org.robolancers321.commands.EmergencyCancel;
-import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
@@ -28,18 +39,6 @@ import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
-import org.robolancers321.commands.autonomous.Auto3NBClose;
-import org.robolancers321.commands.autonomous.Auto3NMClose;
-import org.robolancers321.commands.autonomous.Auto3NTClose;
-import org.robolancers321.commands.autonomous.Auto4NBSkip;
-import org.robolancers321.commands.autonomous.Auto4NBSweep;
-import org.robolancers321.commands.autonomous.Auto4NBSweepStraight;
-import org.robolancers321.commands.autonomous.Auto4NMSweep;
-import org.robolancers321.commands.autonomous.Auto4NMSweepFender;
-import org.robolancers321.commands.autonomous.Auto4NMSweepFenderStraight;
-import org.robolancers321.commands.autonomous.Auto4NMSweepFenderStraightAutoPickup;
-import org.robolancers321.commands.autonomous.Auto4NTClose;
-import org.robolancers321.commands.autonomous.Auto4NTSweep;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -101,8 +100,7 @@ public class RobotContainer {
         2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(180, 30, 0)));
 
     // note in sucker, solid white
-    LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, Color.kWhite));
+    LED.registerSignal(3, this.sucker::noteDetected, LED.solid(Section.FULL, Color.kWhite));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -117,7 +115,8 @@ public class RobotContainer {
     LED.registerSignal(
         5,
         () ->
-            (this.pivot.atGoal() && this.flywheel.isRevved()
+            (this.pivot.atGoal()
+                && this.flywheel.isRevved()
                 && this.flywheel.getGoalRPM()
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
         LED.strobe(Section.FULL, new Color(0, 255, 0)));
@@ -129,39 +128,48 @@ public class RobotContainer {
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
 
-    this.flywheel.setDefaultCommand(this.flywheel.revSpeakerFromRPM(() -> {
-        if (this.indexer.entranceBeamNotBroken()) return 0.0;
+    this.flywheel.setDefaultCommand(
+        this.flywheel.revSpeakerFromRPM(
+            () -> {
+              if (this.indexer.entranceBeamNotBroken()) return 0.0;
 
-        if (this.drivetrain.getDistanceToSpeaker() < 4.0) return Math.min(0.7 * AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()), 2000);
+              if (this.drivetrain.getDistanceToSpeaker() < 4.0)
+                return Math.min(
+                    0.7 * AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()),
+                    2000);
 
-        return 0.0;
-    }));
+              return 0.0;
+            }));
 
     this.retractor.setDefaultCommand(this.retractor.moveToRetracted());
-    this.pivot.setDefaultCommand(this.pivot.aimAtSpeaker(() -> {
-        if (this.indexer.entranceBeamNotBroken()) return PivotConstants.PivotSetpoint.kRetracted.angle;
+    this.pivot.setDefaultCommand(
+        this.pivot.aimAtSpeaker(
+            () -> {
+              if (this.indexer.entranceBeamNotBroken())
+                return PivotConstants.PivotSetpoint.kRetracted.angle;
 
-        if (this.drivetrain.getDistanceToSpeaker() < 4.0) return AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker());
+              if (this.drivetrain.getDistanceToSpeaker() < 4.0)
+                return AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker());
 
-        return PivotConstants.PivotSetpoint.kRetracted.angle;
-    }));
+              return PivotConstants.PivotSetpoint.kRetracted.angle;
+            }));
   }
 
   /*
    * Press Bumpers Together: zero gyro
-   * 
+   *
    * Hold Right Bumper: toggle slow mode
-   * 
+   *
    * Hold Right Trigger: deploy intake
    * Release Right Trigger: retract intake
-   * 
+   *
    * Hold Left Trigger: deploy outtake
    * Release Left Trigger: retract intake
-   * 
+   *
    * Press A Button: snap to amp angle
    * Press B Button: auto pickup note
    * Press X Button: emergency cancel
-   * 
+   *
    */
   private void configureDriverController() {
     // TODO: i think we keep this just in case for teleop
@@ -188,36 +196,43 @@ public class RobotContainer {
 
     new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
     new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());
-    
+
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
   }
 
   /*
    * Press B Button: handoff
-   * 
+   *
    * Hold A Button: rev for score amp
    * Release A Button: eject for score amp
-   * 
+   *
    * Press Y Button: score speaker from distance
-   * 
+   *
    * Hold X Button: rev for fixed speaker shot
    * Release X Button: eject for fixed speaker shot
-   * 
+   *
    */
   private void configureManipulatorController() {
-    new Trigger(this.manipulatorController::getBButton).onTrue((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
+    new Trigger(this.manipulatorController::getBButton)
+        .onTrue((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
 
     new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
-    new Trigger(this.manipulatorController::getAButton).onFalse(this.indexer.outtake().raceWith(Commands.idle(this.pivot, this.flywheel)));
+    new Trigger(this.manipulatorController::getAButton)
+        .onFalse(this.indexer.outtake().raceWith(Commands.idle(this.pivot, this.flywheel)));
 
-    new Trigger(this.manipulatorController::getYButton)
-        .onTrue(new ScoreSpeakerFromDistance());
+    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance());
 
     new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
-    new Trigger(this.manipulatorController::getXButton).onFalse(new ParallelDeadlineGroup(this.indexer.outtake(), this.sucker.out(), Commands.idle(this.pivot, this.flywheel)));
+    new Trigger(this.manipulatorController::getXButton)
+        .onFalse(
+            new ParallelDeadlineGroup(
+                this.indexer.outtake(),
+                this.sucker.out(),
+                Commands.idle(this.pivot, this.flywheel)));
 
     new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
-    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8).onTrue(this.pivot.moveToRetracted());
+    new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
+        .onTrue(this.pivot.moveToRetracted());
   }
 
   private void configureAuto() {
@@ -238,18 +253,25 @@ public class RobotContainer {
     this.autoChooser.addOption("3NM Close", new Auto3NMClose());
     this.autoChooser.addOption("4NM Sweep Fender", new Auto4NMSweepFender());
     this.autoChooser.addOption("4NM Sweep Fender Straight", new Auto4NMSweepFenderStraight());
-    this.autoChooser.addOption("4NM Sweep Fender Straight Auto Pickup", new Auto4NMSweepFenderStraightAutoPickup());
+    this.autoChooser.addOption(
+        "4NM Sweep Fender Straight Auto Pickup", new Auto4NMSweepFenderStraightAutoPickup());
 
     this.autoChooser.addOption("4NB Sweep", new Auto4NBSweep());
     this.autoChooser.addOption("4NB Skip", new Auto4NBSkip());
     this.autoChooser.addOption("3NB Sweep Straight", new Auto4NBSweepStraight());
     this.autoChooser.addOption("3NB Close", new Auto3NBClose());
 
+    //pathplanner
+    this.autoChooser.addOption("SweepStraight4M", new SweepStraight4M());
+    this.autoChooser.addOption("Close4T", new Close4T());
+    this.autoChooser.addOption("Close2B", new Close2B());
+    this.autoChooser.addOption("Close3M", new Close3M());
+
     SmartDashboard.putData(autoChooser);
   }
 
   public Command getAutonomousCommand() {
-    // return AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("4NMSweep"));
+    // return new Close4T();
 
     return this.autoChooser.getSelected();
   }

@@ -3,7 +3,6 @@ package org.robolancers321.commands;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;

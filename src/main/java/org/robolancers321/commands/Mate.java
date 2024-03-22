@@ -29,13 +29,12 @@ public class Mate extends SequentialCommandGroup {
         new ParallelCommandGroup(this.retractor.moveToMating(), this.pivot.moveToMating()),
         new ParallelDeadlineGroup(
             this.indexer.acceptHandoff(), this.sucker.out(), this.flywheel.acceptHandoff()),
-        new ParallelDeadlineGroup(this.indexer.shiftFromHandoffForward(), this.sucker.out(), this.flywheel.shiftForward()),
+        new ParallelDeadlineGroup(
+            this.indexer.shiftFromHandoffForward(),
+            this.sucker.out(),
+            this.flywheel.shiftForward()),
         this.indexer.off(),
         this.flywheel.off(),
-        new ParallelCommandGroup(
-          this.retractor.moveToRetracted(),
-          this.pivot.moveToRetracted()
-        )
-    );
+        new ParallelCommandGroup(this.retractor.moveToRetracted(), this.pivot.moveToRetracted()));
   }
 }

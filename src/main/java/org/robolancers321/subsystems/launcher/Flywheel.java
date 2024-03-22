@@ -5,7 +5,6 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -101,7 +100,6 @@ public class Flywheel extends SubsystemBase {
     SmartDashboard.putNumber("flywheel current (amps)", this.motor.getOutputCurrent());
     SmartDashboard.putBoolean("flywheel isRevved", this.isRevved());
 
-
     SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }
 
@@ -140,10 +138,11 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
-  public Command shiftForward(){
-    return runOnce(() -> {
-      this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftForward.rpm;
-    });
+  public Command shiftForward() {
+    return runOnce(
+        () -> {
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftForward.rpm;
+        });
   }
 
   public Command shiftBackwardFast() {

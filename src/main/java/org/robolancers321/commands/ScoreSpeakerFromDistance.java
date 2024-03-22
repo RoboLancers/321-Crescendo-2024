@@ -32,15 +32,14 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
         this.drivetrain.turnToSpeaker(),
         this.drivetrain.stop(),
         new ParallelCommandGroup(
-          // this.pivot.aimAtSpeaker(
-          //       () -> SmartDashboard.getNumber("tuning pivot angle", 0)),
-          //   this.flywheel.revSpeakerFromRPM(
-          //       () -> SmartDashboard.getNumber("tuning flywheel rpm", 0))
+            // this.pivot.aimAtSpeaker(
+            //       () -> SmartDashboard.getNumber("tuning pivot angle", 0)),
+            //   this.flywheel.revSpeakerFromRPM(
+            //       () -> SmartDashboard.getNumber("tuning flywheel rpm", 0))
             this.pivot.aimAtSpeaker(
                 () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),
             this.flywheel.revSpeakerFromRPM(
-                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))
-        ),
+                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))),
         this.indexer.outtake(),
         this.indexer.off(),
         this.flywheel.off());

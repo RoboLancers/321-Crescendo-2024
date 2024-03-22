@@ -7,7 +7,7 @@ public class MathUtils {
     return Math.abs(b - a) < epsilon;
   }
 
-  public static double squareKeepSign(double x){
+  public static double squareKeepSign(double x) {
     return Math.signum(x) * x * x;
   }
 }

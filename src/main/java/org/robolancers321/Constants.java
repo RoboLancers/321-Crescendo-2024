@@ -51,14 +51,14 @@ public final class Constants {
 
     public static double kSecondOrderKinematicsDt = 0.2;
 
-    public static final double kTranslationP = 1.15; // 4.0
+    public static final double kTranslationP = 5.0; // 1.15
     public static final double kTranslationI = 0.0;
-    public static final double kTranslationD = 0.0;
+    public static final double kTranslationD = 0.0; //0.0
 
     // corrects heading during path planner
-    public static final double kRotationP = 2.16; // 8.5
+    public static final double kRotationP = 3.0; // 2.16
     public static final double kRotationI = 0.0;
-    public static final double kRotationD = 0.0;
+    public static final double kRotationD = 0.25; //0.0
 
     // corrects heading during teleop
     public static final double kHeadingP = 0.2; // multiply by 10 if it doesnt explode
@@ -102,7 +102,7 @@ public final class Constants {
     public static final float kMinAngle = -7f;
     public static final float kMaxAngle = 182.0f;
 
-    public static final double kP = 0.008; //0.0065
+    public static final double kP = 0.008; // 0.0065
     public static final double kI = 0.000;
     public static final double kD = 0.0001;
 
@@ -111,12 +111,12 @@ public final class Constants {
     public static final double kV = 0.000;
 
     public static final double kMaxVelocityDeg = 120; // 400.0; //180
-    public static final double kMaxAccelerationDeg = 500.0; //2000
+    public static final double kMaxAccelerationDeg = 500.0; // 2000
 
     public static final double kToleranceDeg = 5.0;
 
     public enum RetractorSetpoint {
-      kRetracted(182),                                                                                                                                                                                                                                                          
+      kRetracted(182),
       kMating(169),
       kIntake(-6),
       kOuttake(45.0);

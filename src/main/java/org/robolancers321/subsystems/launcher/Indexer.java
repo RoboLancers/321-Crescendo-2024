@@ -149,7 +149,7 @@ public class Indexer extends SubsystemBase {
         .alongWith(new WaitUntilCommand(this::entranceBeamBroken).withTimeout(1.0));
   }
 
-  public Command shiftBackToEntrance(){
+  public Command shiftBackToEntrance() {
     return runOnce(
             () -> {
               this.goalRPM = IndexerConstants.kShiftBackToEntranceRPM;
@@ -158,15 +158,19 @@ public class Indexer extends SubsystemBase {
   }
 
   public Command acceptHandoff() {
-    return runOnce(() -> {
-      this.goalRPM = IndexerConstants.kHandoffRPM;
-    }).alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
+    return runOnce(
+            () -> {
+              this.goalRPM = IndexerConstants.kHandoffRPM;
+            })
+        .alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
   }
 
   public Command shiftFromHandoffForward() {
-    return runOnce(() -> {
-      this.goalRPM = IndexerConstants.kHandoffRPM;
-    }).alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
+    return runOnce(
+            () -> {
+              this.goalRPM = IndexerConstants.kHandoffRPM;
+            })
+        .alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
   }
 
   public Command outtake() {
@@ -176,7 +180,8 @@ public class Indexer extends SubsystemBase {
             })
         .alongWith(
             new WaitUntilCommand(this::exitBeamBroken)
-                .andThen(new WaitUntilCommand(this::exitBeamNotBroken)).andThen(new WaitCommand(0.1)))
+                .andThen(new WaitUntilCommand(this::exitBeamNotBroken))
+                .andThen(new WaitCommand(0.1)))
         .withTimeout(1.0);
   }
 
