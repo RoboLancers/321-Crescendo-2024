@@ -71,7 +71,6 @@ public class RobotContainer {
   private AddressableLEDSim ledSim;
 
 
-  XboxController controller;
   Climber climber;
 
   public RobotContainer() {
@@ -281,36 +280,36 @@ public class RobotContainer {
     this.autoChooser.addOption("Close3M", new Close3M());
 
     SmartDashboard.putData(autoChooser);
-  }
-    this.controller = new XboxController(0);
+  
+
     this.climber = Climber.getInstance();
     configureBindings();
   }
 
 
   private void configureBindings() {
-    new Trigger(this.controller::getAButton).whileTrue(climber.run(() -> {
+    new Trigger(this.manipulatorController::getAButton).whileTrue(climber.run(() -> {
       climber.setLeftPower(0.1);
     }).finallyDo(() -> {
       climber.setLeftPower(0);
     }));
 
     
-       new Trigger(this.controller::getYButton).whileTrue(climber.run(() -> {
+       new Trigger(this.manipulatorController::getYButton).whileTrue(climber.run(() -> {
       climber.setLeftPower(-0.1);
     }).finallyDo(() -> {
       climber.setLeftPower(0);
     }));
     
 
-    new Trigger(this.controller::getXButton).whileTrue(climber.run(() -> {
+    new Trigger(this.manipulatorController::getXButton).whileTrue(climber.run(() -> {
       climber.setRightPower(0.1);
     }).finallyDo(() -> {
       climber.setRightPower(0);
     }));
 
 
-    new Trigger(this.controller::getBButton).whileTrue(climber.run(() -> {
+    new Trigger(this.manipulatorController::getBButton).whileTrue(climber.run(() -> {
       climber.setRightPower(-0.1);
     }).finallyDo(() -> {
       climber.setRightPower(0);
