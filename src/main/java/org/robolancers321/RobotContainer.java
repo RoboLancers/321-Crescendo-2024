@@ -1,6 +1,9 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
+import org.robolancers321.subsystems.Climber;
+
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -48,6 +51,8 @@ import org.robolancers321.subsystems.launcher.AimTable;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -64,6 +69,10 @@ public class RobotContainer {
 
   private LED led;
   private AddressableLEDSim ledSim;
+
+
+  XboxController controller;
+  Climber climber;
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
@@ -272,6 +281,51 @@ public class RobotContainer {
     this.autoChooser.addOption("Close3M", new Close3M());
 
     SmartDashboard.putData(autoChooser);
+  }
+    this.controller = new XboxController(0);
+    this.climber = Climber.getInstance();
+    configureBindings();
+  }
+
+
+  private void configureBindings() {
+    new Trigger(this.controller::getAButton).whileTrue(climber.run(() -> {
+      climber.setLeftPower(0.1);
+    }).finallyDo(() -> {
+      climber.setLeftPower(0);
+    }));
+
+    
+       new Trigger(this.controller::getYButton).whileTrue(climber.run(() -> {
+      climber.setLeftPower(-0.1);
+    }).finallyDo(() -> {
+      climber.setLeftPower(0);
+    }));
+    
+
+    new Trigger(this.controller::getXButton).whileTrue(climber.run(() -> {
+      climber.setRightPower(0.1);
+    }).finallyDo(() -> {
+      climber.setRightPower(0);
+    }));
+
+
+    new Trigger(this.controller::getBButton).whileTrue(climber.run(() -> {
+      climber.setRightPower(-0.1);
+    }).finallyDo(() -> {
+      climber.setRightPower(0);
+    }));
+
+
+    // new Trigger(this.controller::getYButton).whileTrue(climber.run(() -> {
+    //   climber.setLeftPower(0.1);
+    //   climber.setRightPower(0.1);
+    // }).finallyDo(() -> {
+    //   climber.setLeftPower(0);
+    //   climber.setRightPower(0);
+    // }));
+
+
   }
 
   public Command getAutonomousCommand() {

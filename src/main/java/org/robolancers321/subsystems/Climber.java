@@ -40,8 +40,8 @@ public class Climber extends SubsystemBase {
   private final PIDController leftClimberPID;
   private final PIDController rightClimberPID;
 
-  private final DigitalInput leftLimitSwitch;
-  private final DigitalInput rightLimitSwitch;
+  // private final DigitalInput leftLimitSwitch;
+  // private final DigitalInput rightLimitSwitch;
 
   private Climber() {
     this.leftClimberMotor =
@@ -57,8 +57,8 @@ public class Climber extends SubsystemBase {
     this.rightClimberPID =
         new PIDController(ClimberConstants.kP, ClimberConstants.kI, ClimberConstants.kD);
 
-    this.leftLimitSwitch = new DigitalInput(ClimberConstants.kLeftLimitSwitchPort);
-    this.rightLimitSwitch = new DigitalInput(ClimberConstants.kRightLimitSwitchPort);
+    // this.leftLimitSwitch = new DigitalInput(ClimberConstants.kLeftLimitSwitchPort);
+    // this.rightLimitSwitch = new DigitalInput(ClimberConstants.kRightLimitSwitchPort);
 
     configMotors();
     configEncoders();
@@ -73,8 +73,9 @@ public class Climber extends SubsystemBase {
     leftClimberMotor.enableVoltageCompensation(12.0);
     leftClimberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kMaxSoftLimit);
     leftClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, ClimberConstants.kMinSoftLimit);
-    // leftClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
-    // leftClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+
+    leftClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    leftClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
 
     rightClimberMotor.setInverted(ClimberConstants.kRightClimberInverted);
     rightClimberMotor.setIdleMode(IdleMode.kBrake);
@@ -82,8 +83,9 @@ public class Climber extends SubsystemBase {
     rightClimberMotor.enableVoltageCompensation(12.0);
     rightClimberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kMaxSoftLimit);
     rightClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, ClimberConstants.kMinSoftLimit);
-    // rightClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
-    // rightClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+
+    rightClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    rightClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
 
     // leftClimberMotor.burnFlash();
     // rightClimberMotor.burnFlash();
@@ -130,11 +132,11 @@ public class Climber extends SubsystemBase {
     rightClimberPID.setSetpoint(setpoint);
   }
 
-  private void setLeftPower(double speed) {
+  public void setLeftPower(double speed) {
     leftClimberMotor.set(speed);
   }
 
-  private void setRightPower(double speed) {
+  public void setRightPower(double speed) {
     rightClimberMotor.set(speed);
   }
 
@@ -143,13 +145,13 @@ public class Climber extends SubsystemBase {
     // tried new naming convention from 6328 Mechanical Advantage
 
     SmartDashboard.putNumber("climberLeft Position", getLeftClimberPosition());
-    SmartDashboard.putBoolean("climberLeft LimitSwitch", leftLimitSwitch.get());
+    // SmartDashboard.putBoolean("climberLeft LimitSwitch", leftLimitSwitch.get());
     SmartDashboard.putNumber("climberLeft MotorOutput", leftClimberMotor.getAppliedOutput());
     SmartDashboard.putNumber(
         "climberLeft PIDOutput", leftClimberPID.calculate(getLeftClimberPosition()));
 
     SmartDashboard.putNumber("climberRight Position", getRightClimberPosition());
-    SmartDashboard.putBoolean("climberRight LimitSwitch", rightLimitSwitch.get());
+    // SmartDashboard.putBoolean("climberRight LimitSwitch", rightLimitSwitch.get());
     SmartDashboard.putNumber("climberRight MotorOutput", rightClimberMotor.getAppliedOutput());
     SmartDashboard.putNumber(
         "climberRight PIDOutput", rightClimberPID.calculate(getRightClimberPosition()));
@@ -214,39 +216,39 @@ public class Climber extends SubsystemBase {
         .until(() -> leftClimberPID.atSetpoint() && rightClimberPID.atSetpoint());
   }
 
-  public Command zeroLeft() {
-    return run(() -> setLeftPower(ClimberConstants.kDownwardZeroingSpeed))
-        .until(leftLimitSwitch::get)
-        .finallyDo(
-            () -> {
-              setLeftPower(0);
-              resetLeftEncoder();
-            });
-  }
+  // public Command zeroLeft() {
+  //   return run(() -> setLeftPower(ClimberConstants.kDownwardZeroingSpeed))
+  //       .until(leftLimitSwitch::get)
+  //       .finallyDo(
+  //           () -> {
+  //             setLeftPower(0);
+  //             resetLeftEncoder();
+  //           });
+  // }
 
-  public Command zeroRight() {
-    return run(() -> setRightPower(ClimberConstants.kDownwardZeroingSpeed))
-        .until(rightLimitSwitch::get)
-        .finallyDo(
-            () -> {
-              setRightPower(0);
-              resetRightEncoder();
-            });
-  }
+  // public Command zeroRight() {
+  //   return run(() -> setRightPower(ClimberConstants.kDownwardZeroingSpeed))
+  //       .until(rightLimitSwitch::get)
+  //       .finallyDo(
+  //           () -> {
+  //             setRightPower(0);
+  //             resetRightEncoder();
+  //           });
+  // }
 
-  public Command zeroBoth() {
-    return run(() -> {
-          if (!leftLimitSwitch.get()) setLeftPower(ClimberConstants.kDownwardZeroingSpeed);
-          if (!rightLimitSwitch.get()) setRightPower(ClimberConstants.kDownwardZeroingSpeed);
-        })
-        .until(() -> leftLimitSwitch.get() && rightLimitSwitch.get())
-        .finallyDo(
-            () -> {
-              setRightPower(0);
-              setLeftPower(0);
-              resetEncoders();
-            });
-  }
+  // public Command zeroBoth() {
+  //   return run(() -> {
+  //         if (!leftLimitSwitch.get()) setLeftPower(ClimberConstants.kDownwardZeroingSpeed);
+  //         if (!rightLimitSwitch.get()) setRightPower(ClimberConstants.kDownwardZeroingSpeed);
+  //       })
+  //       .until(() -> leftLimitSwitch.get() && rightLimitSwitch.get())
+  //       .finallyDo(
+  //           () -> {
+  //             setRightPower(0);
+  //             setLeftPower(0);
+  //             resetEncoders();
+  //           });
+  // }
 
   public Command tuneControllers() {
     this.initTuning();

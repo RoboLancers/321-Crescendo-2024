@@ -264,13 +264,13 @@ public final class Constants {
 }
 
   public static final class ClimberConstants {
-    public static final int kLeftClimberPort = 0;
-    public static final int kLeftLimitSwitchPort = 0;
+    public static final int kLeftClimberPort = 19;
+    // public static final int kLeftLimitSwitchPort = 0;
     public static final boolean kLeftClimberInverted = false;
 
-    public static final int kRightClimberPort = 0;
-    public static final int kRightLimitSwitchPort = 1;
-    public static final boolean kRightClimberInverted = false;
+    public static final int kRightClimberPort = 18;
+    // public static final int kRightLimitSwitchPort = 1;
+    public static final boolean kRightClimberInverted = true;
 
     public static final int kCurrentLimit = 40;
     public static final float kMaxSoftLimit = 1;
