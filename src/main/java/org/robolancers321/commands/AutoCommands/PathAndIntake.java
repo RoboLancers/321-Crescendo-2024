@@ -6,7 +6,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.commands.IntakeNote;
-import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 
@@ -22,8 +21,6 @@ public class PathAndIntake extends SequentialCommandGroup {
 
     this.addCommands(
         retractor.moveToIntake().withTimeout(0.3),
-        new ParallelRaceGroup(
-            AutoBuilder.followPath(path),
-            new IntakeNote()));
+        new ParallelRaceGroup(AutoBuilder.followPath(path), new IntakeNote()));
   }
 }

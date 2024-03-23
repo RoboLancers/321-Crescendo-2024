@@ -53,12 +53,12 @@ public final class Constants {
 
     public static final double kTranslationP = 5.0; // 1.15
     public static final double kTranslationI = 0.0;
-    public static final double kTranslationD = 0.0; //0.0
+    public static final double kTranslationD = 0.0; // 0.0
 
     // corrects heading during path planner
     public static final double kRotationP = 3.0; // 2.16
     public static final double kRotationI = 0.0;
-    public static final double kRotationD = 0.25; //0.0
+    public static final double kRotationD = 0.25; // 0.0
 
     // corrects heading during teleop
     public static final double kHeadingP = 0.2; // multiply by 10 if it doesnt explode

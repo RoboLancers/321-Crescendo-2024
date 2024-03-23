@@ -1,6 +1,7 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands.ChoreoAutos;
 
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.commands.AutoCommands.PathAndShoot;
@@ -11,8 +12,6 @@ import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
-
-import com.pathplanner.lib.path.PathPlannerPath;
 
 public class Auto4NBSweepStraight extends SequentialCommandGroup {
   private Drivetrain drivetrain;

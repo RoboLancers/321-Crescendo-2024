@@ -1,11 +1,10 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands.PPAutos;
 
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
 import org.robolancers321.commands.AutoCommands.PathAndIntake;
-import org.robolancers321.commands.AutoCommands.PathAndMate;
 import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.commands.AutoCommands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
@@ -16,8 +15,6 @@ import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
-
-import com.pathplanner.lib.path.PathPlannerPath;
 
 public class SweepStraight4M extends SequentialCommandGroup {
   private Drivetrain drivetrain;
@@ -39,14 +36,13 @@ public class SweepStraight4M extends SequentialCommandGroup {
         // TODO: test this
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
+        new ScoreSpeakerFixedAuto(),
         new PathAndIntake(PathPlannerPath.fromPathFile("SweepStraight4M.1")),
         new PathAndRetract(PathPlannerPath.fromPathFile("SweepStraight4M.2")),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
+        new ScoreSpeakerFixedAuto(),
         new PathAndIntake(PathPlannerPath.fromPathFile("SweepStraight4M.3")),
         new PathAndRetract(PathPlannerPath.fromPathFile("SweepStraight4M.4")),
-        new ScoreSpeakerFromDistance().onlyIf(this.indexer::entranceBeamBroken),
-        new PathAndShoot(PathPlannerPath.fromPathFile("SweepStraight4M.5"))
-        );
+        new ScoreSpeakerFixedAuto(),
+        new PathAndShoot(PathPlannerPath.fromPathFile("SweepStraight4M.5")));
   }
 }

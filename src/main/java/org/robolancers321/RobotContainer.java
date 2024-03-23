@@ -26,14 +26,14 @@ import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFenderStraight;
 import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFenderStraightAutoPickup;
 import org.robolancers321.commands.ChoreoAutos.Auto4NTClose;
 import org.robolancers321.commands.ChoreoAutos.Auto4NTSweep;
-import org.robolancers321.commands.PPAutos.Close2B;
-import org.robolancers321.commands.PPAutos.Close3M;
-import org.robolancers321.commands.PPAutos.Close4T;
-import org.robolancers321.commands.PPAutos.SweepStraight4M;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
+import org.robolancers321.commands.PPAutos.Close2B;
+import org.robolancers321.commands.PPAutos.Close3M;
+import org.robolancers321.commands.PPAutos.Close4T;
+import org.robolancers321.commands.PPAutos.SweepStraight4M;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
@@ -48,9 +48,6 @@ import org.robolancers321.subsystems.launcher.AimTable;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -184,6 +181,11 @@ public class RobotContainer {
     new Trigger(this.driverController::getRightBumper)
         .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
 
+    new Trigger(this.driverController::getLeftBumper)
+        .whileTrue(this.sucker.in());
+    new Trigger(this.driverController::getLeftBumper)
+        .whileFalse(this.sucker.off());
+
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNoteManual());
 
@@ -214,7 +216,9 @@ public class RobotContainer {
    */
   private void configureManipulatorController() {
     new Trigger(this.manipulatorController::getBButton)
-        .onTrue((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
+        .onTrue((new Mate().andThen(new Shift())));
+
+        //.onlyIf(this.sucker::noteDetected)
 
     new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
     new Trigger(this.manipulatorController::getAButton)
@@ -261,7 +265,7 @@ public class RobotContainer {
     this.autoChooser.addOption("3NB Sweep Straight", new Auto4NBSweepStraight());
     this.autoChooser.addOption("3NB Close", new Auto3NBClose());
 
-    //pathplanner
+    // pathplanner
     this.autoChooser.addOption("SweepStraight4M", new SweepStraight4M());
     this.autoChooser.addOption("Close4T", new Close4T());
     this.autoChooser.addOption("Close2B", new Close2B());

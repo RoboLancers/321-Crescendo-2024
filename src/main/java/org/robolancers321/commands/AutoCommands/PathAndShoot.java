@@ -21,10 +21,8 @@ public class PathAndShoot extends SequentialCommandGroup {
     this.retractor = Retractor.getInstance();
 
     this.addCommands(
-        new ParallelRaceGroup(
-            AutoBuilder.followPath(path),
-            new IntakeNote()),
-        (new Mate().andThen(new Shift()).andThen(new ScoreSpeakerFromDistance())).onlyIf(this.sucker::noteDetected)
-        );
+        new ParallelRaceGroup(AutoBuilder.followPath(path), new IntakeNote()),
+        (new Mate().andThen(new Shift()).andThen(new ScoreSpeakerFromDistance()))
+            .onlyIf(this.sucker::noteDetected));
   }
 }
