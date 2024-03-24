@@ -17,6 +17,7 @@ import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNoteManual;
+import org.robolancers321.commands.IntakeSource;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.PPAutos.Close4B;
@@ -26,6 +27,7 @@ import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
+import org.robolancers321.commands.ScoreTrap;
 import org.robolancers321.commands.Shift;
 import org.robolancers321.subsystems.Climber;
 import org.robolancers321.subsystems.LED.LED;
@@ -91,14 +93,14 @@ public class RobotContainer {
     // default, meteor red (not climbing)
     LED.registerSignal(0, () -> !climbing, LED.meteorRain(0.02, LED.kDrivingMeteor));
 
-    // meteor blue? (climbing)
+    // meteor blue (climbing)
     LED.registerSignal(1, () -> climbing, LED.meteorRain(0.02, LED.kClimbingMeteor));
     // sees note, blink orange
     LED.registerSignal(
         2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(180, 30, 0)));
 
     // note in sucker, solid white
-    LED.registerSignal(3, this.sucker::noteDetected, LED.solid(Section.FULL, Color.kWhite));
+    LED.registerSignal(3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(255, 255, 255)));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -188,19 +190,21 @@ public class RobotContainer {
     new Trigger(this.driverController::getLeftBumper).whileFalse(this.sucker.off());
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(new IntakeNoteManual());
+        .whileTrue(new IntakeNoteManual().unless(() -> climbing));
 
     // for auto handoff, putting it on a button instead is safer so fender shot is still viable
     // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
     //     .onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
 
     new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .whileTrue(new OuttakeNote());
+        .whileTrue(new OuttakeNote().unless(() -> climbing));
 
-    new Trigger(this.driverController::getAButton).onTrue(this.drivetrain.turnToAngle(90.0));
-    new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());
+    new Trigger(this.driverController::getAButton).onTrue(
+      // new IntakeSource());
+      this.drivetrain.turnToAngle(90.0).unless(() -> climbing));
+    new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote().unless(() -> climbing));
 
-    new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
+    new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel().unless(() -> climbing));
 
     new Trigger(this.driverController::getYButton).onTrue(toggleClimbingMode());
   }
@@ -229,27 +233,27 @@ public class RobotContainer {
    * Left Trigger: left climber down
    */
   private void configureManipulatorController() {
-    new Trigger(this.manipulatorController::getBButton).onTrue((new Mate().andThen(new Shift())));
+    new Trigger(this.manipulatorController::getBButton).onTrue((new Mate().andThen(new Shift()).unless(() -> climbing)));
 
     // .onlyIf(this.sucker::noteDetected)
 
-    new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
+    new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp().unless(() -> climbing));
     new Trigger(this.manipulatorController::getAButton)
-        .onFalse(this.indexer.outtake().raceWith(Commands.idle(this.pivot, this.flywheel)));
+        .onFalse(this.indexer.outtake().raceWith(Commands.idle(this.pivot, this.flywheel)).unless(() -> climbing));
 
-    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance());
+    new Trigger(this.manipulatorController::getYButton).onTrue(new ScoreSpeakerFromDistance().unless(() -> climbing));
 
-    new Trigger(this.manipulatorController::getXButton).whileTrue(new ScoreSpeakerFixedTeleop());
-    new Trigger(this.manipulatorController::getXButton)
+    new Trigger(this.manipulatorController::getXButton).and(() -> !climbing).whileTrue(new ScoreSpeakerFixedTeleop().unless(() -> climbing));
+    new Trigger(this.manipulatorController::getXButton).and(() -> !climbing)
         .onFalse(
             new ParallelDeadlineGroup(
                 this.indexer.outtake(),
                 this.sucker.out(),
-                Commands.idle(this.pivot, this.flywheel)));
+                Commands.idle(this.pivot, this.flywheel)).unless(() -> climbing));
 
-    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
+    new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp().unless(() -> climbing));
     new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
-        .onTrue(this.pivot.moveToRetracted());
+        .onTrue(this.pivot.moveToRetracted().unless(() -> climbing));
 
     new Trigger(() -> -this.manipulatorController.getRightY() > 0.2)
         .whileTrue(
@@ -308,6 +312,8 @@ public class RobotContainer {
                 .run(() -> climber.setRightPower(-0.2))
                 .finallyDo(() -> climber.setRightPower(0))
                 .onlyIf(() -> climbing));
+
+    // new Trigger(this.manipulatorController::getXButton).and(() -> climbing).onTrue(new ScoreTrap());
   }
 
   private void configureAuto() {
@@ -318,7 +324,8 @@ public class RobotContainer {
     Skip - pickup center note first then go back for front note
      */
 
-    this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
+    this.autoChooser.addOption("Do Nothing", Commands.idle(this.drivetrain, this.retractor, this.sucker, this.pivot, this.indexer, this.flywheel, this.climber));
+    this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFromDistance());
 
     // this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
     // this.autoChooser.addOption("4NT Close", new Auto4NTClose());
@@ -337,9 +344,9 @@ public class RobotContainer {
     // this.autoChooser.addOption("3NB Close", new Auto3NBClose());
 
     // pathplanner
-    this.autoChooser.addOption("4 piece mid", new SweepStraight4M());
-    this.autoChooser.addOption("(UNTESTED) 4 piece top", new Close4T());
-    this.autoChooser.addOption("(UNTESTED) 4 piece bottom", new Close4B());
+    // this.autoChooser.addOption("4 piece mid", new SweepStraight4M());
+    this.autoChooser.addOption("score and taxi top", new Close4T());
+    this.autoChooser.addOption("score and taxi bottom", new Close4B());
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
     SmartDashboard.putData(autoChooser);
@@ -353,7 +360,7 @@ public class RobotContainer {
     return Commands.runOnce(
         () -> {
           this.climbing = true;
-          this.pivot.setDefaultCommand(this.pivot.aimAtAmp());
+          this.pivot.setDefaultCommand(this.pivot.aimAtTrap());
         });
   }
 

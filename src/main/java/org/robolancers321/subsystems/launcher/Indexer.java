@@ -194,6 +194,15 @@ public class Indexer extends SubsystemBase {
         });
   }
 
+  public Command intakeSource() {
+    return this.runOnce(
+            () -> {
+              this.goalRPM = IndexerConstants.kSourceRPM;
+            })
+        .alongWith(
+            new WaitUntilCommand(() -> this.exitBeamBroken() && this.entranceBeamBroken()).withTimeout(0.5));
+  }
+
   public Command tuneController() {
     this.initTuning();
 

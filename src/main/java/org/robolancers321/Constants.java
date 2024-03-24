@@ -14,6 +14,11 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
+  public enum Mode {
+    Driving,
+
+  }
+
   public static final class DrivetrainConstants {
     public static final String kMainCameraName = "MainCamera";
     public static final String kNoteCameraName = "NoteCamera";
@@ -164,7 +169,8 @@ public final class Constants {
       kShiftBackwardFast(-4000),
       kShiftBackwardSlow(-1000),
       kAmp(1500.0),
-      kSpeaker(2500.0);
+      kSpeaker(2500.0),
+      kSource(-600);
 
       public final double rpm;
 
@@ -190,7 +196,9 @@ public final class Constants {
     public static final double kShiftBackToEntranceRPM = -100;
     public static final double kShiftForwardFromEntranceRPM = 200;
     public static final double kOuttakeRPM = 3000;
+
     public static final double kTrapRPM = -3000;
+    public static final double kSourceRPM = -600;
   }
 
   public static final class PivotConstants {
@@ -225,6 +233,7 @@ public final class Constants {
       kShift(-9.0),
       kMating(-19.0),
       kAmp(75.0),
+      kTrap(75.0),
       kSpeaker(-16.0);
 
       public final double angle;

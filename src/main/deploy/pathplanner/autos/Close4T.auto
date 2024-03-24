@@ -10,30 +10,6 @@
           "data": {
             "pathName": "Close4T.1"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Close4T.2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Close4T.3"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Close4T.4"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Close4T.5"
-          }
         }
       ]
     }

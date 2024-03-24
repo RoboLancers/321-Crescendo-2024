@@ -369,6 +369,9 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putBoolean("sees note", this.seesNote());
     SmartDashboard.putNumber("angle to note", this.getNoteAngle());
 
+    SmartDashboard.putNumber("chassis speeds x", this.getChassisSpeeds().vxMetersPerSecond);
+    SmartDashboard.putNumber("chassis speeds y", this.getChassisSpeeds().vyMetersPerSecond);
+
     // Translation2d notePose = this.getRelativeNoteLocation();
 
     // SmartDashboard.putNumber("note pose x", notePose.getX());

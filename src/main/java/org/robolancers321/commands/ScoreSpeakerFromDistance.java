@@ -20,7 +20,7 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
 
   public ScoreSpeakerFromDistance() {
     this.pivot = Pivot.getInstance();
-    this.retractor = Retractor.getInstance();
+    // this.retractor = Retractor.getInstance();
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
     this.drivetrain = Drivetrain.getInstance();
@@ -39,7 +39,7 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
             this.pivot.aimAtSpeaker(
                 () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),
             this.flywheel.revSpeakerFromRPM(
-                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))),
+                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))).withTimeout(1.5),
         this.indexer.outtake(),
         this.indexer.off(),
         this.flywheel.off());
