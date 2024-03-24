@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5508684863523587,
-        "y": 4.242785408647741
+        "x": 1.6495379144604458,
+        "y": 4.153982923350462
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5671635958656545,
-        "y": 4.124382094918037
+        "x": 2.5474297102440375,
+        "y": 4.09478126648561
       },
       "prevControl": {
-        "x": 1.5903362575955935,
-        "y": 4.25265235145855
+        "x": 1.6199370860280196,
+        "y": 4.134249037728845
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Close4B.1E"
     }
   ],
   "rotationTargets": [],

@@ -1,9 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import org.robolancers321.subsystems.Climber;
-
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -13,28 +10,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.commands.AutoPickupNote;
-import org.robolancers321.commands.ChoreoAutos.Auto3NBClose;
-import org.robolancers321.commands.ChoreoAutos.Auto3NMClose;
-import org.robolancers321.commands.ChoreoAutos.Auto3NTClose;
-import org.robolancers321.commands.ChoreoAutos.Auto4NBSkip;
-import org.robolancers321.commands.ChoreoAutos.Auto4NBSweep;
-import org.robolancers321.commands.ChoreoAutos.Auto4NBSweepStraight;
-import org.robolancers321.commands.ChoreoAutos.Auto4NMSweep;
-import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFender;
-import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFenderStraight;
-import org.robolancers321.commands.ChoreoAutos.Auto4NMSweepFenderStraightAutoPickup;
-import org.robolancers321.commands.ChoreoAutos.Auto4NTClose;
-import org.robolancers321.commands.ChoreoAutos.Auto4NTSweep;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
-import org.robolancers321.commands.PPAutos.Close2B;
-import org.robolancers321.commands.PPAutos.Close3M;
+import org.robolancers321.commands.PPAutos.Close4B;
 import org.robolancers321.commands.PPAutos.Close4T;
 import org.robolancers321.commands.PPAutos.SweepStraight4M;
 import org.robolancers321.commands.ScoreAmp;
@@ -42,6 +27,7 @@ import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
+import org.robolancers321.subsystems.Climber;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
@@ -51,8 +37,6 @@ import org.robolancers321.subsystems.launcher.AimTable;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -61,6 +45,7 @@ public class RobotContainer {
   private Pivot pivot;
   private Indexer indexer;
   private Flywheel flywheel;
+  private Climber climber;
 
   private XboxController driverController;
   private XboxController manipulatorController;
@@ -70,8 +55,7 @@ public class RobotContainer {
   private LED led;
   private AddressableLEDSim ledSim;
 
-
-  Climber climber;
+  private boolean climbing = false;
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
@@ -80,6 +64,7 @@ public class RobotContainer {
     this.pivot = Pivot.getInstance();
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
+    this.climber = Climber.getInstance();
 
     this.driverController = new XboxController(0);
     this.manipulatorController = new XboxController(1);
@@ -89,6 +74,7 @@ public class RobotContainer {
     this.led = new LED();
     this.ledSim = new AddressableLEDSim(led.ledStrip);
 
+    this.configureEvents();
     this.configureLEDs();
     this.configureDefaultCommands();
     this.configureDriverController();
@@ -96,10 +82,17 @@ public class RobotContainer {
     this.configureAuto();
   }
 
-  private void configureLEDs() {
-    // default, meteor red
-    LED.registerSignal(1, () -> true, LED.meteorRain(0.02, LED.kDefaultMeteorColors));
+  private void configureEvents() {
+    RobotModeTriggers.autonomous().onTrue(disableClimbingMode());
+    RobotModeTriggers.teleop().onTrue(disableClimbingMode());
+  }
 
+  private void configureLEDs() {
+    // default, meteor red (not climbing)
+    LED.registerSignal(0, () -> !climbing, LED.meteorRain(0.02, LED.kDrivingMeteor));
+
+    // meteor blue? (climbing)
+    LED.registerSignal(1, () -> climbing, LED.meteorRain(0.02, LED.kClimbingMeteor));
     // sees note, blink orange
     LED.registerSignal(
         2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(180, 30, 0)));
@@ -164,6 +157,7 @@ public class RobotContainer {
    * Press Bumpers Together: zero gyro
    *
    * Hold Right Bumper: toggle slow mode
+   * Hold Left Bumper: intake
    *
    * Hold Right Trigger: deploy intake
    * Release Right Trigger: retract intake
@@ -174,6 +168,7 @@ public class RobotContainer {
    * Press A Button: snap to amp angle
    * Press B Button: auto pickup note
    * Press X Button: emergency cancel
+   * Press Y Button: enter/exit climb mode
    *
    */
   private void configureDriverController() {
@@ -189,10 +184,8 @@ public class RobotContainer {
     new Trigger(this.driverController::getRightBumper)
         .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
 
-    new Trigger(this.driverController::getLeftBumper)
-        .whileTrue(this.sucker.in());
-    new Trigger(this.driverController::getLeftBumper)
-        .whileFalse(this.sucker.off());
+    new Trigger(this.driverController::getLeftBumper).whileTrue(this.sucker.in());
+    new Trigger(this.driverController::getLeftBumper).whileFalse(this.sucker.off());
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNoteManual());
@@ -208,6 +201,8 @@ public class RobotContainer {
     new Trigger(this.driverController::getBButton).whileTrue(new AutoPickupNote());
 
     new Trigger(this.driverController::getXButton).onTrue(new EmergencyCancel());
+
+    new Trigger(this.driverController::getYButton).onTrue(toggleClimbingMode());
   }
 
   /*
@@ -221,12 +216,22 @@ public class RobotContainer {
    * Hold X Button: rev for fixed speaker shot
    * Release X Button: eject for fixed speaker shot
    *
+   * Left Joystick Up: move shooter to amp
+   * Left Joystick Down: move shooter to retracted
+   *
+   * CLIMB MODE
+   *
+   * Right Joystick Up: move both climbers up
+   * Right Joystick down: move both climbers down
+   * Right Bumper: right climber up
+   * Right Trigger: right climber down
+   * Left Bumper: left climber up
+   * Left Trigger: left climber down
    */
   private void configureManipulatorController() {
-    new Trigger(this.manipulatorController::getBButton)
-        .onTrue((new Mate().andThen(new Shift())));
+    new Trigger(this.manipulatorController::getBButton).onTrue((new Mate().andThen(new Shift())));
 
-        //.onlyIf(this.sucker::noteDetected)
+    // .onlyIf(this.sucker::noteDetected)
 
     new Trigger(this.manipulatorController::getAButton).whileTrue(new ScoreAmp());
     new Trigger(this.manipulatorController::getAButton)
@@ -245,6 +250,64 @@ public class RobotContainer {
     new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp());
     new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
         .onTrue(this.pivot.moveToRetracted());
+
+    new Trigger(() -> -this.manipulatorController.getRightY() > 0.2)
+        .whileTrue(
+            climber
+                .run(
+                    () -> {
+                      climber.setLeftPower(-this.manipulatorController.getRightY());
+                      climber.setRightPower(-this.manipulatorController.getRightY());
+                    })
+                .finallyDo(
+                    () -> {
+                      climber.setLeftPower(0);
+                      climber.setRightPower(0);
+                    })
+                .onlyIf(() -> climbing));
+
+    new Trigger(() -> -this.manipulatorController.getRightY() < -0.2)
+        .whileTrue(
+            climber
+                .run(
+                    () -> {
+                      climber.setLeftPower(-this.manipulatorController.getRightY());
+                      climber.setRightPower(-this.manipulatorController.getRightY());
+                    })
+                .finallyDo(
+                    () -> {
+                      climber.setLeftPower(0);
+                      climber.setRightPower(0);
+                    })
+                .onlyIf(() -> climbing));
+
+    new Trigger(this.manipulatorController::getLeftBumper)
+        .whileTrue(
+            climber
+                .run(() -> climber.setLeftPower(0.2))
+                .finallyDo(() -> climber.setLeftPower(0))
+                .onlyIf(() -> climbing));
+
+    new Trigger(this.manipulatorController::getRightBumper)
+        .whileTrue(
+            climber
+                .run(() -> climber.setRightPower(0.2))
+                .finallyDo(() -> climber.setRightPower(0))
+                .onlyIf(() -> climbing));
+
+    new Trigger(() -> this.manipulatorController.getLeftTriggerAxis() > 0.5)
+        .whileTrue(
+            climber
+                .run(() -> climber.setLeftPower(-0.2))
+                .finallyDo(() -> climber.setLeftPower(0))
+                .onlyIf(() -> climbing));
+
+    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
+        .whileTrue(
+            climber
+                .run(() -> climber.setRightPower(-0.2))
+                .finallyDo(() -> climber.setRightPower(0))
+                .onlyIf(() -> climbing));
   }
 
   private void configureAuto() {
@@ -257,74 +320,59 @@ public class RobotContainer {
 
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
 
-    this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
-    this.autoChooser.addOption("4NT Close", new Auto4NTClose());
-    this.autoChooser.addOption("3NT Close", new Auto3NTClose());
+    // this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
+    // this.autoChooser.addOption("4NT Close", new Auto4NTClose());
+    // this.autoChooser.addOption("3NT Close", new Auto3NTClose());
 
-    this.autoChooser.addOption("4NM Sweep", new Auto4NMSweep());
-    this.autoChooser.addOption("3NM Close", new Auto3NMClose());
-    this.autoChooser.addOption("4NM Sweep Fender", new Auto4NMSweepFender());
-    this.autoChooser.addOption("4NM Sweep Fender Straight", new Auto4NMSweepFenderStraight());
-    this.autoChooser.addOption(
-        "4NM Sweep Fender Straight Auto Pickup", new Auto4NMSweepFenderStraightAutoPickup());
+    // this.autoChooser.addOption("4NM Sweep", new Auto4NMSweep());
+    // this.autoChooser.addOption("3NM Close", new Auto3NMClose());
+    // this.autoChooser.addOption("4NM Sweep Fender", new Auto4NMSweepFender());
+    // this.autoChooser.addOption("4NM Sweep Fender Straight", new Auto4NMSweepFenderStraight());
+    // this.autoChooser.addOption(
+    //     "4NM Sweep Fender Straight Auto Pickup", new Auto4NMSweepFenderStraightAutoPickup());
 
-    this.autoChooser.addOption("4NB Sweep", new Auto4NBSweep());
-    this.autoChooser.addOption("4NB Skip", new Auto4NBSkip());
-    this.autoChooser.addOption("3NB Sweep Straight", new Auto4NBSweepStraight());
-    this.autoChooser.addOption("3NB Close", new Auto3NBClose());
+    // this.autoChooser.addOption("4NB Sweep", new Auto4NBSweep());
+    // this.autoChooser.addOption("4NB Skip", new Auto4NBSkip());
+    // this.autoChooser.addOption("3NB Sweep Straight", new Auto4NBSweepStraight());
+    // this.autoChooser.addOption("3NB Close", new Auto3NBClose());
 
     // pathplanner
-    this.autoChooser.addOption("SweepStraight4M", new SweepStraight4M());
-    this.autoChooser.addOption("Close4T", new Close4T());
-    this.autoChooser.addOption("Close2B", new Close2B());
-    this.autoChooser.addOption("Close3M", new Close3M());
+    this.autoChooser.addOption("4 piece mid", new SweepStraight4M());
+    this.autoChooser.addOption("(UNTESTED) 4 piece top", new Close4T());
+    this.autoChooser.addOption("(UNTESTED) 4 piece bottom", new Close4B());
+    // this.autoChooser.addOption("2 piece mid", new Close3M());
 
     SmartDashboard.putData(autoChooser);
-  
-
-    this.climber = Climber.getInstance();
-    configureBindings();
   }
 
+  private Command toggleClimbingMode() {
+    return Commands.either(disableClimbingMode(), enableClimbingMode(), () -> climbing);
+  }
 
-  private void configureBindings() {
-    new Trigger(this.manipulatorController::getAButton).whileTrue(climber.run(() -> {
-      climber.setLeftPower(0.1);
-    }).finallyDo(() -> {
-      climber.setLeftPower(0);
-    }));
+  private Command enableClimbingMode() {
+    return Commands.runOnce(
+        () -> {
+          this.climbing = true;
+          this.pivot.setDefaultCommand(this.pivot.aimAtAmp());
+        });
+  }
 
-    
-       new Trigger(this.manipulatorController::getYButton).whileTrue(climber.run(() -> {
-      climber.setLeftPower(-0.1);
-    }).finallyDo(() -> {
-      climber.setLeftPower(0);
-    }));
-    
+  private Command disableClimbingMode() {
+    return Commands.runOnce(
+        () -> {
+          this.climbing = false;
+          this.pivot.setDefaultCommand(
+              this.pivot.aimAtSpeaker(
+                  () -> {
+                    if (this.indexer.entranceBeamNotBroken())
+                      return PivotConstants.PivotSetpoint.kRetracted.angle;
 
-    new Trigger(this.manipulatorController::getXButton).whileTrue(climber.run(() -> {
-      climber.setRightPower(0.1);
-    }).finallyDo(() -> {
-      climber.setRightPower(0);
-    }));
+                    if (this.drivetrain.getDistanceToSpeaker() < 4.0)
+                      return AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker());
 
-
-    new Trigger(this.manipulatorController::getBButton).whileTrue(climber.run(() -> {
-      climber.setRightPower(-0.1);
-    }).finallyDo(() -> {
-      climber.setRightPower(0);
-    }));
-
-
-    // new Trigger(this.controller::getYButton).whileTrue(climber.run(() -> {
-    //   climber.setLeftPower(0.1);
-    //   climber.setRightPower(0.1);
-    // }).finallyDo(() -> {
-    //   climber.setLeftPower(0);
-    //   climber.setRightPower(0);
-    // }));
-
-
+                    return PivotConstants.PivotSetpoint.kRetracted.angle;
+                  }));
+        });
   }
 
   public Command getAutonomousCommand() {

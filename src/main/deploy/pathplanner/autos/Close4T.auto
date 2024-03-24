@@ -28,6 +28,12 @@
           "data": {
             "pathName": "Close4T.4"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Close4T.5"
+          }
         }
       ]
     }

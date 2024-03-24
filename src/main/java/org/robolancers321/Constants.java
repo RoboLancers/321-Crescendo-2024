@@ -190,6 +190,7 @@ public final class Constants {
     public static final double kShiftBackToEntranceRPM = -100;
     public static final double kShiftForwardFromEntranceRPM = 200;
     public static final double kOuttakeRPM = 3000;
+    public static final double kTrapRPM = -3000;
   }
 
   public static final class PivotConstants {
@@ -221,6 +222,7 @@ public final class Constants {
 
     public enum PivotSetpoint {
       kRetracted(-13.0),
+      kShift(-9.0),
       kMating(-19.0),
       kAmp(75.0),
       kSpeaker(-16.0);
@@ -272,8 +274,8 @@ public final class Constants {
     public static final boolean kRightClimberInverted = true;
 
     public static final int kCurrentLimit = 40;
-    public static final float kMaxSoftLimit = 1;
-    public static final float kMinSoftLimit = 0;
+    public static final float kMaxSoftLimit = 64;
+    public static final float kMinSoftLimit = -15;
     public static final double kMetersPerRot = 1;
     public static final double kRPMToMPS = kMetersPerRot / 60.0;
 
@@ -299,6 +301,3 @@ public final class Constants {
     }
   }
 }
-
-
-

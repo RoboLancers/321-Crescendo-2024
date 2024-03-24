@@ -47,7 +47,8 @@ public class LED extends VirtualSubsystem {
   private static final int kWavefrontSeparation = 42;
   private static final int kWavefrontLength = 2;
 
-  public static final rgb[] kDefaultMeteorColors = {new rgb(255, 40, 0)};
+  public static final rgb[] kDrivingMeteor = {new rgb(255, 40, 0)};
+  public static final rgb[] kClimbingMeteor = {new rgb(0, 0, 255)};
 
   public static final rgb[] kNoteMeteorColors = {
     new rgb(250, 120, 20),
@@ -72,7 +73,7 @@ public class LED extends VirtualSubsystem {
   private final AddressableLEDBuffer ledBuffer;
   private static TreeSet<Signal> ledSignals;
 
-  private Consumer<AddressableLEDBuffer> currPattern = LED.meteorRain(0.20, kDefaultMeteorColors);
+  private Consumer<AddressableLEDBuffer> currPattern = LED.meteorRain(0.20, kDrivingMeteor);
 
   public LED() {
     this.ledStrip = new AddressableLED(kLEDPWMPort);

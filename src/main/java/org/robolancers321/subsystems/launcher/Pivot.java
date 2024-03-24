@@ -236,6 +236,10 @@ public class Pivot extends SubsystemBase {
     return this.moveToAngle(PivotConstants.PivotSetpoint.kMating.angle);
   }
 
+  public Command moveToShift() {
+    return this.moveToAngle(PivotConstants.PivotSetpoint.kShift.angle);
+  }
+
   public Command aimAtAmp() {
     return this.moveToAngle(PivotConstants.PivotSetpoint.kAmp.angle);
   }

@@ -6,9 +6,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.commands.AutoCommands.PathAndIntake;
 import org.robolancers321.commands.AutoCommands.PathAndRetract;
-import org.robolancers321.commands.AutoCommands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
-import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -43,6 +41,11 @@ public class SweepStraight4M extends SequentialCommandGroup {
         new PathAndIntake(PathPlannerPath.fromPathFile("SweepStraight4M.3")),
         new PathAndRetract(PathPlannerPath.fromPathFile("SweepStraight4M.4")),
         new ScoreSpeakerFixedAuto(),
-        new PathAndShoot(PathPlannerPath.fromPathFile("SweepStraight4M.5")));
+        new PathAndIntake(PathPlannerPath.fromPathFile("SweepStraight4M.5")),
+        new PathAndRetract(PathPlannerPath.fromPathFile("SweepStraight4M.6")),
+        new ScoreSpeakerFixedAuto()
+
+        // new PathAndShoot(PathPlannerPath.fromPathFile("SweepStraight4M.5"))
+        );
   }
 }

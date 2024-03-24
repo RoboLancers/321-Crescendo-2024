@@ -20,7 +20,7 @@ public class PathAndIntake extends SequentialCommandGroup {
     this.sucker = Sucker.getInstance();
 
     this.addCommands(
-        retractor.moveToIntake().withTimeout(0.3),
+        retractor.moveToIntake().withTimeout(0.5),
         new ParallelRaceGroup(AutoBuilder.followPath(path), new IntakeNote()));
   }
 }

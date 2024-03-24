@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.2972787618637085,
-        "y": 5.585555553436279
+        "x": 2.685566909595359,
+        "y": 6.748988882593149
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.373883206175606,
-        "y": 5.521276792467625
+        "x": 2.517828881811611,
+        "y": 6.581250854809402
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "SweepStraight4M.5E"
     },
     {
       "anchor": {
-        "x": 1.7,
-        "y": 5.0
+        "x": 1.4028643441902284,
+        "y": 5.525487974052871
       },
       "prevControl": {
-        "x": 1.6357212390313463,
-        "y": 5.076604444311897
+        "x": 1.7186065141361067,
+        "y": 5.762294601512281
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,12 +38,15 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -30.0,
+    "velocity": 0.0,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
-  "previewStartingState": null,
+  "previewStartingState": {
+    "rotation": 0.0,
+    "velocity": 0
+  },
   "useDefaultConstraints": false
 }

@@ -3,11 +3,11 @@ package org.robolancers321.commands.PPAutos;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import java.util.List;
 import org.robolancers321.commands.AutoCommands.PathAndShoot;
+import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -33,10 +33,10 @@ public class Close3M extends SequentialCommandGroup {
 
     List<PathPlannerPath> pathGroup = PathPlannerAuto.getPathGroupFromAutoFile("Close3M");
 
-
     this.addCommands(
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
+        new ScoreSpeakerFixedAuto(),
         new PathAndShoot(pathGroup.get(0)));
   }
 }

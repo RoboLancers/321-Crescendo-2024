@@ -8,7 +8,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -74,8 +73,8 @@ public class Climber extends SubsystemBase {
     leftClimberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kMaxSoftLimit);
     leftClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, ClimberConstants.kMinSoftLimit);
 
-    leftClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
-    leftClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+    leftClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    leftClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
     rightClimberMotor.setInverted(ClimberConstants.kRightClimberInverted);
     rightClimberMotor.setIdleMode(IdleMode.kBrake);
@@ -84,8 +83,8 @@ public class Climber extends SubsystemBase {
     rightClimberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kMaxSoftLimit);
     rightClimberMotor.setSoftLimit(SoftLimitDirection.kReverse, ClimberConstants.kMinSoftLimit);
 
-    rightClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
-    rightClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+    rightClimberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    rightClimberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
     // leftClimberMotor.burnFlash();
     // rightClimberMotor.burnFlash();
