@@ -69,6 +69,9 @@ public class Retractor extends ProfiledPIDSubsystem {
     this.motor.setSmartCurrentLimit(RetractorConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
     this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 20);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 30000);
 
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kForward, (float) kMaxAngle);
     // this.motor.setSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, (float) kMinAngle);
@@ -89,7 +92,8 @@ public class Retractor extends ProfiledPIDSubsystem {
   }
 
   private void configureController() {
-    super.m_controller.enableContinuousInput(-180.0, 180.0);
+    // super.m_controller.enableContinuousInput(-180.0, 180.0);
+    super.m_controller.disableContinuousInput();
     super.m_controller.setTolerance(RetractorConstants.kToleranceDeg);
     super.m_controller.setGoal(this.getPositionDeg());
 
@@ -103,7 +107,7 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   public double getPositionDeg() {
     return MathUtil.clamp(
-        this.encoder.getPosition() > 180
+        this.encoder.getPosition() > 270
             ? this.encoder.getPosition() - 360.0
             : this.encoder.getPosition(),
         RetractorConstants.kMinAngle,
@@ -180,8 +184,7 @@ public class Retractor extends ProfiledPIDSubsystem {
     SmartDashboard.putNumber("retractor target position (deg)", this.getPositionDeg());
   }
 
-  private void 
-  tune() {
+  private void tune() {
     double tunedP = SmartDashboard.getNumber("retractor kp", RetractorConstants.kP);
     double tunedI = SmartDashboard.getNumber("retractor ki", RetractorConstants.kI);
     double tunedD = SmartDashboard.getNumber("retractor kd", RetractorConstants.kD);
@@ -237,10 +240,6 @@ public class Retractor extends ProfiledPIDSubsystem {
 
   public Command moveToMating() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kMating.angle);
-  }
-
-  public Command moveToClearFromLauncher() {
-    return this.moveToAngle(RetractorConstants.RetractorSetpoint.kClearFromLauncher.angle);
   }
 
   public Command moveToIntake() {

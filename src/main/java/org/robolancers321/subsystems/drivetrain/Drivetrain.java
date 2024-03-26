@@ -18,7 +18,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -35,7 +34,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.robolancers321.Constants.DrivetrainConstants;
-import org.robolancers321.subsystems.intake.Sucker;
+import org.robolancers321.util.MathUtils;
 import org.robolancers321.util.MyAlliance;
 
 public class Drivetrain extends SubsystemBase {
@@ -259,27 +258,6 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
-    // double bestDistance =
-    //     this.mainCamera
-    //         .getLatestResult()
-    //         .getBestTarget()
-    //         .getBestCameraToTarget()
-    //         .getTranslation()
-    //         .getDistance(new Translation3d());
-
-    // // !!!!!! TODO: if vision starts getting funky this is why
-    // // TODO: tune this
-    // // TODO: use offset to have base line for how much we distrust vision, then use coefficient
-    // to
-    // // scale distrust based on distance squared
-    // double translationStandardDeviation = bestDistance * bestDistance;
-    // double rotationStandardDeviation = bestDistance * bestDistance;
-
-    // Matrix<N3, N1> standardDeviation =
-    //     VecBuilder.fill(
-    //         translationStandardDeviation, translationStandardDeviation,
-    // rotationStandardDeviation);
-
     this.odometry.addVisionMeasurement(
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
   }
@@ -291,12 +269,17 @@ public class Drivetrain extends SubsystemBase {
   private double getAngleToSpeaker() {
     Translation2d speakerLocation = this.getSpeakerPosition();
 
-    return -180
-        + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
-        + this.getYawDeg();
+    double angle =
+        -180
+            + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
+            + this.getYawDeg();
 
-    // TODO: is it worth using this.getPose().getRotation() instead? i think we trust gyro over
-    // vision when it comes to angle
+    if (!MyAlliance.isRed()) return angle;
+
+    double x = Math.cos(angle * Math.PI / 180);
+    double y = Math.sin(angle * Math.PI / 180);
+
+    return -Math.atan2(y, -x) * 180 / Math.PI;
   }
 
   public double getDistanceToSpeaker() {
@@ -307,7 +290,7 @@ public class Drivetrain extends SubsystemBase {
 
   public boolean seesNote() {
     return this.noteCamera.getLatestResult().hasTargets();
-        // && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
+    // && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
   }
 
   private double getNoteAngle() {
@@ -386,6 +369,9 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putBoolean("sees note", this.seesNote());
     SmartDashboard.putNumber("angle to note", this.getNoteAngle());
 
+    SmartDashboard.putNumber("chassis speeds x", this.getChassisSpeeds().vxMetersPerSecond);
+    SmartDashboard.putNumber("chassis speeds y", this.getChassisSpeeds().vyMetersPerSecond);
+
     // Translation2d notePose = this.getRelativeNoteLocation();
 
     // SmartDashboard.putNumber("note pose x", notePose.getX());
@@ -415,15 +401,14 @@ public class Drivetrain extends SubsystemBase {
     return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
   }
 
-  public Command 
-  teleopDrive(XboxController controller, boolean fieldCentric) {
+  public Command teleopDrive(XboxController controller, boolean fieldCentric) {
     return run(() -> {
           double multiplier = controller.getRightBumper() ? 0.4 : 1.0;
 
           double omega =
               -DrivetrainConstants.kMaxTeleopRotationPercent
                   * DrivetrainConstants.kMaxOmegaRadiansPerSecond
-                  * MathUtil.applyDeadband(controller.getRightX(), 0.05)
+                  * MathUtil.applyDeadband(MathUtils.squareKeepSign(controller.getRightX()), 0.05)
                   * multiplier;
 
           // TODO: uncomment for aim assist
@@ -438,11 +423,13 @@ public class Drivetrain extends SubsystemBase {
               new Translation2d(
                       DrivetrainConstants.kMaxTeleopSpeedPercent
                           * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                          * MathUtil.applyDeadband(-controller.getLeftY(), 0.05)
+                          * MathUtil.applyDeadband(
+                              -MathUtils.squareKeepSign(controller.getLeftY()), 0.05)
                           * multiplier,
                       DrivetrainConstants.kMaxTeleopSpeedPercent
                           * DrivetrainConstants.kMaxSpeedMetersPerSecond
-                          * MathUtil.applyDeadband(controller.getLeftX(), 0.05)
+                          * MathUtil.applyDeadband(
+                              MathUtils.squareKeepSign(controller.getLeftX()), 0.05)
                           * multiplier)
                   .rotateBy(Rotation2d.fromDegrees(90.0));
 
@@ -481,12 +468,15 @@ public class Drivetrain extends SubsystemBase {
                 .until(this.headingController::atSetpoint));
   }
 
-  public Command driveIntoNote(){
+  public Command driveIntoNote() {
     return run(() -> {
-      double headingControllerOutput = -this.headingController.calculate(this.getNoteAngle(), 0.0);
+          double headingControllerOutput =
+              -this.headingController.calculate(this.getNoteAngle(), 0.0);
 
-      this.drive(0.0, 1.5, headingControllerOutput, false);
-    }).until(() -> !this.seesNote()).withTimeout(1.5);
+          this.drive(0.0, 1.5, headingControllerOutput, false);
+        })
+        .until(() -> !this.seesNote())
+        .withTimeout(2.5);
   }
 
   private Command turnToAngle(DoubleSupplier angleSupplier) {
@@ -507,7 +497,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command turnToSpeaker() {
-    return this.turnToAngle(this::getAngleToSpeaker);
+    return this.turnToAngle(this::getAngleToSpeaker).withTimeout(1.0);
   }
 
   public Command tuneModules() {

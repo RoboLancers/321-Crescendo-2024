@@ -1,7 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.intake.Retractor;
@@ -21,12 +20,6 @@ public class ScoreAmp extends SequentialCommandGroup {
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
 
-    this.addCommands(
-        new Mate(),
-        this.pivot.aimAtAmp(),
-        new Shift(),
-        this.flywheel.revAmp(),
-        Commands.idle()
-      );
+    this.addCommands(this.pivot.aimAtAmp(), this.flywheel.revAmp(), Commands.idle());
   }
 }

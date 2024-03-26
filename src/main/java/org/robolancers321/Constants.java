@@ -14,6 +14,11 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
+  public enum Mode {
+    Driving,
+
+  }
+
   public static final class DrivetrainConstants {
     public static final String kMainCameraName = "MainCamera";
     public static final String kNoteCameraName = "NoteCamera";
@@ -32,7 +37,7 @@ public final class Constants {
     public static final double kTrackWidthMeters = Units.inchesToMeters(22.0);
     public static final double kWheelBaseMeters = Units.inchesToMeters(26.0);
 
-    public static final double kMaxSpeedMetersPerSecond = 4.0;
+    public static final double kMaxSpeedMetersPerSecond = 5.0;
     public static final double kMaxOmegaRadiansPerSecond = 1.5 * Math.PI;
 
     public static final double kMaxTeleopSpeedPercent = 1.0;
@@ -51,14 +56,14 @@ public final class Constants {
 
     public static double kSecondOrderKinematicsDt = 0.2;
 
-    public static final double kTranslationP = 1.15; // 4.0
+    public static final double kTranslationP = 5.0; // 1.15
     public static final double kTranslationI = 0.0;
-    public static final double kTranslationD = 0.0;
+    public static final double kTranslationD = 0.0; // 0.0
 
     // corrects heading during path planner
-    public static final double kRotationP = 2.16; // 8.5
+    public static final double kRotationP = 3.0; // 2.16
     public static final double kRotationI = 0.0;
-    public static final double kRotationD = 0.0;
+    public static final double kRotationD = 0.25; // 0.0
 
     // corrects heading during teleop
     public static final double kHeadingP = 0.2; // multiply by 10 if it doesnt explode
@@ -99,28 +104,27 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = -18f;
-    public static final float kMaxAngle = 155.0f;
+    public static final float kMinAngle = -7f;
+    public static final float kMaxAngle = 182.0f;
 
-    public static final double kP = 0.008; //0.0065
+    public static final double kP = 0.008; // 0.0065
     public static final double kI = 0.000;
     public static final double kD = 0.0001;
 
     public static final double kS = 0.000;
-    public static final double kG = 0.03; // 0.04? // 0.0155;
+    public static final double kG = 0.037; // 0.04? // 0.0155;
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 400.0; //180
-    public static final double kMaxAccelerationDeg = 2000.0; //540
+    public static final double kMaxVelocityDeg = 120; // 400.0; //180
+    public static final double kMaxAccelerationDeg = 500.0; // 2000
 
     public static final double kToleranceDeg = 5.0;
 
     public enum RetractorSetpoint {
-      kRetracted(155),
-      kMating(154),
-      kClearFromLauncher(70),
-      kIntake(-18),
-      kOuttake(20.0);
+      kRetracted(182),
+      kMating(169),
+      kIntake(-6),
+      kOuttake(45.0);
 
       public final double angle;
 
@@ -160,10 +164,13 @@ public final class Constants {
     public static final double kToleranceRPM = 60.0;
 
     public enum FlywheelSetpoint {
-      kAcceptHandoff(300),
-      kShiftBackward(-2000),
+      kAcceptHandoff(150), // this is super finicky
+      kShiftForward(50),
+      kShiftBackwardFast(-4000),
+      kShiftBackwardSlow(-1000),
       kAmp(1500.0),
-      kSpeaker(2500.0);
+      kSpeaker(2500.0),
+      kSource(-600);
 
       public final double rpm;
 
@@ -176,18 +183,22 @@ public final class Constants {
   public static final class IndexerConstants {
     public static final int kMotorPort = 16;
 
-    public static final int kEntranceBeamBreakPort = 9;
-    public static final int kExitBeamBreakPort = 0;
+    public static final int kEntranceBeamBreakPort = 7;
+    public static final int kExitBeamBreakPort = 9;
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 40;
 
     public static final double kFF = 0.000153;
 
-    public static final double kHandoffRPM = 3000;
-    public static final double kShiftBackFromExitRPM = -200;
-    public static final double kShiftBackFromEntranceRPM = -50; //150
+    public static final double kHandoffRPM = 2000;
+    public static final double kShiftBackFromExitRPM = -600;
+    public static final double kShiftBackToEntranceRPM = -100;
+    public static final double kShiftForwardFromEntranceRPM = 200;
     public static final double kOuttakeRPM = 3000;
+
+    public static final double kTrapRPM = -3000;
+    public static final double kSourceRPM = -600;
   }
 
   public static final class PivotConstants {
@@ -199,8 +210,8 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = 0.0f;
-    public static final float kMaxAngle = 90.0f;
+    public static final float kMinAngle = -19f;
+    public static final float kMaxAngle = 75f;
 
     public static final double kP = 0.04; // 0.03
     public static final double kI = 0.0;
@@ -215,13 +226,15 @@ public final class Constants {
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
-    public static final double kToleranceDeg = 2.0;
+    public static final double kToleranceDeg = 1.0;
 
     public enum PivotSetpoint {
-      kRetracted(0.0),
-      kMating(15.0),
-      kAmp(90.0),
-      kSpeaker(0.0);
+      kRetracted(-13.0),
+      kShift(-9.0),
+      kMating(-19.0),
+      kAmp(75.0),
+      kTrap(75.0),
+      kSpeaker(-16.0);
 
       public final double angle;
 
@@ -232,21 +245,68 @@ public final class Constants {
   }
 
   public static final class AimConstants {
-    public static final double kMinDistance = 1.4;
+    public static final double kMinDistance = 1.3;
     public static final double kMaxDistance = 5.4;
 
     public static final class PivotAngleCoefficients {
-      public static final double kA = -22.6139;
-      public static final double kB = -0.826057;
-      public static final double kC = 1.66209;
-      public static final double kD = 12.2049;
+      public static final double kA = 22.0871;
+      public static final double kB = 0.909774;
+      public static final double kC = -1.47466;
+      public static final double kD = -10.4318;
+
+      // public static final double kA = -22.6139;
+      // public static final double kB = -0.826057;
+      // public static final double kC = 1.66209;
+      // public static final double kD = 12.2049;
     }
 
     public static final class FlywheelRPMCoefficients {
-      public static final double kA = -1004.55;
-      public static final double kB = -0.884096;
-      public static final double kC = 2.93695;
-      public static final double kD = 3477.5;
+      public static final double kA = 294.705;
+      public static final double kB = 1.60814;
+      public static final double kC = -3.7283;
+      public static final double kD = 2777.62;
+
+      // public static final double kA = -1004.55;
+      // public static final double kB = -0.884096;
+      // public static final double kC = 2.93695;
+      // public static final double kD = 3477.5;
+    }
+  }
+
+  public static final class ClimberConstants {
+    public static final int kLeftClimberPort = 19;
+    // public static final int kLeftLimitSwitchPort = 0;
+    public static final boolean kLeftClimberInverted = false;
+
+    public static final int kRightClimberPort = 18;
+    // public static final int kRightLimitSwitchPort = 1;
+    public static final boolean kRightClimberInverted = true;
+
+    public static final int kCurrentLimit = 40;
+    public static final float kMaxSoftLimit = 64;
+    public static final float kMinSoftLimit = -15;
+    public static final double kMetersPerRot = 1;
+    public static final double kRPMToMPS = kMetersPerRot / 60.0;
+
+    public static double kP = 0;
+    public static double kI = 0;
+    public static double kD = 0;
+
+    public static final double kErrorTolerance = 0.1;
+
+    // used to zero the climber at a safe speed
+    public static final double kDownwardZeroingSpeed = -0.2;
+
+    public enum ClimberSetpoint {
+      kRetracted(0),
+      kTrap(0),
+      kFullExtend(0);
+
+      public final double position;
+
+      ClimberSetpoint(double position) {
+        this.position = position;
+      }
     }
   }
 }

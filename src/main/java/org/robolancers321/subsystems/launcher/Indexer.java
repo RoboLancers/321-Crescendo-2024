@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
+import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.IndexerConstants;
 
 public class Indexer extends SubsystemBase {
@@ -138,15 +140,23 @@ public class Indexer extends SubsystemBase {
             () -> {
               this.goalRPM = IndexerConstants.kShiftBackFromExitRPM;
             })
-        .alongWith(new WaitUntilCommand(this::exitBeamNotBroken).withTimeout(1.0));
+        .alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
   }
 
-  public Command shiftBackFromEntrance() {
+  public Command shiftForwardToEntrance() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kShiftBackFromEntranceRPM;
+              this.goalRPM = IndexerConstants.kShiftForwardFromEntranceRPM;
             })
-        .alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
+        .alongWith(new WaitUntilCommand(this::entranceBeamBroken).withTimeout(1.0));
+  }
+
+  public Command shiftBackToEntrance() {
+    return runOnce(
+            () -> {
+              this.goalRPM = IndexerConstants.kShiftBackToEntranceRPM;
+            })
+        .alongWith(new WaitUntilCommand(this::exitBeamNotBroken).withTimeout(1.0));
   }
 
   public Command acceptHandoff() {
@@ -154,7 +164,15 @@ public class Indexer extends SubsystemBase {
             () -> {
               this.goalRPM = IndexerConstants.kHandoffRPM;
             })
-        .alongWith((new WaitUntilCommand(this::exitBeamBroken).andThen(new WaitCommand(0.1))).withTimeout(1.0));
+        .alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
+  }
+
+  public Command shiftFromHandoffForward() {
+    return runOnce(
+            () -> {
+              this.goalRPM = IndexerConstants.kHandoffRPM;
+            })
+        .alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
   }
 
   public Command outtake() {
@@ -163,9 +181,26 @@ public class Indexer extends SubsystemBase {
               this.goalRPM = IndexerConstants.kOuttakeRPM;
             })
         .alongWith(
-            new WaitUntilCommand(this::entranceBeamBroken)
-                .andThen(new WaitUntilCommand(this::exitBeamBroken)))
+            new WaitUntilCommand(this::exitBeamBroken)
+                .andThen(new WaitUntilCommand(this::exitBeamNotBroken))
+                .andThen(new WaitCommand(0.1)))
         .withTimeout(1.0);
+  }
+
+  public Command revTrap(){
+      return runOnce(
+        () -> {
+          this.goalRPM = IndexerConstants.kTrapRPM;
+        });
+  }
+
+  public Command intakeSource() {
+    return this.runOnce(
+            () -> {
+              this.goalRPM = IndexerConstants.kSourceRPM;
+            })
+        .alongWith(
+            new WaitUntilCommand(() -> this.exitBeamBroken() && this.entranceBeamBroken()).withTimeout(0.5));
   }
 
   public Command tuneController() {

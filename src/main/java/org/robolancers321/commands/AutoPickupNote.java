@@ -25,7 +25,7 @@ public class AutoPickupNote extends SequentialCommandGroup {
             this.sucker.in(),
             new SequentialCommandGroup(
                 this.retractor.moveToIntake(),
-                new WaitCommand(0.2),
+                new WaitCommand(0.5),
                 new ConditionalCommand(
                     new SequentialCommandGroup(
                         // this.drivetrain.turnToNote(),
@@ -35,17 +35,13 @@ public class AutoPickupNote extends SequentialCommandGroup {
                         //     .withTimeout(1.5),
                         this.drivetrain.driveIntoNote(),
                         this.drivetrain
-                            .driveCommand(0.0, 2.5, 0.0, false)
+                            .driveCommand(0.0, 1.5, 0.0, false)
                             .until(this.sucker::noteDetected)
                             .withTimeout(1.0),
                         this.drivetrain.stop(),
-                        this.retractor.moveToMating()
-                    ),
+                        this.retractor.moveToMating()),
                     new InstantCommand(),
-                    this.drivetrain::seesNote)
-            )
-        ),
-        this.sucker.offInstantly()
-    );
+                    this.drivetrain::seesNote))),
+        this.sucker.offInstantly());
   }
 }

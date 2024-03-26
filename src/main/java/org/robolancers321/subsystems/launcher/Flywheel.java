@@ -4,6 +4,7 @@ package org.robolancers321.subsystems.launcher;
 import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.revrobotics.*;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import java.util.function.DoubleSupplier;
 import org.robolancers321.Constants.FlywheelConstants;
+import org.robolancers321.Constants.FlywheelConstants.FlywheelSetpoint;
 
 public class Flywheel extends SubsystemBase {
   private static Flywheel instance = null;
@@ -54,6 +56,11 @@ public class Flywheel extends SubsystemBase {
     this.motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
     this.motor.setSmartCurrentLimit(FlywheelConstants.kCurrentLimit);
     this.motor.enableVoltageCompensation(12);
+
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 30000);
+    this.motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 30000);
   }
 
   private void configureEncoder() {
@@ -94,7 +101,6 @@ public class Flywheel extends SubsystemBase {
     SmartDashboard.putNumber("flywheel current (amps)", this.motor.getOutputCurrent());
     SmartDashboard.putBoolean("flywheel isRevved", this.isRevved());
 
-
     SmartDashboard.putNumber("flywheel mp goal (rpm)", this.goalRPM);
   }
 
@@ -133,10 +139,24 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
-  public Command shiftBackward() {
+  public Command shiftForward() {
     return runOnce(
         () -> {
-          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackward.rpm;
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftForward.rpm;
+        });
+  }
+
+  public Command shiftBackwardFast() {
+    return runOnce(
+        () -> {
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackwardFast.rpm;
+        });
+  }
+
+  public Command shiftBackwardSlow() {
+    return runOnce(
+        () -> {
+          this.goalRPM = FlywheelConstants.FlywheelSetpoint.kShiftBackwardSlow.rpm;
         });
   }
 
@@ -162,6 +182,13 @@ public class Flywheel extends SubsystemBase {
               this.goalRPM = rpm.getAsDouble();
             })
         .alongWith(new WaitUntilCommand(this::isRevved));
+  }
+
+  public Command intakeSource() {
+    return runOnce(
+            () -> {
+              this.goalRPM = FlywheelSetpoint.kSource.rpm;
+            });
   }
 
   public Command tuneController() {
