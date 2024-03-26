@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.7023114046228107,
+        "y": 4.410523436431489
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 0.7121783474336195,
+        "y": 2.062191047459019
+      },
+      "isLocked": false,
+      "linkedName": "BotStart"
+    },
+    {
+      "anchor": {
+        "x": 4.432015787108499,
+        "y": 1.5096422500537308
+      },
+      "prevControl": {
+        "x": 3.4453215060276294,
+        "y": 1.5984447353510094
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -63.06,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

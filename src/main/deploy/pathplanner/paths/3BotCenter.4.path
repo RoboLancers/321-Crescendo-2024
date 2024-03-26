@@ -1,0 +1,65 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.885445770891543,
+        "y": 2.476602645512984
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.07635646040523,
+        "y": 1.9733885621617402
+      },
+      "isLocked": false,
+      "linkedName": "3BotCenter.3End"
+    },
+    {
+      "anchor": {
+        "x": 5.842988609054142,
+        "y": 1.5491100212969666
+      },
+      "prevControl": {
+        "x": 6.504073777378325,
+        "y": 1.4997753072429225
+      },
+      "nextControl": {
+        "x": 5.0033891465614175,
+        "y": 1.6117666976023945
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.22182059748735,
+        "y": 3.1574216994587836
+      },
+      "prevControl": {
+        "x": 3.504523162892481,
+        "y": 2.3384654461616616
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

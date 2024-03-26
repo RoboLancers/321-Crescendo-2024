@@ -1,0 +1,83 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.113284226568455,
+        "y": 3.0488853285398885
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.770930618784316,
+        "y": 1.3024364510267488
+      },
+      "isLocked": false,
+      "linkedName": "3BotCenter.2End"
+    },
+    {
+      "anchor": {
+        "x": 5.754186123756863,
+        "y": 1.4997753072429225
+      },
+      "prevControl": {
+        "x": 4.934924371700216,
+        "y": 1.3632316819001478
+      },
+      "nextControl": {
+        "x": 6.642210976729647,
+        "y": 1.6477794494050535
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.885445770891543,
+        "y": 2.476602645512984
+      },
+      "prevControl": {
+        "x": 7.017154803540378,
+        "y": 2.091791875891445
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "3BotCenter.3End"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 1.35,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "IntakeNote"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

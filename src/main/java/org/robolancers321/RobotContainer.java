@@ -16,13 +16,18 @@ import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
+import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.IntakeSource;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
-import org.robolancers321.commands.PPAutos.Close4B;
-import org.robolancers321.commands.PPAutos.Close4T;
-import org.robolancers321.commands.PPAutos.SweepStraight4M;
+import org.robolancers321.commands.PPAutos.BotTaxi;
+import org.robolancers321.commands.PPAutos.FourBottom;
+import org.robolancers321.commands.PPAutos.FourMid;
+import org.robolancers321.commands.PPAutos.FourTop;
+import org.robolancers321.commands.PPAutos.ThreeBotCenter;
+import org.robolancers321.commands.PPAutos.ThreeTopCenter;
+import org.robolancers321.commands.PPAutos.TopTaxi;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
@@ -39,6 +44,8 @@ import org.robolancers321.subsystems.launcher.AimTable;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
+
+import com.pathplanner.lib.auto.NamedCommands;
 
 public class RobotContainer {
   private Drivetrain drivetrain;
@@ -71,6 +78,8 @@ public class RobotContainer {
     this.driverController = new XboxController(0);
     this.manipulatorController = new XboxController(1);
 
+    this.configureNamedCommands();
+
     this.autoChooser = new SendableChooser<Command>();
 
     this.led = new LED();
@@ -97,7 +106,7 @@ public class RobotContainer {
     LED.registerSignal(1, () -> climbing, LED.meteorRain(0.02, LED.kClimbingMeteor));
     // sees note, blink orange
     LED.registerSignal(
-        2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(180, 30, 0)));
+        2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(255, 255, 0)));
 
     // note in sucker, solid white
     LED.registerSignal(3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(255, 255, 255)));
@@ -109,7 +118,7 @@ public class RobotContainer {
             (!this.flywheel.isRevved()
                 && this.flywheel.getGoalRPM()
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
-        LED.solid(Section.FULL, new Color(255, 255, 0)));
+        LED.strobe(Section.FULL, new Color(0, 255, 0)));
 
     // flywheel is revved, blink green
     LED.registerSignal(
@@ -119,7 +128,7 @@ public class RobotContainer {
                 && this.flywheel.isRevved()
                 && this.flywheel.getGoalRPM()
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
-        LED.strobe(Section.FULL, new Color(0, 255, 0)));
+        LED.solid(Section.FULL, new Color(0, 255, 0)));
   }
 
   private void configureDefaultCommands() {
@@ -344,12 +353,24 @@ public class RobotContainer {
     // this.autoChooser.addOption("3NB Close", new Auto3NBClose());
 
     // pathplanner
-    this.autoChooser.addOption("4 piece mid", new SweepStraight4M());
-    this.autoChooser.addOption("score and taxi top", new Close4T());
-    this.autoChooser.addOption("score and taxi bottom", new Close4B());
+    this.autoChooser.addOption("4 piece mid", new FourMid());
+    this.autoChooser.addOption("score and taxi top", new TopTaxi());
+    this.autoChooser.addOption("score and taxi bottom", new BotTaxi());
+    this.autoChooser.addOption("4 piece top", new FourTop());
+    this.autoChooser.addOption("4 piece bottom", new FourBottom());
+    this.autoChooser.addOption("3 piece top center first", new ThreeTopCenter());
+    this.autoChooser.addOption("3 piece bot center first", new ThreeBotCenter());
+
+
+
+
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
     SmartDashboard.putData(autoChooser);
+  }
+
+  private void configureNamedCommands(){
+    NamedCommands.registerCommand("IntakeNote", new IntakeNote());
   }
 
   private Command toggleClimbingMode() {

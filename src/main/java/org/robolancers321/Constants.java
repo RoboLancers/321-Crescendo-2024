@@ -190,6 +190,10 @@ public final class Constants {
     public static final int kCurrentLimit = 40;
 
     public static final double kFF = 0.000153;
+    public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
+
 
     public static final double kHandoffRPM = 2000;
     public static final double kShiftBackFromExitRPM = -600;

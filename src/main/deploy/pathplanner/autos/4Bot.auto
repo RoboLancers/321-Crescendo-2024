@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4Bot.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4Bot.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4Bot.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4Bot.4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4Bot.5"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

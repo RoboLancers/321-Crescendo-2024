@@ -115,13 +115,27 @@ public class Indexer extends SubsystemBase {
   private void initTuning() {
     SmartDashboard.putNumber(
         "indexer kff", SmartDashboard.getNumber("indexer kff", IndexerConstants.kFF));
+    SmartDashboard.putNumber(
+        "indexer kp", SmartDashboard.getNumber("indexer kp", IndexerConstants.kP));
+    SmartDashboard.putNumber(
+        "indexer ki", SmartDashboard.getNumber("indexer ki", IndexerConstants.kI));
+    SmartDashboard.putNumber(
+        "indexer kd", SmartDashboard.getNumber("indexer kd", IndexerConstants.kD));
     SmartDashboard.putNumber("indexer target rpm", 0.0);
   }
 
   private void tune() {
     double tunedFF = SmartDashboard.getNumber("indexer kff", IndexerConstants.kFF);
+    double tunedP = SmartDashboard.getNumber("indexer kp", IndexerConstants.kP);
+    double tunedI = SmartDashboard.getNumber("indexer ki", IndexerConstants.kI);
+    double tunedD = SmartDashboard.getNumber("indexer kd", IndexerConstants.kD);
+
+
 
     this.controller.setFF(tunedFF);
+    this.controller.setP(tunedP);
+    this.controller.setI(tunedI);
+    this.controller.setD(tunedD);
 
     double targetRPM = SmartDashboard.getNumber("indexer target rpm", 0.0);
 

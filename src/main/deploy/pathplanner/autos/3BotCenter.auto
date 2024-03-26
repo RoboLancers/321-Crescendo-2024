@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3BotCenter.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3BotCenter.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3BotCenter.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3BotCenter.4"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

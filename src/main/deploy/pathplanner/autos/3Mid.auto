@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3Mid.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3Mid.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3Mid.3"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
