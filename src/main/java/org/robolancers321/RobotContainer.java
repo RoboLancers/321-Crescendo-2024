@@ -325,7 +325,7 @@ public class RobotContainer {
      */
 
     this.autoChooser.addOption("Do Nothing", Commands.idle(this.drivetrain, this.retractor, this.sucker, this.pivot, this.indexer, this.flywheel, this.climber));
-    this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFromDistance());
+    this.autoChooser.setDefaultOption("Score And Sit", new ScoreSpeakerFixedAuto());
 
     // this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
     // this.autoChooser.addOption("4NT Close", new Auto4NTClose());
@@ -344,7 +344,7 @@ public class RobotContainer {
     // this.autoChooser.addOption("3NB Close", new Auto3NBClose());
 
     // pathplanner
-    // this.autoChooser.addOption("4 piece mid", new SweepStraight4M());
+    this.autoChooser.addOption("4 piece mid", new SweepStraight4M());
     this.autoChooser.addOption("score and taxi top", new Close4T());
     this.autoChooser.addOption("score and taxi bottom", new Close4B());
     // this.autoChooser.addOption("2 piece mid", new Close3M());

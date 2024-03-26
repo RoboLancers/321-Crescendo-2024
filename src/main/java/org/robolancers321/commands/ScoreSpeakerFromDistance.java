@@ -39,7 +39,9 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
             this.pivot.aimAtSpeaker(
                 () -> AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker())),
             this.flywheel.revSpeakerFromRPM(
-                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))).withTimeout(1.5),
+                () -> AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()))),
+                // TODO: pivot does not move:
+                // .withTimeout(1.5)
         this.indexer.outtake(),
         this.indexer.off(),
         this.flywheel.off());

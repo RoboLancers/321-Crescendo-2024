@@ -40,7 +40,7 @@ public class Close4T extends SequentialCommandGroup {
     this.addCommands(
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
-        new ScoreSpeakerFromDistance(),
+        new ScoreSpeakerFixedAuto(),
         AutoBuilder.followPath(pathGroup.get(0))
         // new PathAndShoot(pathGroup.get(0)),
         // new PathAndIntake(pathGroup.get(1)),
