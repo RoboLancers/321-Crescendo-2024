@@ -117,6 +117,8 @@ public final class Constants {
 
     public static final double kMaxVelocityDeg = 120; // 400.0; //180
     public static final double kMaxAccelerationDeg = 500.0; // 2000
+    public static TrapezoidProfile.Constraints kProfileConstraints =
+        new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
     public static final double kToleranceDeg = 5.0;
 

@@ -130,8 +130,6 @@ public class Indexer extends SubsystemBase {
     double tunedI = SmartDashboard.getNumber("indexer ki", IndexerConstants.kI);
     double tunedD = SmartDashboard.getNumber("indexer kd", IndexerConstants.kD);
 
-
-
     this.controller.setFF(tunedFF);
     this.controller.setP(tunedP);
     this.controller.setI(tunedI);
