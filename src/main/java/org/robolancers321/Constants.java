@@ -16,7 +16,6 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public enum Mode {
     Driving,
-
   }
 
   public static final class DrivetrainConstants {
@@ -80,8 +79,8 @@ public final class Constants {
     public static final double kGearRatio = 6.12;
     public static final double kDrivePositionConversionFactor =
         2 * Math.PI * kWheelRadiusMeters / kGearRatio;
-    public static final double kDriveVelocityConversionFactor =
-        2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
+    public static final double kDriveVelocityConversionFactor = 2 * Math.PI * kWheelRadiusMeters;
+    // 2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
     public static final double kTurnPositionConversionFactor = 7.0 / 150.0;
 
     public static final double kDriveP = 0.00;
@@ -193,7 +192,6 @@ public final class Constants {
     public static final double kP = 0;
     public static final double kI = 0;
     public static final double kD = 0;
-
 
     public static final double kHandoffRPM = 2000;
     public static final double kShiftBackFromExitRPM = -600;

@@ -2,21 +2,27 @@
 package org.robolancers321.subsystems.drivetrain;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.robolancers321.Constants;
 import org.robolancers321.Constants.SwerveModuleConstants;
 import org.robolancers321.util.VirtualSubsystem;
 
@@ -67,14 +73,24 @@ public class SwerveModule extends VirtualSubsystem {
 
   private final String id;
 
-  private final CANSparkMax driveMotor;
+  // private final CANSparkMax driveMotor;
+  private final TalonFX driveMotor;
   private final CANSparkMax turnMotor;
 
-  private final RelativeEncoder driveEncoder;
+  // private final RelativeEncoder driveEncoder;
   private final CANcoder turnEncoder;
 
-  private final SparkPIDController driveController;
+  // private final SparkPIDController driveController;
   private final PIDController turnController;
+
+  private final Slot0Configs drivePIDConfig =
+      new Slot0Configs()
+          .withKP(SwerveModuleConstants.kDriveP)
+          .withKI(SwerveModuleConstants.kDriveI)
+          .withKD(SwerveModuleConstants.kDriveD)
+          .withKV(SwerveModuleConstants.kDriveFF);
+  private final VelocityVoltage driveVelocityOutput =
+      new VelocityVoltage(0).withSlot(0).withUpdateFreqHz(50);
 
   private SwerveModuleState commandedState = new SwerveModuleState();
 
@@ -89,10 +105,12 @@ public class SwerveModule extends VirtualSubsystem {
       double turnEncoderOffset) {
     this.id = id;
 
-    this.driveMotor = new CANSparkMax(driveMotorPort, MotorType.kBrushless);
-    this.driveEncoder = this.driveMotor.getEncoder();
-    this.driveController = this.driveMotor.getPIDController();
-    this.configDrive(driveMotorPort, invertDriveMotor);
+    this.driveMotor = new TalonFX(driveMotorPort);
+
+    // this.driveMotor = new CANSparkMax(driveMotorPort, MotorType.kBrushless);
+    // this.driveEncoder = this.driveMotor.getEncoder();
+    // this.driveController = this.driveMotor.getPIDController();
+    this.configDrive(invertDriveMotor);
 
     this.turnMotor = new CANSparkMax(turnMotorPort, MotorType.kBrushless);
     this.turnEncoder = new CANcoder(turnEncoderPort);
@@ -107,24 +125,48 @@ public class SwerveModule extends VirtualSubsystem {
     this.commandedState = new SwerveModuleState();
   }
 
-  private void configDrive(int driveMotorPort, boolean invertDriveMotor) {
-    this.driveMotor.setInverted(invertDriveMotor);
-    this.driveMotor.setIdleMode(IdleMode.kBrake);
-    this.driveMotor.setSmartCurrentLimit(40);
-    this.driveMotor.enableVoltageCompensation(12);
+  private void configDrive(boolean invertDriveMotor) {
+    final var config = this.driveMotor.getConfigurator();
 
-    this.driveEncoder.setPosition(0.0);
-    this.driveEncoder.setPositionConversionFactor(
-        SwerveModuleConstants.kDrivePositionConversionFactor);
-    this.driveEncoder.setVelocityConversionFactor(
-        SwerveModuleConstants.kDriveVelocityConversionFactor);
+    this.driveMotor.getPosition().setUpdateFrequency(50);
+    this.driveMotor.getVelocity().setUpdateFrequency(50);
+    this.driveMotor.optimizeBusUtilization();
 
-    this.driveController.setP(SwerveModuleConstants.kDriveP);
-    this.driveController.setI(SwerveModuleConstants.kDriveI);
-    this.driveController.setD(SwerveModuleConstants.kDriveD);
-    this.driveController.setFF(SwerveModuleConstants.kDriveFF);
+    config.apply(new TalonFXConfiguration()); // factory default
 
-    this.driveMotor.burnFlash();
+    final var outputConfig =
+        new MotorOutputConfigs()
+            .withInverted(
+                invertDriveMotor
+                    ? InvertedValue.Clockwise_Positive
+                    : InvertedValue.CounterClockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Brake);
+
+    final var feedbackConfig =
+        new FeedbackConfigs()
+            .withSensorToMechanismRatio(Constants.SwerveModuleConstants.kGearRatio);
+
+    config.apply(outputConfig);
+    config.apply(feedbackConfig);
+    config.apply(drivePIDConfig);
+
+    // this.driveMotor.setInverted(invertDriveMotor);
+    // this.driveMotor.setIdleMode(IdleMode.kBrake);
+    // this.driveMotor.setSmartCurrentLimit(40);
+    // this.driveMotor.enableVoltageCompensation(12);
+
+    // this.driveEncoder.setPosition(0.0);
+    // this.driveEncoder.setPositionConversionFactor(
+    //     SwerveModuleConstants.kDrivePositionConversionFactor);
+    // this.driveEncoder.setVelocityConversionFactor(
+    //     SwerveModuleConstants.kDriveVelocityConversionFactor);
+
+    // this.driveController.setP(SwerveModuleConstants.kDriveP);
+    // this.driveController.setI(SwerveModuleConstants.kDriveI);
+    // this.driveController.setD(SwerveModuleConstants.kDriveD);
+    // this.driveController.setFF(SwerveModuleConstants.kDriveFF);
+
+    // this.driveMotor.burnFlash();
   }
 
   private void configTurn(
@@ -153,7 +195,9 @@ public class SwerveModule extends VirtualSubsystem {
   }
 
   public double getDriveVelocityMPS() {
-    return this.driveEncoder.getVelocity();
+    // return this.driveEncoder.getVelocity();
+    return Constants.SwerveModuleConstants.kDriveVelocityConversionFactor
+        * this.driveMotor.getVelocity().getValueAsDouble();
   }
 
   public double getTurnAngleRotations() {
@@ -170,7 +214,10 @@ public class SwerveModule extends VirtualSubsystem {
 
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
-        this.driveEncoder.getPosition(), Rotation2d.fromRadians(this.getTurnAngleRad()));
+        Constants.SwerveModuleConstants.kDrivePositionConversionFactor
+            * this.driveMotor.getPosition().getValueAsDouble(),
+        // this.driveEncoder.getPosition(),
+        Rotation2d.fromRadians(this.getTurnAngleRad()));
   }
 
   public SwerveModuleState getState() {
@@ -227,10 +274,17 @@ public class SwerveModule extends VirtualSubsystem {
     double tunedDriveFF =
         SmartDashboard.getNumber("module drive kff", SwerveModuleConstants.kDriveFF);
 
-    this.driveController.setP(tunedDriveP);
-    this.driveController.setI(tunedDriveI);
-    this.driveController.setD(tunedDriveD);
-    this.driveController.setFF(tunedDriveFF);
+    this.drivePIDConfig.kP = tunedDriveP;
+    this.drivePIDConfig.kI = tunedDriveI;
+    this.drivePIDConfig.kD = tunedDriveD;
+    this.drivePIDConfig.kV = tunedDriveFF;
+
+    this.driveMotor.getConfigurator().apply(drivePIDConfig);
+
+    // this.driveController.setP(tunedDriveP);
+    // this.driveController.setI(tunedDriveI);
+    // this.driveController.setD(tunedDriveD);
+    // this.driveController.setFF(tunedDriveFF);
 
     double tunedTurnP = SmartDashboard.getNumber("module turn kp", SwerveModuleConstants.kTurnP);
     double tunedTurnI = SmartDashboard.getNumber("module turn ki", SwerveModuleConstants.kTurnI);
@@ -243,8 +297,11 @@ public class SwerveModule extends VirtualSubsystem {
   public void periodic() {
     SmartDashboard.putNumber(this.id + " ref angle", this.commandedState.angle.getDegrees());
 
-    this.driveController.setReference(
-        this.commandedState.speedMetersPerSecond, ControlType.kVelocity);
+    // this.driveController.setReference(
+    //     this.commandedState.speedMetersPerSecond, ControlType.kVelocity);
+
+    this.driveMotor.setControl(
+        driveVelocityOutput.withVelocity(this.commandedState.speedMetersPerSecond));
 
     this.turnController.setSetpoint(this.commandedState.angle.getRadians());
 
