@@ -71,6 +71,7 @@ public class Drivetrain extends SubsystemBase {
   private final SwerveDrivePoseEstimator odometry;
 
   private final Field2d field;
+  private final Field2d visionField;
 
   public boolean slowMode = false;
 
@@ -106,6 +107,7 @@ public class Drivetrain extends SubsystemBase {
             new Pose2d());
 
     this.field = new Field2d();
+    this.visionField = new Field2d();
 
     this.configureGyro();
     this.configureController();
@@ -157,7 +159,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   private void configureField() {
-    SmartDashboard.putData(this.field);
+    SmartDashboard.putData("Odo Field", this.field);
+    SmartDashboard.putData("Vision Field", this.visionField);
 
     PathPlannerLogging.setLogActivePathCallback(
         poses -> this.field.getObject("pathplanner path poses").setPoses(poses));
@@ -257,6 +260,8 @@ public class Drivetrain extends SubsystemBase {
     Optional<EstimatedRobotPose> visionEstimate = visionEstimator.update();
 
     if (visionEstimate.isEmpty()) return;
+
+    visionField.setRobotPose(visionEstimate.get().estimatedPose.toPose2d());
 
     this.odometry.addVisionMeasurement(
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
@@ -359,7 +364,7 @@ public class Drivetrain extends SubsystemBase {
 
     Pose2d odometryPose = this.getPose();
 
-    SmartDashboard.putNumber("odometry pos x (m)", odometryPose.getX());
+    SmartDashboard.putNumber("odomFetry pos x (m)", odometryPose.getX());
     SmartDashboard.putNumber("odometry pos y (m)", odometryPose.getY());
     SmartDashboard.putNumber("odometry angle (deg)", odometryPose.getRotation().getDegrees());
 
@@ -381,7 +386,7 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-    this.fuseVision();
+    // this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 

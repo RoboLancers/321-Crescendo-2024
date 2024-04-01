@@ -16,6 +16,7 @@ import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
+import org.robolancers321.commands.FeederShot;
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.IntakeSource;
@@ -45,6 +46,7 @@ import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
 import org.robolancers321.subsystems.launcher.Pivot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 public class RobotContainer {
@@ -109,7 +111,7 @@ public class RobotContainer {
         2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(255, 255, 0)));
 
     // note in sucker, solid white
-    LED.registerSignal(3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(255, 255, 255)));
+    LED.registerSignal(3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(100, 150, 255)));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -132,7 +134,8 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    this.drivetrain.setDefaultCommand(this.drivetrain.teleopDrive(driverController, true));
+    this.drivetrain.setDefaultCommand(//this.drivetrain.tuneModules());
+      this.drivetrain.teleopDrive(driverController, true));
 
     this.sucker.setDefaultCommand(this.sucker.off());
     this.indexer.setDefaultCommand(this.indexer.off());
@@ -150,7 +153,7 @@ public class RobotContainer {
               return 0.0;
             }));
 
-    this.retractor.setDefaultCommand(this.retractor.moveToRetracted());
+    this.retractor.setDefaultCommand(this.retractor.moveToMating());
     this.pivot.setDefaultCommand(
         this.pivot.aimAtSpeaker(
             () -> {
@@ -260,6 +263,15 @@ public class RobotContainer {
                 this.sucker.out(),
                 Commands.idle(this.pivot, this.flywheel)).unless(() -> climbing));
 
+    new Trigger(this.manipulatorController::getLeftBumper).and(() -> !climbing).whileTrue(new FeederShot().unless(() -> climbing));
+    new Trigger(this.manipulatorController::getLeftBumper).and(() -> !climbing)
+        .onFalse(
+            new ParallelDeadlineGroup(
+                this.indexer.outtake(),
+                this.sucker.out(),
+                Commands.idle(this.pivot, this.flywheel)).unless(() -> climbing));
+
+
     new Trigger(() -> this.manipulatorController.getLeftY() < -0.8).onTrue(this.pivot.aimAtAmp().unless(() -> climbing));
     new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
         .onTrue(this.pivot.moveToRetracted().unless(() -> climbing));
@@ -357,12 +369,9 @@ public class RobotContainer {
     this.autoChooser.addOption("score and taxi top", new TopTaxi());
     this.autoChooser.addOption("score and taxi bottom", new BotTaxi());
     this.autoChooser.addOption("4 piece top", new FourTop());
-    this.autoChooser.addOption("4 piece bottom", new FourBottom());
-    this.autoChooser.addOption("3 piece top center first", new ThreeTopCenter());
+    // this.autoChooser.addOption("4 piece bottom", new FourBottom());
+    // this.autoChooser.addOption("3 piece top center first", new ThreeTopCenter());
     this.autoChooser.addOption("3 piece bot center first", new ThreeBotCenter());
-
-
-
 
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
@@ -405,6 +414,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     // return new Close4T();
+    // return AutoBuilder.buildAuto("4Top");
 
     return this.autoChooser.getSelected();
   }

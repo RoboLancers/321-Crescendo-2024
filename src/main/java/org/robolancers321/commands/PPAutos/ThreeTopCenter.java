@@ -4,11 +4,14 @@ package org.robolancers321.commands.PPAutos;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import java.util.List;
 import org.robolancers321.commands.AutoCommands.PathAndIntake;
 import org.robolancers321.commands.AutoCommands.PathAndMate;
+import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.commands.AutoCommands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
@@ -37,16 +40,23 @@ public class ThreeTopCenter extends SequentialCommandGroup {
 
     List<PathPlannerPath> pathGroup = PathPlannerAuto.getPathGroupFromAutoFile("3TopCenter");
 
+    // Pose2d startingPose = pathGroup.get(0).getPreviewStartingHolonomicPose();
+
+
     this.addCommands(
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
+
+        // new InstantCommand(() -> this.drivetrain.resetPose(startingPose)),
+
+        // AutoBuilder.buildAuto("3TopCenter")
         new ScoreSpeakerFixedAuto(),
-        AutoBuilder.followPath(pathGroup.get(0)),
-        new PathAndMate(pathGroup.get(1)),
-        new ScoreSpeakerFromDistance(),
-        AutoBuilder.followPath(pathGroup.get(2)),
-        new PathAndMate(pathGroup.get(3)),
-        new ScoreSpeakerFromDistance()
+        new PathAndIntake(pathGroup.get(0)),
+        new PathAndRetract(pathGroup.get(1)),
+        new ScoreSpeakerFixedAuto(),
+        new PathAndIntake(pathGroup.get(2)),
+        new PathAndRetract(pathGroup.get(3)),
+        new ScoreSpeakerFixedAuto()
         );
   }
 }

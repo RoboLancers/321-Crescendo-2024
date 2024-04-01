@@ -42,7 +42,6 @@ public class FourMid extends SequentialCommandGroup {
         // TODO: test this
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
-
         new ScoreSpeakerFixedAuto(),
         new PathAndIntake(pathGroup.get(0)),
         new PathAndRetract(pathGroup.get(1)),
