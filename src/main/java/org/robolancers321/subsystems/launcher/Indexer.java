@@ -11,8 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-
-import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.IndexerConstants;
 
 public class Indexer extends SubsystemBase {
@@ -39,7 +37,7 @@ public class Indexer extends SubsystemBase {
   private final DigitalInput entranceBeamBreak;
   private final DigitalInput exitBeamBreak;
 
-  private double goalRPM = 0.0;
+  private double goalPosition = 0.0;
 
   private Indexer() {
     this.motor = new CANSparkFlex(IndexerConstants.kMotorPort, kBrushless);
@@ -67,14 +65,18 @@ public class Indexer extends SubsystemBase {
   }
 
   private void configureController() {
-    this.controller.setP(0.0);
-    this.controller.setI(0.0);
-    this.controller.setD(0.0);
+    this.controller.setP(IndexerConstants.kP);
+    this.controller.setI(IndexerConstants.kI);
+    this.controller.setD(IndexerConstants.kD);
     this.controller.setFF(IndexerConstants.kFF);
   }
 
   public double getRPM() {
     return this.encoder.getVelocity();
+  }
+
+  public double getPosition() {
+    return this.encoder.getPosition();
   }
 
   public boolean entranceBeamBroken() {
@@ -93,13 +95,13 @@ public class Indexer extends SubsystemBase {
     return !this.exitBeamBroken();
   }
 
-  private void setRPM(double rpm) {
-    this.controller.setReference(rpm, ControlType.kVelocity);
+  private void setPosition(double position) {
+    this.controller.setReference(getPosition() + position, ControlType.kPosition);
   }
 
   private void doSendables() {
     SmartDashboard.putNumber("indexer rpm", this.getRPM());
-    SmartDashboard.putNumber("indexer goal rpm", this.goalRPM);
+    SmartDashboard.putNumber("indexer goal position", this.goalPosition);
 
     SmartDashboard.putBoolean("indexer entrance beam broken", this.entranceBeamBroken());
     SmartDashboard.putBoolean("indexer exit beam broken", this.exitBeamBroken());
@@ -107,7 +109,7 @@ public class Indexer extends SubsystemBase {
 
   @Override
   public void periodic() {
-    this.setRPM(this.goalRPM);
+    this.setPosition(this.goalPosition);
 
     this.doSendables();
   }
@@ -121,7 +123,7 @@ public class Indexer extends SubsystemBase {
         "indexer ki", SmartDashboard.getNumber("indexer ki", IndexerConstants.kI));
     SmartDashboard.putNumber(
         "indexer kd", SmartDashboard.getNumber("indexer kd", IndexerConstants.kD));
-    SmartDashboard.putNumber("indexer target rpm", 0.0);
+    SmartDashboard.putNumber("indexer target position", 0.0);
   }
 
   private void tune() {
@@ -130,29 +132,28 @@ public class Indexer extends SubsystemBase {
     double tunedI = SmartDashboard.getNumber("indexer ki", IndexerConstants.kI);
     double tunedD = SmartDashboard.getNumber("indexer kd", IndexerConstants.kD);
 
-
-
     this.controller.setFF(tunedFF);
     this.controller.setP(tunedP);
     this.controller.setI(tunedI);
     this.controller.setD(tunedD);
 
-    double targetRPM = SmartDashboard.getNumber("indexer target rpm", 0.0);
+    double targetPosition = SmartDashboard.getNumber("indexer target position", 0.0);
 
-    this.goalRPM = targetRPM;
+    this.goalPosition = targetPosition;
   }
 
   public Command off() {
     return runOnce(
         () -> {
-          this.goalRPM = 0.0;
+          this.goalPosition = 0.0;
+          this.motor.set(0);
         });
   }
 
   public Command shiftBackFromExit() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kShiftBackFromExitRPM;
+              this.goalPosition = IndexerConstants.kShiftBackFromExitRPM;
             })
         .alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
   }
@@ -160,7 +161,7 @@ public class Indexer extends SubsystemBase {
   public Command shiftForwardToEntrance() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kShiftForwardFromEntranceRPM;
+              this.goalPosition = IndexerConstants.kShiftForwardFromEntranceRPM;
             })
         .alongWith(new WaitUntilCommand(this::entranceBeamBroken).withTimeout(1.0));
   }
@@ -168,7 +169,7 @@ public class Indexer extends SubsystemBase {
   public Command shiftBackToEntrance() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kShiftBackToEntranceRPM;
+              this.goalPosition = IndexerConstants.kShiftBackToEntranceRPM;
             })
         .alongWith(new WaitUntilCommand(this::exitBeamNotBroken).withTimeout(1.0));
   }
@@ -176,7 +177,7 @@ public class Indexer extends SubsystemBase {
   public Command acceptHandoff() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kHandoffRPM;
+              this.goalPosition = IndexerConstants.kHandoffRPM;
             })
         .alongWith(new WaitUntilCommand(this::exitBeamBroken).withTimeout(1.0));
   }
@@ -184,7 +185,7 @@ public class Indexer extends SubsystemBase {
   public Command shiftFromHandoffForward() {
     return runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kHandoffRPM;
+              this.goalPosition = IndexerConstants.kHandoffRPM;
             })
         .alongWith(new WaitUntilCommand(this::entranceBeamNotBroken).withTimeout(1.0));
   }
@@ -192,7 +193,7 @@ public class Indexer extends SubsystemBase {
   public Command outtake() {
     return this.runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kOuttakeRPM;
+              this.goalPosition = IndexerConstants.kOuttakeRPM;
             })
         .alongWith(
             new WaitUntilCommand(this::exitBeamBroken)
@@ -201,20 +202,21 @@ public class Indexer extends SubsystemBase {
         .withTimeout(1.0);
   }
 
-  public Command revTrap(){
-      return runOnce(
+  public Command revTrap() {
+    return runOnce(
         () -> {
-          this.goalRPM = IndexerConstants.kTrapRPM;
+          this.goalPosition = IndexerConstants.kTrapRPM;
         });
   }
 
   public Command intakeSource() {
     return this.runOnce(
             () -> {
-              this.goalRPM = IndexerConstants.kSourceRPM;
+              this.goalPosition = IndexerConstants.kSourceRPM;
             })
         .alongWith(
-            new WaitUntilCommand(() -> this.exitBeamBroken() && this.entranceBeamBroken()).withTimeout(0.5));
+            new WaitUntilCommand(() -> this.exitBeamBroken() && this.entranceBeamBroken())
+                .withTimeout(0.5));
   }
 
   public Command tuneController() {

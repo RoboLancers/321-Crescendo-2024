@@ -106,16 +106,18 @@ public final class Constants {
     public static final float kMinAngle = -7f;
     public static final float kMaxAngle = 182.0f;
 
-    public static final double kP = 0.008; // 0.0065
-    public static final double kI = 0.000;
-    public static final double kD = 0.0001;
+    public static final double kP = 0.005; // 0.008
+    public static final double kI = 0.00;
+    public static final double kD = 0.00; // 0.0001
 
     public static final double kS = 0.000;
-    public static final double kG = 0.037; // 0.04? // 0.0155;
+    public static final double kG = 0.037; // 0.
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 120; // 400.0; //180
-    public static final double kMaxAccelerationDeg = 500.0; // 2000
+    public static final double kMaxVelocityDeg = 400; // 400.0; //180 //120
+    public static final double kMaxAccelerationDeg = 2000; // 2000 //500
+    public static TrapezoidProfile.Constraints kProfileConstraints =
+        new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
     public static final double kToleranceDeg = 5.0;
 
@@ -169,7 +171,8 @@ public final class Constants {
       kShiftBackwardSlow(-1000),
       kAmp(1500.0),
       kSpeaker(2500.0),
-      kSource(-600);
+      kSource(-600),
+      kFeeder(4000);
 
       public final double rpm;
 
@@ -215,7 +218,7 @@ public final class Constants {
     public static final float kMinAngle = -19f;
     public static final float kMaxAngle = 75f;
 
-    public static final double kP = 0.04; // 0.03
+    public static final double kP = 0.04; // 0.04
     public static final double kI = 0.0;
     public static final double kD = 0.0; // 0.02;
 
@@ -223,8 +226,8 @@ public final class Constants {
     public static final double kG = 0.023;
     public static final double kV = 0.0; // 0.35
 
-    public static final double kMaxVelocityDeg = 160;
-    public static final double kMaxAccelerationDeg = 1500;
+    public static final double kMaxVelocityDeg = 160; // 160
+    public static final double kMaxAccelerationDeg = 1500; // 1500
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
@@ -236,7 +239,7 @@ public final class Constants {
       kMating(-19.0),
       kAmp(75.0),
       kTrap(75.0),
-      kSpeaker(-16.0);
+      kSpeaker(-13.0);
 
       public final double angle;
 
