@@ -12,19 +12,14 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import java.util.function.DoubleSupplier;
-
-import org.robolancers321.Constants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 
@@ -58,7 +53,8 @@ public class Retractor extends SubsystemBase {
     this.encoder = this.motor.getAbsoluteEncoder(Type.kDutyCycle);
     this.feedforwardController =
         new ArmFeedforward(RetractorConstants.kS, RetractorConstants.kG, RetractorConstants.kV);
-    this.feedbackController = new PIDController(RetractorConstants.kP, RetractorConstants.kI, RetractorConstants.kD);
+    this.feedbackController =
+        new PIDController(RetractorConstants.kP, RetractorConstants.kI, RetractorConstants.kD);
     this.motionProfile = new TrapezoidProfile(RetractorConstants.kProfileConstraints);
     this.previousReference = new TrapezoidProfile.State(this.getPositionDeg(), 0);
     this.goalReference = previousReference;
@@ -155,7 +151,7 @@ public class Retractor extends SubsystemBase {
 
   @Override
   public void periodic() {
-    
+
     // update assumed position with next profile timestamp
     previousReference = motionProfile.calculate(0.02, previousReference, goalReference);
 

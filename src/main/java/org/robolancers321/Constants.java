@@ -16,7 +16,6 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public enum Mode {
     Driving,
-
   }
 
   public static final class DrivetrainConstants {
@@ -109,7 +108,7 @@ public final class Constants {
 
     public static final double kP = 0.005; // 0.008
     public static final double kI = 0.00;
-    public static final double kD = 0.00; //0.0001
+    public static final double kD = 0.00; // 0.0001
 
     public static final double kS = 0.000;
     public static final double kG = 0.037; // 0.
@@ -197,7 +196,6 @@ public final class Constants {
     public static final double kI = 0;
     public static final double kD = 0;
 
-
     public static final double kHandoffRPM = 2000;
     public static final double kShiftBackFromExitRPM = -600;
     public static final double kShiftBackToEntranceRPM = -100;
@@ -228,8 +226,8 @@ public final class Constants {
     public static final double kG = 0.023;
     public static final double kV = 0.0; // 0.35
 
-    public static final double kMaxVelocityDeg = 160; //160
-    public static final double kMaxAccelerationDeg = 1500; //1500
+    public static final double kMaxVelocityDeg = 160; // 160
+    public static final double kMaxAccelerationDeg = 1500; // 1500
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 

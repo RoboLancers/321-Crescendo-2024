@@ -47,7 +47,7 @@ public class LED extends VirtualSubsystem {
   private static final int kWavefrontSeparation = 42;
   private static final int kWavefrontLength = 2;
 
-  public static final rgb[] kDrivingMeteor = {new rgb(255, 40, 0)}; //255, 40, 0
+  public static final rgb[] kDrivingMeteor = {new rgb(255, 40, 0)}; // 255, 40, 0
   public static final rgb[] kClimbingMeteor = {new rgb(0, 0, 255)};
 
   public static final rgb[] kNoteMeteorColors = {

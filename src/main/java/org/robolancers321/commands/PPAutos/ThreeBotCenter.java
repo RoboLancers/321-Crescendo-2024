@@ -1,20 +1,14 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.commands.PPAutos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import java.util.List;
 import org.robolancers321.commands.AutoCommands.PathAndIntake;
-import org.robolancers321.commands.AutoCommands.PathAndMate;
 import org.robolancers321.commands.AutoCommands.PathAndRetract;
-import org.robolancers321.commands.AutoCommands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
-import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -40,7 +34,6 @@ public class ThreeBotCenter extends SequentialCommandGroup {
 
     List<PathPlannerPath> pathGroup = PathPlannerAuto.getPathGroupFromAutoFile("3BotCenter");
 
-
     // Pose2d startingPose = pathGroup.get(0).getPreviewStartingHolonomicPose();
 
     this.addCommands(
@@ -56,7 +49,6 @@ public class ThreeBotCenter extends SequentialCommandGroup {
         new ScoreSpeakerFixedAuto(),
         new PathAndIntake(pathGroup.get(2)),
         new PathAndRetract(pathGroup.get(3)),
-        new ScoreSpeakerFixedAuto()
-        );
+        new ScoreSpeakerFixedAuto());
   }
 }

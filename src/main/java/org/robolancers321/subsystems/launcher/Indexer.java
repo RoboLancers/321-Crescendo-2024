@@ -11,8 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-
-import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.IndexerConstants;
 
 public class Indexer extends SubsystemBase {
@@ -77,7 +75,7 @@ public class Indexer extends SubsystemBase {
     return this.encoder.getVelocity();
   }
 
-  public double getPosition(){
+  public double getPosition() {
     return this.encoder.getPosition();
   }
 
@@ -204,8 +202,8 @@ public class Indexer extends SubsystemBase {
         .withTimeout(1.0);
   }
 
-  public Command revTrap(){
-      return runOnce(
+  public Command revTrap() {
+    return runOnce(
         () -> {
           this.goalPosition = IndexerConstants.kTrapRPM;
         });
@@ -217,7 +215,8 @@ public class Indexer extends SubsystemBase {
               this.goalPosition = IndexerConstants.kSourceRPM;
             })
         .alongWith(
-            new WaitUntilCommand(() -> this.exitBeamBroken() && this.entranceBeamBroken()).withTimeout(0.5));
+            new WaitUntilCommand(() -> this.exitBeamBroken() && this.entranceBeamBroken())
+                .withTimeout(0.5));
   }
 
   public Command tuneController() {

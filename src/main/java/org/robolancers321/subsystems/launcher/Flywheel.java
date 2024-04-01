@@ -186,9 +186,9 @@ public class Flywheel extends SubsystemBase {
 
   public Command intakeSource() {
     return runOnce(
-            () -> {
-              this.goalRPM = FlywheelSetpoint.kSource.rpm;
-            });
+        () -> {
+          this.goalRPM = FlywheelSetpoint.kSource.rpm;
+        });
   }
 
   public Command tuneController() {
