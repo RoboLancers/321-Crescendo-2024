@@ -5,6 +5,8 @@ import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 import com.revrobotics.*;
 import com.revrobotics.CANSparkBase.ControlType;
+
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,7 +41,9 @@ public class Indexer extends SubsystemBase {
   private final DigitalInput entranceBeamBreak;
   private final DigitalInput exitBeamBreak;
 
-  private boolean isVelocity = true;
+  private boolean isVelocity = false;
+  private double targetPosition = 0;
+
 
   private Indexer() {
     this.motor = new CANSparkFlex(IndexerConstants.kMotorPort, kBrushless);
@@ -63,7 +67,7 @@ public class Indexer extends SubsystemBase {
   }
 
   private void configureEncoder() {
-    this.encoder.setPositionConversionFactor(1.0);
+    this.encoder.setPositionConversionFactor(Math.PI * 3); //circumference (3pi) * gear ratio (1)
     this.encoder.setVelocityConversionFactor(1.0);
     this.encoder.setPosition(0);
   }
@@ -72,6 +76,11 @@ public class Indexer extends SubsystemBase {
     this.controller.setP(IndexerConstants.kP, 1);
     this.controller.setI(IndexerConstants.kI, 1);
     this.controller.setD(IndexerConstants.kD, 1);
+    this.controller.setFF(0, 1);
+
+    this.controller.setP(0, 0);
+    this.controller.setI(0,0);
+    this.controller.setD(0, 0);
     this.controller.setFF(IndexerConstants.kFF, 0);
   }
 
@@ -81,6 +90,10 @@ public class Indexer extends SubsystemBase {
 
   public double getPosition(){
     return this.encoder.getPosition();
+  }
+
+  public boolean atSetpoint(){
+    return Math.abs(targetPosition - encoder.getPosition()) < IndexerConstants.kTolerance;
   }
 
   public boolean entranceBeamBroken() {
@@ -109,6 +122,7 @@ public class Indexer extends SubsystemBase {
 
   private void doSendables() {
     SmartDashboard.putNumber("indexer rpm", this.getRPM());
+    SmartDashboard.putNumber("indexer current position", getPosition());
 
     SmartDashboard.putBoolean("indexer entrance beam broken", this.entranceBeamBroken());
     SmartDashboard.putBoolean("indexer exit beam broken", this.exitBeamBroken());
@@ -143,12 +157,12 @@ public class Indexer extends SubsystemBase {
     double tunedI = SmartDashboard.getNumber("indexer ki", IndexerConstants.kI);
     double tunedD = SmartDashboard.getNumber("indexer kd", IndexerConstants.kD);
 
-    this.controller.setFF(tunedFF);
+    this.controller.setFF(tunedFF, 0);
 
     double targetRPM = SmartDashboard.getNumber("indexer target rpm", 0.0);
-    this.controller.setP(tunedP);
-    this.controller.setI(tunedI);
-    this.controller.setD(tunedD);
+    this.controller.setP(tunedP, 1);
+    this.controller.setI(tunedI, 1);
+    this.controller.setD(tunedD, 1);
 
     double targetPosition = SmartDashboard.getNumber("indexer target position", 0.0);
 

@@ -133,7 +133,7 @@ public class RobotContainer {
         this.drivetrain.teleopDrive(driverController, true));
 
     this.sucker.setDefaultCommand(this.sucker.off());
-    this.indexer.setDefaultCommand(this.indexer.off());
+    this.indexer.setDefaultCommand(this.indexer.tuneController());
 
     this.flywheel.setDefaultCommand(
         this.flywheel.revSpeakerFromRPM(

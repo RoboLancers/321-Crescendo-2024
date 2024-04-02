@@ -190,6 +190,7 @@ public final class Constants {
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 40;
+    public static final double kTolerance = 1;
 
     public static final double kFF = 0.000153;
     public static final double kP = 0;
