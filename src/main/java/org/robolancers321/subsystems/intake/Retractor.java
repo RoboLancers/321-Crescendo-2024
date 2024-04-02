@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
-import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 
 public class Retractor extends SubsystemBase {
@@ -96,7 +95,7 @@ public class Retractor extends SubsystemBase {
   private void configureController() {
     // super.m_controller.enableContinuousInput(-180.0, 180.0);
     feedbackController.disableContinuousInput();
-    feedbackController.setTolerance(PivotConstants.kToleranceDeg);
+    feedbackController.setTolerance(RetractorConstants.kToleranceDeg);
     feedbackController.setSetpoint(previousReference.position);
   }
 

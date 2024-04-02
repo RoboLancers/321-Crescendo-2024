@@ -86,7 +86,7 @@ public final class Constants {
     public static final double kDriveP = 0.00;
     public static final double kDriveI = 0.00;
     public static final double kDriveD = 0.00;
-    public static final double kDriveFF = 0.198; // 0.198
+    public static final double kDriveFF = 0.71; // 0.198
 
     public static final double kTurnP = 0.50;
     public static final double kTurnI = 0.00;
@@ -123,7 +123,7 @@ public final class Constants {
 
     public enum RetractorSetpoint {
       kRetracted(182),
-      kMating(169),
+      kMating(173),
       kIntake(-6),
       kOuttake(45.0);
 
@@ -190,28 +190,17 @@ public final class Constants {
 
     public static final boolean kInvertMotor = true;
     public static final int kCurrentLimit = 40;
-    public static final double kTolerance = 1;
 
     public static final double kFF = 0.000153;
-    public static final double kP = 0;
-    public static final double kI = 0;
-    public static final double kD = 0;
 
-    //velocity
     public static final double kHandoffRPM = 2000;
-    // public static final double kShiftBackFromExitRPM = -600;
-    // public static final double kShiftBackToEntranceRPM = -100;
-    // public static final double kShiftForwardFromEntranceRPM = 200;
+    public static final double kShiftBackFromExitRPM = -450;
+    public static final double kShiftBackToEntranceRPM = -100;
+    public static final double kShiftForwardFromEntranceRPM = 200;
     public static final double kOuttakeRPM = 3000;
+
     public static final double kTrapRPM = -3000;
     public static final double kSourceRPM = -600;
-
-    //position
-    public static final double kShiftBackFromExit = 0;
-    public static final double kShiftBackToEntrance = 0;
-    public static final double kShiftForwardFromEntrance = 0;
-
-
   }
 
   public static final class PivotConstants {
@@ -223,7 +212,7 @@ public final class Constants {
 
     public static final double kGearRatio = 360.0;
 
-    public static final float kMinAngle = -19f;
+    public static final float kMinAngle = -23f;
     public static final float kMaxAngle = 75f;
 
     public static final double kP = 0.04; // 0.04
@@ -242,12 +231,12 @@ public final class Constants {
     public static final double kToleranceDeg = 1.0;
 
     public enum PivotSetpoint {
-      kRetracted(-13.0),
+      kRetracted(-23.0),
       kShift(-9.0),
-      kMating(-19.0),
+      kMating(-23.0),
       kAmp(75.0),
       kTrap(75.0),
-      kSpeaker(-13.0);
+      kSpeaker(-23.0);
 
       public final double angle;
 

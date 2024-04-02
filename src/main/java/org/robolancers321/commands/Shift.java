@@ -18,12 +18,17 @@ public class Shift extends SequentialCommandGroup {
 
     this.addCommands(
         this.pivot.moveToShift(),
-        this.flywheel.shiftBackwardFast(),
-        this.indexer.shiftBackFromExit(),
-        this.flywheel.shiftBackwardSlow(),
-        this.indexer.shiftBackToEntrance(),
-        this.indexer.shiftForwardToEntrance(),
+        this.indexer
+            .shiftBackFromExit()
+            .alongWith(this.flywheel.shiftBackwardFast())
+            .until(this.indexer::exitBeamNotBroken),
+        this.indexer
+            .shiftForwardToEntrance()
+            .alongWith(this.flywheel.shiftBackwardSlow())
+            .until(this.indexer::entranceBeamBroken),
         this.indexer.off(),
         this.flywheel.off());
+
+    this.setName("Shift");
   }
 }

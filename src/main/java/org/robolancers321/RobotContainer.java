@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -92,6 +93,10 @@ public class RobotContainer {
   private void configureEvents() {
     RobotModeTriggers.autonomous().onTrue(disableClimbingMode());
     RobotModeTriggers.teleop().onTrue(disableClimbingMode());
+
+    CommandScheduler.getInstance()
+        .onCommandInitialize(
+            command -> SmartDashboard.putString("Curr Command", command.getName()));
   }
 
   private void configureLEDs() {
@@ -99,14 +104,15 @@ public class RobotContainer {
     LED.registerSignal(0, () -> !climbing, LED.meteorRain(0.02, LED.kDrivingMeteor));
 
     // meteor blue (climbing)
-    LED.registerSignal(1, () -> climbing, LED.meteorRain(0.02, LED.kClimbingMeteor));
+    // TODO: more technically correct solution is probably propagating robot mode into signal sets?
+    LED.registerSignal(15, () -> climbing, LED.meteorRain(0.02, LED.kClimbingMeteor));
     // sees note, blink orange
     LED.registerSignal(
         2, this.drivetrain::seesNote, LED.strobe(Section.FULL, new Color(255, 255, 0)));
 
     // note in sucker, solid white
     LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(100, 150, 255)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(50, 255, 255)));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -133,7 +139,7 @@ public class RobotContainer {
         this.drivetrain.teleopDrive(driverController, true));
 
     this.sucker.setDefaultCommand(this.sucker.off());
-    this.indexer.setDefaultCommand(this.indexer.tuneController());
+    this.indexer.setDefaultCommand(this.indexer.off());
 
     this.flywheel.setDefaultCommand(
         this.flywheel.revSpeakerFromRPM(
@@ -153,7 +159,7 @@ public class RobotContainer {
         this.pivot.aimAtSpeaker(
             () -> {
               if (this.indexer.entranceBeamNotBroken())
-                return PivotConstants.PivotSetpoint.kRetracted.angle;
+                return PivotConstants.PivotSetpoint.kShift.angle;
 
               if (this.drivetrain.getDistanceToSpeaker() < 4.0)
                 return AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker());

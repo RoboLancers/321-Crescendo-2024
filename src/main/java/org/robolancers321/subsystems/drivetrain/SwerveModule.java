@@ -2,6 +2,7 @@
 package org.robolancers321.subsystems.drivetrain;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -130,7 +131,8 @@ public class SwerveModule extends VirtualSubsystem {
 
     this.driveMotor.getPosition().setUpdateFrequency(50);
     this.driveMotor.getVelocity().setUpdateFrequency(50);
-    this.driveMotor.optimizeBusUtilization();
+
+    this.driveMotor.setPosition(0.0);
 
     config.apply(new TalonFXConfiguration()); // factory default
 
@@ -146,9 +148,18 @@ public class SwerveModule extends VirtualSubsystem {
         new FeedbackConfigs()
             .withSensorToMechanismRatio(Constants.SwerveModuleConstants.kGearRatio);
 
+    // stator for heat issues or acceleration
+    final var currentLimitConfig =
+        new CurrentLimitsConfigs()
+            .withSupplyCurrentLimit(40)
+            .withSupplyCurrentLimitEnable(true)
+            .withStatorCurrentLimit(40)
+            .withStatorCurrentLimitEnable(true);
+
     config.apply(outputConfig);
     config.apply(feedbackConfig);
     config.apply(drivePIDConfig);
+    config.apply(currentLimitConfig);
 
     // this.driveMotor.setInverted(invertDriveMotor);
     // this.driveMotor.setIdleMode(IdleMode.kBrake);
@@ -301,7 +312,11 @@ public class SwerveModule extends VirtualSubsystem {
     //     this.commandedState.speedMetersPerSecond, ControlType.kVelocity);
 
     this.driveMotor.setControl(
-        driveVelocityOutput.withVelocity(this.commandedState.speedMetersPerSecond));
+        driveVelocityOutput
+            .withVelocity(
+                this.commandedState.speedMetersPerSecond
+                    / Constants.SwerveModuleConstants.kDriveVelocityConversionFactor)
+            .withEnableFOC(false));
 
     this.turnController.setSetpoint(this.commandedState.angle.getRadians());
 
