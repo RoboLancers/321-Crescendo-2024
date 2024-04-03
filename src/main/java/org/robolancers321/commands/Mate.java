@@ -3,6 +3,8 @@ package org.robolancers321.commands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
@@ -31,6 +33,7 @@ public class Mate extends SequentialCommandGroup {
         this.sucker.out(),
         this.flywheel.acceptHandoff()
       ).until(this.indexer::exitBeamBroken),
+      new WaitCommand(0.2),
 
         // this.indexer
         //     .acceptHandoff()

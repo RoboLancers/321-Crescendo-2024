@@ -26,7 +26,7 @@ public final class Constants {
         AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
     public static final Transform3d kRobotToCameraTransform = 
-        new Transform3d(-0.34, 0, 0.48, new Rotation3d(0, -32.0 * Math.PI / 180.0, 0)); //0.34, 0 ,-0.48
+        new Transform3d(-0.35, 0, 0.516, new Rotation3d(0, -31.5 * Math.PI / 180.0, Math.PI)); //0.34, 0 ,-0.48
 //0.33, 0.513
     public static final double kNoteCameraMountHeight =
         Units.inchesToMeters(11.0); // rough estimate of camera height while mounted on crate
@@ -107,16 +107,16 @@ public final class Constants {
     public static final float kMinAngle = -7f;
     public static final float kMaxAngle = 182.0f;
 
-    public static final double kP = 0.005; // 0.008
+    public static final double kP = 0.008; // 0.005; // 0.008
     public static final double kI = 0.00;
     public static final double kD = 0.00; // 0.0001
 
     public static final double kS = 0.000;
-    public static final double kG = 0.037; // 0.
+    public static final double kG = 0.03; // 0.037; // 0.
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 400; // 400.0; //180 //120
-    public static final double kMaxAccelerationDeg = 2000; // 2000 //500
+    public static final double kMaxVelocityDeg = 250; // 400.0; //180 //120
+    public static final double kMaxAccelerationDeg = 500; // 2000 //500
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
@@ -124,7 +124,7 @@ public final class Constants {
 
     public enum RetractorSetpoint {
       kRetracted(182),
-      kMating(173),
+      kMating(165), // 173
       kIntake(-6),
       kOuttake(45.0);
 
@@ -168,8 +168,8 @@ public final class Constants {
     public enum FlywheelSetpoint {
       kAcceptHandoff(150), // this is super finicky
       kShiftForward(50),
-      kShiftBackwardFast(-4000),
-      kShiftBackwardSlow(-1000),
+      kShiftBackwardFast(-1500), // -4, -1
+      kShiftBackwardSlow(-800),
       kAmp(1500.0),
       kSpeaker(2500.0),
       kSource(-600),
@@ -234,7 +234,7 @@ public final class Constants {
     public enum PivotSetpoint {
       kRetracted(-23.0),
       kShift(-9.0),
-      kMating(-23.0),
+      kMating(-10.0), // -23
       kAmp(75.0),
       kTrap(75.0),
       kSpeaker(-23.0);
