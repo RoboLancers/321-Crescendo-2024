@@ -261,10 +261,16 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
+
     visionField.setRobotPose(visionEstimate.get().estimatedPose.toPose2d());
 
     this.odometry.addVisionMeasurement(
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
+
+    SmartDashboard.putNumber("vision estimate x", visionEstimate.get().estimatedPose.getX());
+    SmartDashboard.putNumber("vision estimate y", visionEstimate.get().estimatedPose.getY());
+    SmartDashboard.putNumber("vision estimate z", visionEstimate.get().estimatedPose.getZ());
+
   }
 
   private Translation2d getSpeakerPosition() {
@@ -386,7 +392,7 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
-    // this.fuseVision();
+    this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 

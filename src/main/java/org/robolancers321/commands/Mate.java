@@ -26,17 +26,26 @@ public class Mate extends SequentialCommandGroup {
     this.addCommands(
         this.flywheel.off(),
         new ParallelCommandGroup(this.retractor.moveToMating(), this.pivot.moveToMating()),
-        this.indexer
-            .acceptHandoff()
-            .alongWith(this.sucker.out(), this.flywheel.acceptHandoff())
-            .until(this.indexer::exitBeamBroken),
+      new ParallelCommandGroup(
+        this.indexer.acceptHandoff(),
+        this.sucker.out(),
+        this.flywheel.acceptHandoff()
+      ).until(this.indexer::exitBeamBroken),
+
+        // this.indexer
+        //     .acceptHandoff()
+        //     .alongWith(this.sucker.out(), this.flywheel.acceptHandoff())
+        //     .until(this.indexer::exitBeamBroken),
+
+
         // new ParallelDeadlineGroup(
         //     this.indexer.acceptHandoff(), this.sucker.out(), this.flywheel.acceptHandoff()),
         // new ParallelDeadlineGroup(
         //     this.indexer.shiftFromHandoffForward(),
         //     this.sucker.out(),
         //     this.flywheel.shiftForward()),
-        this.sucker.off(),
+
+        this.sucker.offInstantly(),
         this.indexer.off(),
         this.flywheel.off(),
         new ParallelCommandGroup(this.retractor.moveToRetracted()));

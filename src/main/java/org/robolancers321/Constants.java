@@ -25,9 +25,9 @@ public final class Constants {
     public static final AprilTagFieldLayout kAprilTagFieldLayout =
         AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
-    public static final Transform3d kRobotToCameraTransform =
-        new Transform3d(0.34, 0, -0.48, new Rotation3d(0, 40.0 * Math.PI / 180.0, Math.PI));
-
+    public static final Transform3d kRobotToCameraTransform = 
+        new Transform3d(-0.34, 0, 0.48, new Rotation3d(0, -32.0 * Math.PI / 180.0, 0)); //0.34, 0 ,-0.48
+//0.33, 0.513
     public static final double kNoteCameraMountHeight =
         Units.inchesToMeters(11.0); // rough estimate of camera height while mounted on crate
     public static final double kNoteCameraMountPitch =
@@ -55,7 +55,7 @@ public final class Constants {
 
     public static double kSecondOrderKinematicsDt = 0.2;
 
-    public static final double kTranslationP = 5.0; // 1.15
+    public static final double kTranslationP = 1.8; // 1.15
     public static final double kTranslationI = 0.0;
     public static final double kTranslationD = 0.0; // 0.0
 
@@ -78,7 +78,8 @@ public final class Constants {
     public static final double kWheelRadiusMeters = Units.inchesToMeters(2.0);
     public static final double kGearRatio = 6.12;
     public static final double kDrivePositionConversionFactor =
-        2 * Math.PI * kWheelRadiusMeters / kGearRatio;
+        2 * Math.PI * kWheelRadiusMeters;
+        // / kGearRatio;
     public static final double kDriveVelocityConversionFactor = 2 * Math.PI * kWheelRadiusMeters;
     // 2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
     public static final double kTurnPositionConversionFactor = 7.0 / 150.0;

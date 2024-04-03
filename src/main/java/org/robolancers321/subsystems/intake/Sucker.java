@@ -64,6 +64,7 @@ public class Sucker extends SubsystemBase {
   private void doSendables() {
     SmartDashboard.putNumber("sucker rpm", this.getVelocityRPM());
     SmartDashboard.putBoolean("sucker detects note", this.noteDetected());
+    SmartDashboard.putNumber("sucker output", this.motor.get());
   }
 
   @Override
@@ -98,10 +99,10 @@ public class Sucker extends SubsystemBase {
   public Command out() {
     return run(() -> {
           this.motor.set(SuckerConstants.kOutSpeed);
-        })
-        .finallyDo(
-            () -> {
-              this.motor.set(0.0);
-            });
+        });
+        // .finallyDo(
+        //     () -> {
+        //       this.motor.set(0.0);
+        //     });
   }
 }
