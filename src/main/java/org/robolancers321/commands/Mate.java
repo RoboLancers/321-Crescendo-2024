@@ -27,6 +27,7 @@ public class Mate extends SequentialCommandGroup {
 
     this.addCommands(
         this.flywheel.off(),
+        this.indexer.off(),
         new ParallelCommandGroup(this.retractor.moveToMating(), this.pivot.moveToMating()),
       new ParallelCommandGroup(
         this.indexer.acceptHandoff(),

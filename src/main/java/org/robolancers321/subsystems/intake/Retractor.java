@@ -212,7 +212,7 @@ public class Retractor extends SubsystemBase {
             RetractorConstants.kMaxAngle));
   }
 
-  private Command moveToAngle(DoubleSupplier angleDegSupplier) {
+  public Command moveToAngle(DoubleSupplier angleDegSupplier) {
     return new SequentialCommandGroup(
         new InstantCommand(
             () ->
@@ -231,7 +231,7 @@ public class Retractor extends SubsystemBase {
             .until(this::atGoal));
   }
 
-  private Command moveToAngle(double angleDeg) {
+  public Command moveToAngle(double angleDeg) {
     return this.moveToAngle(() -> angleDeg);
   }
 
@@ -249,6 +249,10 @@ public class Retractor extends SubsystemBase {
 
   public Command moveToOuttake() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kOuttake.angle);
+  }
+
+  public Command moveToSpeaker() {
+    return this.moveToAngle(RetractorConstants.RetractorSetpoint.kSpeaker.angle);
   }
 
   public Command tuneControllers() {

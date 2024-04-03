@@ -126,7 +126,8 @@ public final class Constants {
       kRetracted(182),
       kMating(165), // 173
       kIntake(-6),
-      kOuttake(45.0);
+      kOuttake(45.0),
+      kSpeaker(173);
 
       public final double angle;
 
@@ -168,9 +169,9 @@ public final class Constants {
     public enum FlywheelSetpoint {
       kAcceptHandoff(150), // this is super finicky
       kShiftForward(50),
-      kShiftBackwardFast(-1500), // -4, -1
-      kShiftBackwardSlow(-800),
-      kAmp(1500.0),
+      kShiftBackwardFast(-800), // -4, -1
+      kShiftBackwardSlow(-400),
+      kAmp(2500.0),
       kSpeaker(2500.0),
       kSource(-600),
       kFeeder(4000);
@@ -195,9 +196,9 @@ public final class Constants {
     public static final double kFF = 0.000153;
 
     public static final double kHandoffRPM = 2000;
-    public static final double kShiftBackFromExitRPM = -450;
+    public static final double kShiftBackFromExitRPM = -250;
     public static final double kShiftBackToEntranceRPM = -100;
-    public static final double kShiftForwardFromEntranceRPM = 200;
+    public static final double kShiftForwardFromEntranceRPM = 500;
     public static final double kOuttakeRPM = 3000;
 
     public static final double kTrapRPM = -3000;
@@ -214,7 +215,7 @@ public final class Constants {
     public static final double kGearRatio = 360.0;
 
     public static final float kMinAngle = -23f;
-    public static final float kMaxAngle = 75f;
+    public static final float kMaxAngle = 77f;
 
     public static final double kP = 0.04; // 0.04
     public static final double kI = 0.0;
@@ -235,7 +236,7 @@ public final class Constants {
       kRetracted(-23.0),
       kShift(-9.0),
       kMating(-10.0), // -23
-      kAmp(75.0),
+      kAmp(77.0),
       kTrap(75.0),
       kSpeaker(-23.0);
 
@@ -252,10 +253,15 @@ public final class Constants {
     public static final double kMaxDistance = 5.4;
 
     public static final class PivotAngleCoefficients {
-      public static final double kA = 22.0871;
-      public static final double kB = 0.909774;
-      public static final double kC = -1.47466;
-      public static final double kD = -10.4318;
+      public static final double kA = 12.11;
+      public static final double kB = 1.95;
+      public static final double kC = -2.79;
+      public static final double kD = -15.58;
+
+      // public static final double kA = 22.0871;
+      // public static final double kB = 0.909774;
+      // public static final double kC = -1.47466;
+      // public static final double kD = -10.4318;
 
       // public static final double kA = -22.6139;
       // public static final double kB = -0.826057;

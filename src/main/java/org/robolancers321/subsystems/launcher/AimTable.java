@@ -67,10 +67,13 @@ public class AimTable {
     if (distance > AimConstants.kMaxDistance)
       return interpolateFlywheelRPM(AimConstants.kMaxDistance);
 
-    return AimConstants.FlywheelRPMCoefficients.kA
-            * Math.atan(
-                AimConstants.FlywheelRPMCoefficients.kB * distance
-                    + AimConstants.FlywheelRPMCoefficients.kC)
-        + AimConstants.FlywheelRPMCoefficients.kD;
+    if (distance > 2.35) return 2500;
+    return 2400;
+
+    // return AimConstants.FlywheelRPMCoefficients.kA
+    //         * Math.atan(
+    //             AimConstants.FlywheelRPMCoefficients.kB * distance
+    //                 + AimConstants.FlywheelRPMCoefficients.kC)
+    //     + AimConstants.FlywheelRPMCoefficients.kD;
   }
 }

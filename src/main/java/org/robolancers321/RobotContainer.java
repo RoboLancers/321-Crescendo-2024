@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
+import org.robolancers321.Constants.IndexerConstants;
 import org.robolancers321.Constants.PivotConstants;
+import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
 import org.robolancers321.commands.AutoPickupNote;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.FeederShot;
@@ -113,9 +115,9 @@ public class RobotContainer {
 
     // note in sucker, solid white
     LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(50, 255, 255)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(100, 150, 150)));
 
-    // flywheel is revving, solid yellow
+    // flywheel is revving, strobe green
     LED.registerSignal(
         4,
         () ->
@@ -124,7 +126,7 @@ public class RobotContainer {
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
         LED.strobe(Section.FULL, new Color(0, 255, 0)));
 
-    // flywheel is revved, blink green
+    // flywheel is revved, solid green
     LED.registerSignal(
         5,
         () ->
@@ -155,12 +157,15 @@ public class RobotContainer {
               return 0.0;
             }));
 
-    this.retractor.setDefaultCommand(this.retractor.moveToMating());
+    this.retractor.setDefaultCommand(
+      this.retractor.moveToRetracted()
+      );
+
     this.pivot.setDefaultCommand(
         this.pivot.aimAtSpeaker(
             () -> {
               if (this.indexer.entranceBeamNotBroken())
-                return PivotConstants.PivotSetpoint.kShift.angle;
+                return PivotConstants.PivotSetpoint.kRetracted.angle;
 
               if (this.drivetrain.getDistanceToSpeaker() < 4.0)
                 return AimTable.interpolatePivotAngle(this.drivetrain.getDistanceToSpeaker());
