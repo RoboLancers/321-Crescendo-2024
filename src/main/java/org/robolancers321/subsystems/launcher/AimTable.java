@@ -67,7 +67,6 @@ public class AimTable {
     if (distance > AimConstants.kMaxDistance)
       return interpolateFlywheelRPM(AimConstants.kMaxDistance);
 
-    if (distance > 2.35) return 2500;
     return 2400;
 
     // return AimConstants.FlywheelRPMCoefficients.kA

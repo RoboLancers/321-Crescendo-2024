@@ -151,7 +151,7 @@ public class RobotContainer {
 
               if (this.drivetrain.getDistanceToSpeaker() < 4.0)
                 return Math.min(
-                    0.7 * AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()),
+                    0.85 * AimTable.interpolateFlywheelRPM(this.drivetrain.getDistanceToSpeaker()),
                     2000);
 
               return 0.0;

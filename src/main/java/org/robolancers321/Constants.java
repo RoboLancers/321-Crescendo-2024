@@ -249,14 +249,20 @@ public final class Constants {
   }
 
   public static final class AimConstants {
-    public static final double kMinDistance = 1.3;
-    public static final double kMaxDistance = 5.4;
+    public static final double kMinDistance = 1.00;
+    public static final double kMaxDistance = 2.6;
 
     public static final class PivotAngleCoefficients {
-      public static final double kA = 12.11;
-      public static final double kB = 1.95;
-      public static final double kC = -2.79;
-      public static final double kD = -15.58;
+      public static final double kA = 8.31998;
+      public static final double kB = 3.60133;
+      public static final double kC = -5.22848;
+      public static final double kD = -14.9893;
+
+      // with 5th point
+      // public static final double kA = 12.1173;
+      // public static final double kB = 1.95352;
+      // public static final double kC = -2.79434;
+      // public static final double kD = -15.5831;
 
       // public static final double kA = 22.0871;
       // public static final double kB = 0.909774;
