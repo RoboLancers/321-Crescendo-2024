@@ -403,10 +403,10 @@ public class RobotContainer {
     this.autoChooser.addOption("4 piece mid", new FourMid());
     this.autoChooser.addOption("score and taxi top", new TopTaxi());
     this.autoChooser.addOption("score and taxi bottom", new BotTaxi());
-    this.autoChooser.addOption("4 piece top", new FourTop());
+    // this.autoChooser.addOption("4 piece top", new FourTop());
     // this.autoChooser.addOption("4 piece bottom", new FourBottom());
     // this.autoChooser.addOption("3 piece top center first", new ThreeTopCenter());
-    this.autoChooser.addOption("3 piece bot center first", new ThreeBotCenter());
+    // this.autoChooser.addOption("3 piece bot center first", new ThreeBotCenter());
 
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
