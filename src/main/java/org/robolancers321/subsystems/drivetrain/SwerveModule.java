@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -151,15 +152,21 @@ public class SwerveModule extends VirtualSubsystem {
     // stator for heat issues or acceleration
     final var currentLimitConfig =
         new CurrentLimitsConfigs()
-            .withSupplyCurrentLimit(40)
+            .withSupplyCurrentLimit(60)
             .withSupplyCurrentLimitEnable(true)
-            .withStatorCurrentLimit(40)
+            .withStatorCurrentLimit(60)
             .withStatorCurrentLimitEnable(true);
+    
+    final var torqueCurrentLimitConfig =
+        new TorqueCurrentConfigs()
+            .withPeakForwardTorqueCurrent(60)
+            .withPeakReverseTorqueCurrent(60);
 
     config.apply(outputConfig);
     config.apply(feedbackConfig);
     config.apply(drivePIDConfig);
     config.apply(currentLimitConfig);
+    config.apply(torqueCurrentLimitConfig);
 
     // this.driveMotor.setInverted(invertDriveMotor);
     // this.driveMotor.setIdleMode(IdleMode.kBrake);
@@ -188,7 +195,7 @@ public class SwerveModule extends VirtualSubsystem {
       double turnEncoderOffset) {
     this.turnMotor.setInverted(invertTurnMotor);
     this.turnMotor.setIdleMode(IdleMode.kBrake);
-    this.turnMotor.setSmartCurrentLimit(40);
+    this.turnMotor.setSmartCurrentLimit(20);
     this.turnMotor.enableVoltageCompensation(12);
 
     CANcoderConfiguration config = SwerveModuleConstants.kCANCoderConfig;
