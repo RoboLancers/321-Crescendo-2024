@@ -25,6 +25,7 @@ public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
     this.flywheel = Flywheel.getInstance();
     this.drivetrain = Drivetrain.getInstance();
 
+    // NOTE: actual usage of these are now inside of aim table
     SmartDashboard.putNumber("tuning pivot angle", 0);
     SmartDashboard.putNumber("tuning flywheel rpm", 0);
 

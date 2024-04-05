@@ -23,7 +23,7 @@ public class FeederShot extends ParallelCommandGroup {
     this.flywheel = Flywheel.getInstance();
 
     this.addCommands(
-        flywheel.revSpeakerFromRPM(() -> FlywheelSetpoint.kFeeder.rpm),
+        flywheel.revFeeder(),
         retractor.moveToMating(),
         pivot.aimAtSpeakerFixed(),
         Commands.idle());
