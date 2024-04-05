@@ -3,6 +3,8 @@ package org.robolancers321.subsystems.launcher;
 
 import org.robolancers321.Constants.AimConstants;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class AimTable {
   // unit test
   public static void main(String[] args) {
@@ -47,6 +49,8 @@ public class AimTable {
   }
 
   public static double interpolatePivotAngle(double distance) {
+    // return SmartDashboard.getNumber("tuning pivot angle", 0.0);
+
     if (Double.isNaN(distance) || distance < AimConstants.kMinDistance)
       return interpolatePivotAngle(AimConstants.kMinDistance);
 
@@ -61,6 +65,8 @@ public class AimTable {
   }
 
   public static double interpolateFlywheelRPM(double distance) {
+    // return SmartDashboard.getNumber("tuning flywheel rpm", 0.0);
+
     if (Double.isNaN(distance) || distance < AimConstants.kMinDistance)
       return interpolateFlywheelRPM(AimConstants.kMinDistance);
 
@@ -68,6 +74,9 @@ public class AimTable {
       return interpolateFlywheelRPM(AimConstants.kMaxDistance);
 
     return 2400;
+
+
+
 
     // return AimConstants.FlywheelRPMCoefficients.kA
     //         * Math.atan(

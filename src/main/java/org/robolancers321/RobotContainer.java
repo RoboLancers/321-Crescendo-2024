@@ -284,10 +284,10 @@ public class RobotContainer {
                     Commands.idle(this.pivot, this.flywheel))
                 .unless(() -> climbing));
 
-    new Trigger(this.manipulatorController::getLeftBumper)
+    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
         .whileTrue(new FeederShot().unless(() -> climbing));
-    new Trigger(this.manipulatorController::getLeftBumper)
+    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
         .onFalse(
             new ParallelDeadlineGroup(

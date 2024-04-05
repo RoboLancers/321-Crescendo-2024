@@ -4,6 +4,9 @@ package org.robolancers321.commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
 import org.robolancers321.subsystems.launcher.Flywheel;
@@ -30,7 +33,7 @@ public class ScoreSpeakerFixedAuto extends SequentialCommandGroup {
             this.flywheel.revSpeaker(),
             this.retractor.moveToSpeaker(),
             this.pivot.aimAtSpeakerFixed()),
-        new ParallelDeadlineGroup(this.indexer.acceptHandoff(), this.sucker.out())
+        new ParallelDeadlineGroup((new WaitUntilCommand(this.indexer::exitBeamBroken).andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken)).andThen(new WaitCommand(0.1))).withTimeout(1.0), this.indexer.acceptHandoff(), this.sucker.out())
         // this.indexer.off() // ,
         // stay revved during auto
         // this.flywheel.off()

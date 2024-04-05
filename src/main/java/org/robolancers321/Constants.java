@@ -171,10 +171,10 @@ public final class Constants {
       kShiftForward(50),
       kShiftBackwardFast(-800), // -4, -1
       kShiftBackwardSlow(-400),
-      kAmp(2500.0),
+      kAmp(900.0),
       kSpeaker(2500.0),
       kSource(-600),
-      kFeeder(4000);
+      kFeeder(3400);
 
       public final double rpm;
 
