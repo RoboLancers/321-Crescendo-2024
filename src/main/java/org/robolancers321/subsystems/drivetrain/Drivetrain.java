@@ -117,9 +117,10 @@ public class Drivetrain extends SubsystemBase {
 
   public void configureGyro() {
     this.gyro.zeroYaw();
-    this.gyro.setAngleAdjustment(0.0);
+    this.gyro.setAngleAdjustment(180.0); // bruh
   }
 
+  // TODO: what the fuckkkkk why is this
   public void setYaw(double angle) {
     this.gyro.zeroYaw();
     this.gyro.setAngleAdjustment(angle);
@@ -139,7 +140,7 @@ public class Drivetrain extends SubsystemBase {
         this::getPose,
         this::resetPose,
         this::getChassisSpeeds,
-        this::drive,
+        this::driveFromSpeeds,
         new HolonomicPathFollowerConfig(
             new PIDConstants(
                 DrivetrainConstants.kTranslationP,
@@ -171,7 +172,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public double getYawDeg() {
-    return this.gyro.getYaw();
+    return this.gyro.getAngle();
   }
 
   public Pose2d getPose() {
@@ -212,7 +213,7 @@ public class Drivetrain extends SubsystemBase {
     this.backLeft.update(states[3]);
   }
 
-  private void drive(
+  private void driveFromInput(
       double desiredThrottleMPS,
       double desiredStrafeMPS,
       double desiredOmegaRadPerSec,
@@ -237,13 +238,13 @@ public class Drivetrain extends SubsystemBase {
     ChassisSpeeds speeds =
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                correctedStrafe, correctedThrottle, correctedOmega, this.gyro.getRotation2d())
+                correctedStrafe, correctedThrottle, correctedOmega, Rotation2d.fromDegrees(-(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment()) + 180))
             : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
 
-    this.drive(speeds);
+    this.driveFromSpeeds(speeds);
   }
 
-  private void drive(ChassisSpeeds speeds) {
+  private void driveFromSpeeds(ChassisSpeeds speeds) {
     SwerveModuleState[] states = DrivetrainConstants.kSwerveKinematics.toSwerveModuleStates(speeds);
 
     SwerveDriveKinematics.desaturateWheelSpeeds(
@@ -367,6 +368,8 @@ public class Drivetrain extends SubsystemBase {
 
   private void doSendables() {
     SmartDashboard.putNumber("drive heading (deg)", this.getYawDeg());
+    SmartDashboard.putNumber("internal navx sensor yaw", this.gyro.getYaw());
+    SmartDashboard.putNumber("internal navx angle adjustment", this.gyro.getAngleAdjustment());
 
     Pose2d odometryPose = this.getPose();
 
@@ -409,7 +412,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command stop() {
-    return runOnce(() -> this.drive(0.0, 0.0, 0.0, false));
+    return runOnce(() -> this.driveFromInput(0.0, 0.0, 0.0, false));
   }
 
   public Command teleopDrive(XboxController controller, boolean fieldCentric) {
@@ -444,7 +447,7 @@ public class Drivetrain extends SubsystemBase {
                           * multiplier)
                   .rotateBy(Rotation2d.fromDegrees(90.0));
 
-          this.drive(strafeVec.getX(), strafeVec.getY(), omega, true);
+          this.driveFromInput(strafeVec.getX(), strafeVec.getY(), omega, true);
         })
         .finallyDo(this::stop);
   }
@@ -456,7 +459,7 @@ public class Drivetrain extends SubsystemBase {
       BooleanSupplier fieldRelativeSupplier) {
     return run(
         () ->
-            this.drive(
+            this.driveFromInput(
                 throttleSupplier.getAsDouble(),
                 strafeSupplier.getAsDouble(),
                 omegaSupplier.getAsDouble(),
@@ -474,7 +477,7 @@ public class Drivetrain extends SubsystemBase {
                   double headingControllerOutput =
                       -this.headingController.calculate(this.getYawDeg(), angle);
 
-                  this.drive(0.0, 0.0, headingControllerOutput, true);
+                  this.driveFromInput(0.0, 0.0, headingControllerOutput, true);
                 })
                 .until(this.headingController::atSetpoint));
   }
@@ -484,7 +487,7 @@ public class Drivetrain extends SubsystemBase {
           double headingControllerOutput =
               -this.headingController.calculate(this.getNoteAngle(), 0.0);
 
-          this.drive(0.0, 1.5, headingControllerOutput, false);
+          this.driveFromInput(0.0, 1.5, headingControllerOutput, false);
         })
         .until(() -> !this.seesNote())
         .withTimeout(2.5);
@@ -498,7 +501,7 @@ public class Drivetrain extends SubsystemBase {
                   double headingControllerOutput =
                       -this.headingController.calculate(angleSupplier.getAsDouble(), 0.0);
 
-                  this.drive(0.0, 0.0, headingControllerOutput, true);
+                  this.driveFromInput(0.0, 0.0, headingControllerOutput, true);
                 }))
         .until(this.headingController::atSetpoint);
   }

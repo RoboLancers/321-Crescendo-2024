@@ -323,7 +323,7 @@ public class SwerveModule extends VirtualSubsystem {
             .withVelocity(
                 this.commandedState.speedMetersPerSecond
                     / Constants.SwerveModuleConstants.kDriveVelocityConversionFactor)
-            .withEnableFOC(false));
+            .withEnableFOC(true));
 
     this.turnController.setSetpoint(this.commandedState.angle.getRadians());
 

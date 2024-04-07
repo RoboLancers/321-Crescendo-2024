@@ -3,16 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7023114046228107,
-        "y": 4.410523436431489
+        "x": 0.7284778050297884,
+        "y": 4.42669621430541
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.142885055000881,
-        "y": 2.397667103026514
+        "x": 1.7121880748754355,
+        "y": 3.372720925185073
       },
       "isLocked": false,
       "linkedName": "BotStart"
+    },
+    {
+      "anchor": {
+        "x": 5.365969077159265,
+        "y": 0.7893554248646963
+      },
+      "prevControl": {
+        "x": 4.402885297205359,
+        "y": 0.7993875475725486
+      },
+      "nextControl": {
+        "x": 6.49020938555429,
+        "y": 0.777644588318916
+      },
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,15 +36,21 @@
         "y": 0.7893554248646963
       },
       "prevControl": {
-        "x": 4.856294327973273,
-        "y": 1.2136339657294701
+        "x": 7.181148741755401,
+        "y": 0.7963368851131419
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "3BotCenter.1End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -40,10 +62,10 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 0,
-    "rotateFast": true
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "3BotCenter.Fixed",
   "previewStartingState": {
     "rotation": -63.06,
     "velocity": 0

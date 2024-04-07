@@ -34,6 +34,12 @@
           "data": {
             "pathName": "4Top.5"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4Top.6"
+          }
         }
       ]
     }

@@ -87,7 +87,7 @@ public final class Constants {
     public static final double kDriveP = 0.00;
     public static final double kDriveI = 0.00;
     public static final double kDriveD = 0.00;
-    public static final double kDriveFF = 0.71; // 0.198
+    public static final double kDriveFF = 0.751; // 0.712;
 
     public static final double kTurnP = 0.50;
     public static final double kTurnI = 0.00;
@@ -107,27 +107,28 @@ public final class Constants {
     public static final float kMinAngle = -7f;
     public static final float kMaxAngle = 182.0f;
 
-    public static final double kP = 0.008; // 0.005; // 0.008
+    public static final double kP = 0.007; // 0.005; // 0.007
     public static final double kI = 0.00;
     public static final double kD = 0.00; // 0.0001
 
     public static final double kS = 0.000;
-    public static final double kG = 0.03; // 0.037; // 0.
+    public static final double kG = 0.02; // 0.037; // 0.02
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 250; // 400.0; //180 //120
-    public static final double kMaxAccelerationDeg = 500; // 2000 //500
+    public static final double kMaxVelocityDeg = 900; //120 //250
+    public static final double kMaxAccelerationDeg = 10000;  //500
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 
-    public static final double kToleranceDeg = 5.0;
+    public static final double kToleranceDeg = 6.0;
 
     public enum RetractorSetpoint {
       kRetracted(182),
       kMating(165), // 173
       kIntake(-6),
       kOuttake(45.0),
-      kSpeaker(173);
+      kSpeaker(173),
+      kAmp(107.0);
 
       public final double angle;
 
@@ -148,6 +149,8 @@ public final class Constants {
     public static final double kInSpeed = 1.0;
     public static final double kOutSpeed = -1.0;
 
+    public static final double kAmpShot = -0.6;
+
     // public static final double kFF = 0.00017;
 
     // public static final double kInRPM = 2000;
@@ -164,7 +167,7 @@ public final class Constants {
         10000000; // effectively infinite ramp up, keeping this for the infrastructure
 
     public static final double kFF = 0.0001502;
-    public static final double kToleranceRPM = 60.0;
+    public static final double kToleranceRPM = 80.0;
 
     public enum FlywheelSetpoint {
       kAcceptHandoff(150), // this is super finicky
@@ -174,7 +177,7 @@ public final class Constants {
       kAmp(900.0),
       kSpeaker(2500.0),
       kSource(-600),
-      kFeeder(3400);
+      kFeeder(3200);
 
       public final double rpm;
 
@@ -235,7 +238,7 @@ public final class Constants {
     public enum PivotSetpoint {
       kRetracted(-23.0),
       kShift(-9.0),
-      kMating(-10.0), // -23
+      kMating(-7.0), // -23
       kAmp(77.0),
       kTrap(75.0),
       kSpeaker(-23.0);

@@ -7,7 +7,10 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import java.util.List;
+
+import org.robolancers321.commands.AutoCommands.PathAndIntake;
 import org.robolancers321.commands.AutoCommands.PathAndMate;
+import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.commands.AutoCommands.PathAndShoot;
 import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
@@ -40,12 +43,12 @@ public class FourBottom extends SequentialCommandGroup {
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())),
         new ScoreSpeakerFixedAuto(),
-        new PathAndShoot(pathGroup.get(0)),
-        AutoBuilder.followPath(pathGroup.get(1)),
-        new PathAndMate(pathGroup.get(2)),
-        new ScoreSpeakerFromDistance(),
-        AutoBuilder.followPath(pathGroup.get(3)),
-        new PathAndMate(pathGroup.get(4)),
-        new ScoreSpeakerFromDistance());
+        new PathAndIntake(pathGroup.get(0)),
+        new PathAndRetract(pathGroup.get(1)),
+        new ScoreSpeakerFixedAuto(),
+        new PathAndIntake(pathGroup.get(2)),
+        new PathAndRetract(pathGroup.get(3)),
+        new ScoreSpeakerFixedAuto()
+    );
   }
 }

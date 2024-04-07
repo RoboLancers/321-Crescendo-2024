@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -46,6 +47,7 @@ public class Retractor extends SubsystemBase {
   private TrapezoidProfile motionProfile;
   private TrapezoidProfile.State previousReference;
   private TrapezoidProfile.State goalReference;
+  private Timer timer;
 
   private Retractor() {
     this.motor = new CANSparkMax(RetractorConstants.kMotorPort, kBrushless);
@@ -62,6 +64,9 @@ public class Retractor extends SubsystemBase {
     this.configureEncoder();
     this.configureController();
     this.motor.burnFlash();
+
+    this.timer = new Timer();
+    this.timer.start();
   }
 
   private void configureMotor() {
@@ -112,8 +117,23 @@ public class Retractor extends SubsystemBase {
     return this.encoder.getVelocity();
   }
 
-  private boolean atGoal() {
+  public boolean atGoal() {
     return Math.abs(goalReference.position - getPositionDeg()) < RetractorConstants.kToleranceDeg;
+  }
+
+  public double getGoal(){
+    return goalReference.position;
+  }
+
+  public boolean atGoalTimed(double seconds){
+    if(atGoal()){
+     return this.timer.get() > seconds;
+    } 
+
+    else{
+      timer.reset();
+      return false;
+    }
   }
 
   private void setGoal(double position) {
@@ -146,6 +166,8 @@ public class Retractor extends SubsystemBase {
     SmartDashboard.putNumber("retractor position (deg)", this.getPositionDeg());
     SmartDashboard.putNumber("retractor velocity (deg)", this.getVelocityDeg());
     SmartDashboard.putNumber("retractor position actual", this.encoder.getPosition());
+    SmartDashboard.putBoolean("timer elapsed", atGoalTimed(3));
+    SmartDashboard.putNumber("timer seconds ", timer.get());
   }
 
   @Override
@@ -253,6 +275,10 @@ public class Retractor extends SubsystemBase {
 
   public Command moveToSpeaker() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kSpeaker.angle);
+  }
+
+  public Command moveToAmp(){
+    return this.moveToAngle(RetractorConstants.RetractorSetpoint.kAmp.angle);
   }
 
   public Command tuneControllers() {

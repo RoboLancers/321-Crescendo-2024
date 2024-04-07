@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.934780484945588,
-        "y": 2.4272679314589416
+        "x": 0.8690078435791664,
+        "y": 4.438407050851191
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.204626716945742,
-        "y": 2.0029893905941654
+        "x": 0.13885407557932078,
+        "y": 4.014128509986414
       },
       "isLocked": false,
       "linkedName": "4Bot.4End"
@@ -70,7 +70,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "4Bot.Fixed",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

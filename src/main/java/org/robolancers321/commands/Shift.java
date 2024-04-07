@@ -30,6 +30,7 @@ public class Shift extends SequentialCommandGroup {
             .until(this.indexer::entranceBeamBroken),
         new WaitCommand(0.2),
         this.indexer.off(),
+        new WaitCommand(0.2),
         this.flywheel.off()
         );
 

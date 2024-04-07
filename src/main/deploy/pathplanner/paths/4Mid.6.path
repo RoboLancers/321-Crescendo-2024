@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "4PieceMid.Fixed",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

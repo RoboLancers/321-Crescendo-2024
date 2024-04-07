@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7417791758660457,
-        "y": 6.689787225728298
+        "x": 0.9626945359454185,
+        "y": 6.593200975274989
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.182352826244115,
-        "y": 6.887126081944472
+        "x": 2.403268186323488,
+        "y": 6.790539831491163
       },
       "isLocked": false,
       "linkedName": "4Top.2End"
@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": null,
+  "folder": "4Top.Fixed",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

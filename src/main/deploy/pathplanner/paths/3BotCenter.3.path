@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7319122330552369,
-        "y": 4.410523436431489
+        "x": 0.904140353216511,
+        "y": 4.485250397034318
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.389558625271098,
-        "y": 2.664074558918349
+        "x": 2.5617867454323724,
+        "y": 2.7388015195211786
       },
       "isLocked": false,
       "linkedName": "3BotCenter.2End"
@@ -36,8 +36,8 @@
         "y": 2.476602645512984
       },
       "prevControl": {
-        "x": 7.017154803540378,
-        "y": 2.091791875891445
+        "x": 7.33338961685056,
+        "y": 2.435854001522554
       },
       "nextControl": null,
       "isLocked": false,
@@ -59,7 +59,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": null,
+  "folder": "3BotCenter.Fixed",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

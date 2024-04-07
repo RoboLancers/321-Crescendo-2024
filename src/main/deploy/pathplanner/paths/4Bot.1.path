@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7023114046228107,
-        "y": 4.410523436431489
+        "x": 0.7284778050297884,
+        "y": 4.42669621430541
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7580742853793416,
-        "y": 4.144115980539654
+        "x": 1.2905979592273011,
+        "y": 4.169057810298216
       },
       "isLocked": false,
       "linkedName": "BotStart"
@@ -20,15 +20,21 @@
         "y": 4.134249037728845
       },
       "prevControl": {
-        "x": 1.6298040288388285,
-        "y": 4.153982923350462
+        "x": 1.9581156423368469,
+        "y": 4.122214464115091
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "4Bot.1End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -43,7 +49,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "4Bot.Fixed",
   "previewStartingState": {
     "rotation": -63.06,
     "velocity": 0
