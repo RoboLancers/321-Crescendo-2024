@@ -65,10 +65,10 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "3TopCenter.Fixed",
+  "folder": "3TopCenter",
   "previewStartingState": {
     "rotation": 60.59,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

@@ -1,7 +1,8 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import static org.robolancers321.util.MathUtils.epsilonEquals;
+
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
@@ -17,11 +18,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import static org.robolancers321.util.MathUtils.epsilonEquals;
-
 import org.robolancers321.Constants.FlywheelConstants;
-import org.robolancers321.Constants.IndexerConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
@@ -32,6 +29,7 @@ import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
+import org.robolancers321.commands.PPAutos.BotDisrupt;
 import org.robolancers321.commands.PPAutos.BotTaxi;
 import org.robolancers321.commands.PPAutos.FourBottom;
 import org.robolancers321.commands.PPAutos.FourMid;
@@ -39,10 +37,10 @@ import org.robolancers321.commands.PPAutos.FourTop;
 import org.robolancers321.commands.PPAutos.ScoreAndSit;
 import org.robolancers321.commands.PPAutos.ThreeBotCenter;
 import org.robolancers321.commands.PPAutos.ThreeTopCenter;
+import org.robolancers321.commands.PPAutos.TopDisrupt;
 import org.robolancers321.commands.PPAutos.TopTaxi;
 import org.robolancers321.commands.ScoreAmp;
 import org.robolancers321.commands.ScoreAmpIntake;
-import org.robolancers321.commands.ScoreSpeakerFixedAuto;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
@@ -75,7 +73,6 @@ public class RobotContainer {
   private AddressableLEDSim ledSim;
 
   private boolean climbing = false;
-
 
   public RobotContainer() {
     this.drivetrain = Drivetrain.getInstance();
@@ -123,7 +120,9 @@ public class RobotContainer {
 
     // intakeDown, solid orange
     LED.registerSignal(
-        2, () -> epsilonEquals(this.retractor.getPositionDeg(), RetractorSetpoint.kIntake.angle, 30), LED.solid(Section.FULL, new Color(255, 255, 255)));
+        2,
+        () -> epsilonEquals(this.retractor.getPositionDeg(), RetractorSetpoint.kIntake.angle, 30),
+        LED.solid(Section.FULL, new Color(255, 255, 255)));
 
     // note in sucker, solid white
     LED.registerSignal(
@@ -148,10 +147,12 @@ public class RobotContainer {
                     > FlywheelConstants.FlywheelSetpoint.kAcceptHandoff.rpm),
         LED.solid(Section.FULL, new Color(0, 255, 0)));
 
-    LED.registerSignal(6, () -> 
-    this.retractor.atGoalTimed(0.6) && this.retractor.getGoal() == RetractorConstants.RetractorSetpoint.kAmp.angle, 
-    LED.solid(Section.FULL, new Color(20, 0, 50)));
-     
+    LED.registerSignal(
+        6,
+        () ->
+            this.retractor.atGoalTimed(0.6)
+                && this.retractor.getGoal() == RetractorConstants.RetractorSetpoint.kAmp.angle,
+        LED.solid(Section.FULL, new Color(20, 0, 50)));
   }
 
   private void configureDefaultCommands() {
@@ -175,9 +176,8 @@ public class RobotContainer {
             }));
 
     this.retractor.setDefaultCommand(
-      // this.retractor.tuneControllers()
-      this.retractor.moveToSpeaker()
-      );
+        // this.retractor.tuneControllers()
+        this.retractor.moveToSpeaker());
 
     this.pivot.setDefaultCommand(
         this.pivot.aimAtSpeaker(
@@ -265,7 +265,7 @@ public class RobotContainer {
    *
    * Left Trigger hold: rev feeder
    * Left Trigger release: shoot feeder
-   * 
+   *
    * CLIMB MODE
    *
    * Right Joystick Up: move both climbers up
@@ -300,7 +300,10 @@ public class RobotContainer {
         .and(() -> !climbing)
         .onFalse(
             new ParallelDeadlineGroup(
-              (new WaitUntilCommand(this.indexer::exitBeamBroken).andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken)).andThen(new WaitCommand(0.1))).withTimeout(1.0),
+                    (new WaitUntilCommand(this.indexer::exitBeamBroken)
+                            .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
+                            .andThen(new WaitCommand(0.1)))
+                        .withTimeout(1.0),
                     this.indexer.outtake(),
                     this.sucker.out(),
                     Commands.idle(this.pivot, this.flywheel))
@@ -313,22 +316,23 @@ public class RobotContainer {
         .and(() -> !climbing)
         .onFalse(
             new ParallelDeadlineGroup(
-              (new WaitUntilCommand(this.indexer::exitBeamBroken).andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken)).andThen(new WaitCommand(0.1))).withTimeout(1.0),
+                    (new WaitUntilCommand(this.indexer::exitBeamBroken)
+                            .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
+                            .andThen(new WaitCommand(0.1)))
+                        .withTimeout(1.0),
                     this.indexer.outtake(),
                     this.sucker.out(),
                     Commands.idle(this.pivot, this.flywheel))
                 .unless(() -> climbing));
 
-    new Trigger(()-> this.manipulatorController.getRightTriggerAxis() > 0.5)
+    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
         .whileTrue(new ScoreAmpIntake().unless(() -> climbing));
     new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
         .onFalse(
             new ParallelDeadlineGroup(
-              new WaitCommand(0.4),
-                    this.sucker.ampShot(),
-                    Commands.idle(this.retractor))
+                    new WaitCommand(0.4), this.sucker.ampShot(), Commands.idle(this.retractor))
                 .unless(() -> climbing));
 
     new Trigger(() -> this.manipulatorController.getLeftY() < -0.8)
@@ -442,6 +446,8 @@ public class RobotContainer {
     this.autoChooser.addOption("3 piece bottom", new FourBottom());
     this.autoChooser.addOption("3 piece top center only", new ThreeTopCenter());
     this.autoChooser.addOption("3 piece bottom center only", new ThreeBotCenter());
+    this.autoChooser.addOption("top chaos", new TopDisrupt());
+    this.autoChooser.addOption("bottom chaos", new BotDisrupt());
 
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 

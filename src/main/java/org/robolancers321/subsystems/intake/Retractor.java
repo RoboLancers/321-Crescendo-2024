@@ -121,16 +121,14 @@ public class Retractor extends SubsystemBase {
     return Math.abs(goalReference.position - getPositionDeg()) < RetractorConstants.kToleranceDeg;
   }
 
-  public double getGoal(){
+  public double getGoal() {
     return goalReference.position;
   }
 
-  public boolean atGoalTimed(double seconds){
-    if(atGoal()){
-     return this.timer.get() > seconds;
-    } 
-
-    else{
+  public boolean atGoalTimed(double seconds) {
+    if (atGoal()) {
+      return this.timer.get() > seconds;
+    } else {
       timer.reset();
       return false;
     }
@@ -277,7 +275,7 @@ public class Retractor extends SubsystemBase {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kSpeaker.angle);
   }
 
-  public Command moveToAmp(){
+  public Command moveToAmp() {
     return this.moveToAngle(RetractorConstants.RetractorSetpoint.kAmp.angle);
   }
 

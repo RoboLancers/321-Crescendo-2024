@@ -81,7 +81,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "TopTaxi",
   "previewStartingState": {
     "rotation": 60.59,
     "velocity": 0

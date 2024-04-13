@@ -65,7 +65,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "4Bot.Fixed",
+  "folder": "4Bot",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

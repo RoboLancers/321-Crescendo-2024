@@ -1,10 +1,10 @@
 {
     "version": "v0.3",
     "robotConfiguration": {
-        "mass": 53.837263288913476,
+        "mass": 61.73998083590995,
         "rotationalInertia": 5.506392685924157,
-        "motorMaxTorque": 0.7248618784530386,
-        "motorMaxVelocity": 4704,
+        "motorMaxTorque": 1.162295081967213,
+        "motorMaxVelocity": 4800,
         "gearing": 6.12,
         "wheelbase": 0.7873995748042296,
         "trackWidth": 0.7111996159522074,
@@ -1795,7 +1795,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NT-Sweep": {
             "waypoints": [
@@ -2375,7 +2375,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "3NB-Skip": {
             "waypoints": [
@@ -3157,7 +3157,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "3NB-Close": {
             "waypoints": [
@@ -4081,7 +4081,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NB-Sweep": {
             "waypoints": [
@@ -4724,7 +4724,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "3NM-Close": {
             "waypoints": [
@@ -5617,7 +5617,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NT-Skip": {
             "waypoints": [
@@ -6548,7 +6548,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NB-SweepStraight": {
             "waypoints": [
@@ -7220,7 +7220,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NB-Skip": {
             "waypoints": [
@@ -8711,7 +8711,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NM-Sweep": {
             "waypoints": [
@@ -9392,7 +9392,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NM-SweepFender": {
             "waypoints": [
@@ -10338,7 +10338,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NM-SweepFenderStraight": {
             "waypoints": [
@@ -11235,7 +11235,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "4NM-SweepFenderStraightAutoPickup": {
             "waypoints": [
@@ -11898,7 +11898,7 @@
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
             "eventMarkers": [],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "New Path": {
             "waypoints": [

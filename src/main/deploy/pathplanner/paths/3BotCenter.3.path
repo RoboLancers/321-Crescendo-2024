@@ -59,7 +59,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "3BotCenter.Fixed",
+  "folder": "3BotCenter",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

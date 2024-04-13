@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "BotTaxi",
   "previewStartingState": {
     "rotation": -63.06,
     "velocity": 0

@@ -238,7 +238,11 @@ public class Drivetrain extends SubsystemBase {
     ChassisSpeeds speeds =
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                correctedStrafe, correctedThrottle, correctedOmega, Rotation2d.fromDegrees(-(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment()) + 180))
+                correctedStrafe,
+                correctedThrottle,
+                correctedOmega,
+                Rotation2d.fromDegrees(
+                    -(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment()) + 180))
             : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
 
     this.driveFromSpeeds(speeds);
@@ -262,7 +266,6 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
-
     visionField.setRobotPose(visionEstimate.get().estimatedPose.toPose2d());
 
     this.odometry.addVisionMeasurement(
@@ -271,7 +274,6 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("vision estimate x", visionEstimate.get().estimatedPose.getX());
     SmartDashboard.putNumber("vision estimate y", visionEstimate.get().estimatedPose.getY());
     SmartDashboard.putNumber("vision estimate z", visionEstimate.get().estimatedPose.getZ());
-
   }
 
   private Translation2d getSpeakerPosition() {

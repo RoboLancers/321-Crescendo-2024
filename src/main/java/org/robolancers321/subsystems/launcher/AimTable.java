@@ -3,8 +3,6 @@ package org.robolancers321.subsystems.launcher;
 
 import org.robolancers321.Constants.AimConstants;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 public class AimTable {
   // unit test
   public static void main(String[] args) {
@@ -74,9 +72,6 @@ public class AimTable {
       return interpolateFlywheelRPM(AimConstants.kMaxDistance);
 
     return 2400;
-
-
-
 
     // return AimConstants.FlywheelRPMCoefficients.kA
     //         * Math.atan(

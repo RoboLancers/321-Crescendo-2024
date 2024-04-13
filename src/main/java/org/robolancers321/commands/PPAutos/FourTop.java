@@ -53,7 +53,6 @@ public class FourTop extends SequentialCommandGroup {
         new ScoreSpeakerFixedAuto(),
         new PathAndIntake(pathGroup.get(4)),
         new PathAndRetract(pathGroup.get(5)),
-        new ScoreSpeakerFixedAuto()
-      );
+        new ScoreSpeakerFixedAuto());
   }
 }
