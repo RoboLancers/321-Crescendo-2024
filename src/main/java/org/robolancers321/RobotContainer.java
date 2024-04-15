@@ -26,6 +26,7 @@ import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
 import org.robolancers321.commands.AutoPickupNote;
+import org.robolancers321.commands.AutoScoreTrap;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.FeederShot;
 import org.robolancers321.commands.IntakeNote;
@@ -305,6 +306,8 @@ public class RobotContainer {
                     this.sucker.out(),
                     Commands.idle(this.pivot, this.flywheel))
                 .unless(() -> climbing));
+
+    new Trigger(() -> this.manipulatorController.getLeftBumper()).and(() -> !climbing).onTrue(new AutoScoreTrap());
 
     new Trigger(() -> this.manipulatorController.getPOV() == 0)
         .and(() -> !climbing)
