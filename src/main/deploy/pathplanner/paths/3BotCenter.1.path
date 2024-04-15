@@ -65,10 +65,10 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "3BotCenter.Fixed",
+  "folder": "3BotCenter",
   "previewStartingState": {
     "rotation": -63.06,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

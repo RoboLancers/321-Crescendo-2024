@@ -95,15 +95,17 @@ public class Sucker extends SubsystemBase {
               this.motor.set(0.0);
             });
   }
-  
+
   public Command ampShot() {
-    return run(() -> {
+    return run(
+        () -> {
           this.motor.set(SuckerConstants.kAmpShot);
         });
   }
 
   public Command out() {
-    return run(() -> {
+    return run(
+        () -> {
           this.motor.set(SuckerConstants.kOutSpeed);
         });
   }

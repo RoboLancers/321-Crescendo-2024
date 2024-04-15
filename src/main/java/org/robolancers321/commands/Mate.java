@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-
 import org.robolancers321.Constants.PivotConstants.PivotSetpoint;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
 import org.robolancers321.subsystems.intake.Retractor;
@@ -31,27 +30,27 @@ public class Mate extends SequentialCommandGroup {
     SmartDashboard.putNumber("handoff retractor angle", RetractorSetpoint.kMating.angle);
     SmartDashboard.putNumber("handoff pivot angle", PivotSetpoint.kMating.angle);
 
-
     this.addCommands(
         this.flywheel.off(),
         this.indexer.off(),
         new ParallelCommandGroup(
-          this.retractor.moveToAngle(() -> SmartDashboard.getNumber("handoff retractor angle", RetractorSetpoint.kMating.angle)), 
-          this.pivot.moveToAngle(() -> SmartDashboard.getNumber("handoff pivot angle", PivotSetpoint.kMating.angle))
-          ),
-
-      new ParallelCommandGroup(
-        this.indexer.acceptHandoff(),
-        this.sucker.out(),
-        this.flywheel.acceptHandoff()
-      ).until(this.indexer::exitBeamBroken).withTimeout(1.0),
-      new WaitCommand(0.2),
+            this.retractor.moveToAngle(
+                () ->
+                    SmartDashboard.getNumber(
+                        "handoff retractor angle", RetractorSetpoint.kMating.angle)),
+            this.pivot.moveToAngle(
+                () ->
+                    SmartDashboard.getNumber("handoff pivot angle", PivotSetpoint.kMating.angle))),
+        new ParallelCommandGroup(
+                this.indexer.acceptHandoff(), this.sucker.out(), this.flywheel.acceptHandoff())
+            .until(this.indexer::exitBeamBroken)
+            .withTimeout(1.0),
+        new WaitCommand(0.2),
 
         // this.indexer
         //     .acceptHandoff()
         //     .alongWith(this.sucker.out(), this.flywheel.acceptHandoff())
         //     .until(this.indexer::exitBeamBroken),
-
 
         // new ParallelDeadlineGroup(
         //     this.indexer.acceptHandoff(), this.sucker.out(), this.flywheel.acceptHandoff()),

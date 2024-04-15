@@ -1,7 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.drivetrain;
 
-import com.ctre.phoenix.Util;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -24,7 +23,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -240,7 +238,10 @@ public class Drivetrain extends SubsystemBase {
     ChassisSpeeds speeds =
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                correctedStrafe, correctedThrottle, correctedOmega, Rotation2d.fromDegrees(-(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment())))
+                correctedStrafe,
+                correctedThrottle,
+                correctedOmega,
+                Rotation2d.fromDegrees(-(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment())))
             : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
 
     this.driveFromSpeeds(speeds);
@@ -264,7 +265,6 @@ public class Drivetrain extends SubsystemBase {
 
     if (visionEstimate.isEmpty()) return;
 
-
     visionField.setRobotPose(visionEstimate.get().estimatedPose.toPose2d());
 
     this.odometry.addVisionMeasurement(
@@ -273,7 +273,6 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("vision estimate x", visionEstimate.get().estimatedPose.getX());
     SmartDashboard.putNumber("vision estimate y", visionEstimate.get().estimatedPose.getY());
     SmartDashboard.putNumber("vision estimate z", visionEstimate.get().estimatedPose.getZ());
-
   }
 
   private Translation2d getSpeakerPosition() {
@@ -306,26 +305,26 @@ public class Drivetrain extends SubsystemBase {
     private double distance;
     private Pose2d pose;
 
-    public TrapPose(){
+    public TrapPose() {
       this.distance = Double.MAX_VALUE;
       this.pose = new Pose2d();
     }
 
-    public TrapPose(double distance, Pose2d pose){
+    public TrapPose(double distance, Pose2d pose) {
       this.distance = distance;
       this.pose = pose;
     }
 
-    public double getDistance(){
+    public double getDistance() {
       return this.distance;
     }
 
-    public Pose2d getPose(){
+    public Pose2d getPose() {
       return this.pose;
     }
   }
 
-  public TrapPose getClosestTrapPosition(){
+  public TrapPose getClosestTrapPosition() {
     Pose2d[] blueTrapPoses = {
       new Pose2d(new Translation2d(3.7, 2.35), Rotation2d.fromDegrees(-120)),
       // TODO: other jawns
@@ -337,10 +336,12 @@ public class Drivetrain extends SubsystemBase {
 
     TrapPose closestPose = new TrapPose();
 
-    for(int i = 0;i<trapPosesForTeam.length;i++){
-      double distance = trapPosesForTeam[i].getTranslation().getDistance(this.getPose().getTranslation());
+    for (int i = 0; i < trapPosesForTeam.length; i++) {
+      double distance =
+          trapPosesForTeam[i].getTranslation().getDistance(this.getPose().getTranslation());
 
-      if(distance < closestPose.getDistance()) closestPose = new TrapPose(distance, trapPosesForTeam[i]);
+      if (distance < closestPose.getDistance())
+        closestPose = new TrapPose(distance, trapPosesForTeam[i]);
     }
 
     return closestPose;
@@ -614,7 +615,8 @@ public class Drivetrain extends SubsystemBase {
     return AutoBuilder.followPath(path);
   }
 
-  public Command pathfindToTrap(){
-    return AutoBuilder.pathfindToPose(this.getClosestTrapPosition().pose, DrivetrainConstants.kAutoConstraints);
+  public Command pathfindToTrap() {
+    return AutoBuilder.pathfindToPose(
+        this.getClosestTrapPosition().pose, DrivetrainConstants.kAutoConstraints);
   }
 }

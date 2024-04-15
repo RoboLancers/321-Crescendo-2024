@@ -25,9 +25,10 @@ public final class Constants {
     public static final AprilTagFieldLayout kAprilTagFieldLayout =
         AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
-    public static final Transform3d kRobotToCameraTransform = 
-        new Transform3d(-0.35, 0, 0.516, new Rotation3d(0, -31.5 * Math.PI / 180.0, Math.PI)); //0.34, 0 ,-0.48
-//0.33, 0.513
+    public static final Transform3d kRobotToCameraTransform =
+        new Transform3d(
+            -0.35, 0, 0.516, new Rotation3d(0, -31.5 * Math.PI / 180.0, Math.PI)); // 0.34, 0 ,-0.48
+    // 0.33, 0.513
     public static final double kNoteCameraMountHeight =
         Units.inchesToMeters(11.0); // rough estimate of camera height while mounted on crate
     public static final double kNoteCameraMountPitch =
@@ -77,9 +78,8 @@ public final class Constants {
 
     public static final double kWheelRadiusMeters = Units.inchesToMeters(2.0);
     public static final double kGearRatio = 6.12;
-    public static final double kDrivePositionConversionFactor =
-        2 * Math.PI * kWheelRadiusMeters;
-        // / kGearRatio;
+    public static final double kDrivePositionConversionFactor = 2 * Math.PI * kWheelRadiusMeters;
+    // / kGearRatio;
     public static final double kDriveVelocityConversionFactor = 2 * Math.PI * kWheelRadiusMeters;
     // 2 * Math.PI * kWheelRadiusMeters / (kGearRatio * 60.0);
     public static final double kTurnPositionConversionFactor = 7.0 / 150.0;
@@ -115,8 +115,8 @@ public final class Constants {
     public static final double kG = 0.02; // 0.037; // 0.02
     public static final double kV = 0.000;
 
-    public static final double kMaxVelocityDeg = 900; //120 //250
-    public static final double kMaxAccelerationDeg = 10000;  //500
+    public static final double kMaxVelocityDeg = 900; // 120 //250
+    public static final double kMaxAccelerationDeg = 10000; // 500
     public static TrapezoidProfile.Constraints kProfileConstraints =
         new Constraints(kMaxVelocityDeg, kMaxAccelerationDeg);
 

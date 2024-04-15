@@ -156,7 +156,7 @@ public class SwerveModule extends VirtualSubsystem {
             .withSupplyCurrentLimitEnable(true)
             .withStatorCurrentLimit(60)
             .withStatorCurrentLimitEnable(true);
-    
+
     final var torqueCurrentLimitConfig =
         new TorqueCurrentConfigs()
             .withPeakForwardTorqueCurrent(60)

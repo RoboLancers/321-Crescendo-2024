@@ -3,12 +3,16 @@
   "robotLength": 0.96,
   "holonomicMode": true,
   "pathFolders": [
-    "3BotCenter.Fixed",
-    "3Mid.Distance",
-    "3TopCenter.Fixed",
-    "4Bot.Fixed",
-    "4PieceMid.Fixed",
-    "4Top.Fixed"
+    "3BotCenter",
+    "3Mid",
+    "3TopCenter",
+    "4Bot",
+    "4Mid",
+    "4Top",
+    "BotTaxi",
+    "BotDisrupt",
+    "TopDisrupt",
+    "TopTaxi"
   ],
   "autoFolders": [],
   "defaultMaxVel": 4.0,

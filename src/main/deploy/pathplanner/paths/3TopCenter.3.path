@@ -65,7 +65,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "3TopCenter.Fixed",
+  "folder": "3TopCenter",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

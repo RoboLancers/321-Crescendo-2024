@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "4Top.Fixed",
+  "folder": "4Top",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
