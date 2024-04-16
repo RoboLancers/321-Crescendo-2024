@@ -325,14 +325,11 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public TrapPose getClosestTrapPosition() {
-    Pose2d[] blueTrapPoses = {
-      new Pose2d(new Translation2d(3.7, 2.35), Rotation2d.fromDegrees(-120)),
-      // TODO: other jawns
+    Pose2d[] trapPosesForTeam = {
+      new Pose2d(new Translation2d(3.835, 2.29), Rotation2d.fromDegrees(-120)),
+      new Pose2d(new Translation2d(3.835, 5.91), Rotation2d.fromDegrees(120)),
+      new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0)),
     };
-
-    Pose2d[] redTrapPoses = {}; // TODO
-
-    Pose2d[] trapPosesForTeam = MyAlliance.isRed() ? redTrapPoses : blueTrapPoses;
 
     TrapPose closestPose = new TrapPose();
 
@@ -616,7 +613,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command pathfindToTrap() {
-    return AutoBuilder.pathfindToPose(
+    return AutoBuilder.pathfindToPoseFlipped(
         this.getClosestTrapPosition().pose, DrivetrainConstants.kAutoConstraints);
   }
 }
