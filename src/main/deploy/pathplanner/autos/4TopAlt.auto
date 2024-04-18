@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4TopAlt.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4TopAlt.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4TopAlt.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4TopAlt.4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4TopAlt.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4TopAlt.6"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
