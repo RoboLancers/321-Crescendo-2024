@@ -241,8 +241,7 @@ public class Drivetrain extends SubsystemBase {
                 correctedStrafe,
                 correctedThrottle,
                 correctedOmega,
-                Rotation2d.fromDegrees(
-                    -(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment()) + 180))
+                Rotation2d.fromDegrees(-(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment())))
             : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
 
     this.driveFromSpeeds(speeds);
@@ -300,6 +299,49 @@ public class Drivetrain extends SubsystemBase {
     Translation2d speakerLocation = this.getSpeakerPosition();
 
     return this.getPose().getTranslation().getDistance(speakerLocation);
+  }
+
+  public class TrapPose {
+    private double distance;
+    private Pose2d pose;
+
+    public TrapPose() {
+      this.distance = Double.MAX_VALUE;
+      this.pose = new Pose2d();
+    }
+
+    public TrapPose(double distance, Pose2d pose) {
+      this.distance = distance;
+      this.pose = pose;
+    }
+
+    public double getDistance() {
+      return this.distance;
+    }
+
+    public Pose2d getPose() {
+      return this.pose;
+    }
+  }
+
+  public TrapPose getClosestTrapPosition() {
+    Pose2d[] trapPosesForTeam = {
+      new Pose2d(new Translation2d(3.835, 2.29), Rotation2d.fromDegrees(-120)),
+      new Pose2d(new Translation2d(3.835, 5.91), Rotation2d.fromDegrees(120)),
+      new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0)),
+    };
+
+    TrapPose closestPose = new TrapPose();
+
+    for (int i = 0; i < trapPosesForTeam.length; i++) {
+      double distance =
+          trapPosesForTeam[i].getTranslation().getDistance(this.getPose().getTranslation());
+
+      if (distance < closestPose.getDistance())
+        closestPose = new TrapPose(distance, trapPosesForTeam[i]);
+    }
+
+    return closestPose;
   }
 
   public boolean seesNote() {
@@ -568,5 +610,10 @@ public class Drivetrain extends SubsystemBase {
 
   public Command followPath(PathPlannerPath path) {
     return AutoBuilder.followPath(path);
+  }
+
+  public Command pathfindToTrap() {
+    return AutoBuilder.pathfindToPoseFlipped(
+        this.getClosestTrapPosition().pose, DrivetrainConstants.kAutoConstraints);
   }
 }
