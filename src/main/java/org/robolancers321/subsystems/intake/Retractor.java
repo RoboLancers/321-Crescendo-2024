@@ -248,7 +248,7 @@ public class Retractor extends SubsystemBase {
                             angleDegSupplier.getAsDouble(),
                             RetractorConstants.kMinAngle,
                             RetractorConstants.kMaxAngle)))
-            .until(this::atGoal));
+            .until(this::atGoal)).withTimeout(4.0);
   }
 
   public Command moveToAngle(double angleDeg) {

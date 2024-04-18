@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -636,5 +638,10 @@ public class Drivetrain extends SubsystemBase {
   public Command pathfindToTrap() {
     return AutoBuilder.pathfindToPose(
         this.getClosestTrapPosition().pose, DrivetrainConstants.kAutoConstraints);
+  }
+
+  // TODO: distance filter, same as trap
+  public Command alignToAmp(){
+    return AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("AmpAlign"), DrivetrainConstants.kAutoConstraints);
   }
 }

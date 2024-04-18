@@ -314,6 +314,11 @@ public class SwerveModule extends VirtualSubsystem {
   @Override
   public void periodic() {
     SmartDashboard.putNumber(this.id + " ref angle", this.commandedState.angle.getDegrees());
+    SmartDashboard.putNumber(this.id + " strator current draw", driveMotor.getStatorCurrent().getValueAsDouble());
+    SmartDashboard.putNumber(this.id + " supply current draw", driveMotor.getSupplyCurrent().getValueAsDouble());
+    SmartDashboard.putNumber(this.id + " torque current draw", driveMotor.getTorqueCurrent().getValueAsDouble());
+
+
 
     // this.driveController.setReference(
     //     this.commandedState.speedMetersPerSecond, ControlType.kVelocity);

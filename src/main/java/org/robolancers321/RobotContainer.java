@@ -157,8 +157,7 @@ public class RobotContainer {
     LED.registerSignal(
         6,
         () ->
-            this.retractor.atGoalTimed(0.6)
-                && this.retractor.getGoal() == RetractorConstants.RetractorSetpoint.kAmp.angle,
+        this.retractor.getGoal() == RetractorConstants.RetractorSetpoint.kAmp.angle,
         LED.solid(Section.FULL, new Color(20, 0, 50)));
   }
 
@@ -244,9 +243,8 @@ public class RobotContainer {
         .whileTrue(new OuttakeNote().unless(() -> climbing));
 
     new Trigger(this.driverController::getAButton)
-        .onTrue(
-            // new IntakeSource());
-            this.drivetrain.turnToAngle(90.0).unless(() -> climbing));
+        .whileTrue(this.drivetrain.alignToAmp().unless(() -> climbing));
+
     new Trigger(this.driverController::getBButton)
         .whileTrue(new AutoPickupNote().unless(() -> climbing));
 
@@ -345,13 +343,14 @@ public class RobotContainer {
 
     new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
-        .whileTrue(new ScoreAmpIntake().unless(() -> climbing));
-    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
-        .and(() -> !climbing)
-        .onFalse(
-            new ParallelDeadlineGroup(
-                    new WaitCommand(0.4), this.sucker.ampShot(), Commands.idle(this.retractor))
-                .unless(() -> climbing));
+        .onTrue(new ScoreAmpIntake().unless(() -> climbing));
+
+    // new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
+    //     .and(() -> !climbing)
+    //     .onFalse(
+    //         new ParallelDeadlineGroup(
+    //                 new WaitCommand(0.4), this.sucker.ampShot(), Commands.idle(this.retractor))
+    //             .unless(() -> climbing));
 
     new Trigger(() -> this.manipulatorController.getLeftY() < -0.8)
         .onTrue(this.pivot.aimAtAmp().unless(() -> climbing));

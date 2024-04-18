@@ -173,7 +173,7 @@ public class Flywheel extends SubsystemBase {
             () -> {
               this.goalRPM = FlywheelConstants.FlywheelSetpoint.kSpeaker.rpm;
             })
-        .alongWith(new WaitUntilCommand(this::isRevved));
+        .alongWith(new WaitUntilCommand(this::isRevved).withTimeout(4.0));
   }
 
   public Command revTrap() {

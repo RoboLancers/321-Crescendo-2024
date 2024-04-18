@@ -221,7 +221,7 @@ public class Pivot extends SubsystemBase {
                             angleDegSupplier.getAsDouble(),
                             PivotConstants.kMinAngle,
                             PivotConstants.kMaxAngle)))
-            .until(this::atGoal));
+            .until(this::atGoal)).withTimeout(4.0);
   }
 
   public Command moveToAngle(double angleDeg) {

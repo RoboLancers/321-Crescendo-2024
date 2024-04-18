@@ -44,7 +44,7 @@ public final class Constants {
     public static final double kMaxTeleopRotationPercent = 1.0;
 
     public static final PathConstraints kAutoConstraints =
-        new PathConstraints(4.0, 3.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
+        new PathConstraints(4.0, 4.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
 
     public static final SwerveDriveKinematics kSwerveKinematics =
         new SwerveDriveKinematics(

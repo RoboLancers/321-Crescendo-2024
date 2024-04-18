@@ -32,12 +32,12 @@
     },
     {
       "anchor": {
-        "x": 7.848666424864946,
-        "y": 2.5529623669803687
+        "x": 7.885445770891543,
+        "y": 2.476602645512984
       },
       "prevControl": {
-        "x": 7.296610270823963,
-        "y": 2.5122137229899386
+        "x": 7.33338961685056,
+        "y": 2.435854001522554
       },
       "nextControl": null,
       "isLocked": false,
@@ -49,7 +49,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 270.0,
     "maxAngularAcceleration": 360.0
   },
@@ -61,5 +61,5 @@
   "reversed": false,
   "folder": "3BotCenter",
   "previewStartingState": null,
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
