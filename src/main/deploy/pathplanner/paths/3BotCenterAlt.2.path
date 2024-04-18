@@ -3,48 +3,54 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.848666424864946,
-        "y": 2.5529623669803687
+        "x": 7.924913542134778,
+        "y": 2.150993532756296
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.039577114378632,
-        "y": 2.0497482836291248
+        "x": 7.184892831324126,
+        "y": 1.5589769641077749
       },
       "isLocked": false,
-      "linkedName": "3BotCenter.3End"
+      "linkedName": "3BotCenterAlt.1End"
     },
     {
       "anchor": {
-        "x": 5.7407158466242745,
-        "y": 1.4170112220395616
+        "x": 3.5538578769465246,
+        "y": 1.6872472206482891
       },
       "prevControl": {
-        "x": 6.401801014948457,
-        "y": 1.3676765079855175
+        "x": 5.193668512470479,
+        "y": 0.7136096558059404
       },
       "nextControl": {
-        "x": 4.90111638413155,
-        "y": 1.4796678983449896
+        "x": 2.606631367108889,
+        "y": 2.249662960864385
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.857297007033385,
-        "y": 4.473539560488536
+        "x": 0.904140353216511,
+        "y": 4.485250397034318
       },
       "prevControl": {
-        "x": 1.1852004303152672,
-        "y": 3.7943110408332084
+        "x": 1.5508684863523587,
+        "y": 3.3646274984857665
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "3BotCenterAlt.2End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -55,11 +61,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.036243467926475,
+    "rotation": -59.38139459109056,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "3BotCenter",
+  "folder": "3BotCenterAlt",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

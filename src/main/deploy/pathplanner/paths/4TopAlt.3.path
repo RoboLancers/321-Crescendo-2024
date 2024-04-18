@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.848666424864946,
-        "y": 2.5529623669803687
+        "x": 0.9626945359454185,
+        "y": 6.593200975274989
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.039577114378632,
-        "y": 2.0497482836291248
+        "x": 4.165608331216664,
+        "y": 7.696215392430785
       },
       "isLocked": false,
-      "linkedName": "3BotCenter.3End"
+      "linkedName": "4TopAlt.2End"
     },
     {
       "anchor": {
-        "x": 5.7407158466242745,
-        "y": 1.4170112220395616
+        "x": 5.764053066567673,
+        "y": 6.7095211113499165
       },
       "prevControl": {
-        "x": 6.401801014948457,
-        "y": 1.3676765079855175
+        "x": 5.369375354135325,
+        "y": 6.916726910376898
       },
       "nextControl": {
-        "x": 4.90111638413155,
-        "y": 1.4796678983449896
+        "x": 6.17613740356934,
+        "y": 6.493176834424042
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.857297007033385,
-        "y": 4.473539560488536
+        "x": 7.895312713702351,
+        "y": 5.821496258377133
       },
       "prevControl": {
-        "x": 1.1852004303152672,
-        "y": 3.7943110408332084
+        "x": 7.145425060080891,
+        "y": 5.851097086809559
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "4TopAlt.3End"
     }
   ],
   "rotationTargets": [],
@@ -55,11 +55,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.036243467926475,
-    "rotateFast": false
+    "rotation": 0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "3BotCenter",
+  "folder": "4TopAlt",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

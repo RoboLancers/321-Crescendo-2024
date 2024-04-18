@@ -38,8 +38,10 @@ import org.robolancers321.commands.PPAutos.BotTaxi;
 import org.robolancers321.commands.PPAutos.FourBottom;
 import org.robolancers321.commands.PPAutos.FourMid;
 import org.robolancers321.commands.PPAutos.FourTop;
+import org.robolancers321.commands.PPAutos.FourTopAlt;
 import org.robolancers321.commands.PPAutos.ScoreAndSit;
 import org.robolancers321.commands.PPAutos.ThreeBotCenter;
+import org.robolancers321.commands.PPAutos.ThreeBotCenterAlt;
 import org.robolancers321.commands.PPAutos.ThreeTopCenter;
 import org.robolancers321.commands.PPAutos.TopDisrupt;
 import org.robolancers321.commands.PPAutos.TopTaxi;
@@ -455,10 +457,16 @@ public class RobotContainer {
     this.autoChooser.addOption("4 piece mid", new FourMid());
     this.autoChooser.addOption("score and taxi top", new TopTaxi());
     this.autoChooser.addOption("score and taxi bottom", new BotTaxi());
+
     this.autoChooser.addOption("4 piece top", new FourTop());
+    this.autoChooser.addOption("4 piece top second note", new FourTopAlt());
+
     this.autoChooser.addOption("3 piece bottom", new FourBottom());
     this.autoChooser.addOption("3 piece top center only", new ThreeTopCenter());
+
     this.autoChooser.addOption("3 piece bottom center only", new ThreeBotCenter());
+    this.autoChooser.addOption("3 piece bottom center only second note", new ThreeBotCenterAlt());
+    
     this.autoChooser.addOption("top chaos", new TopDisrupt());
     this.autoChooser.addOption("bottom chaos", new BotDisrupt());
 
