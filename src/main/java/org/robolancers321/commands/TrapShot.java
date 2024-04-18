@@ -26,11 +26,13 @@ public class TrapShot extends SequentialCommandGroup {
         this.indexer.shiftBackFromExit().withTimeout(0.1),
         this.indexer.off(),
         new ParallelCommandGroup(
-            this.pivot.aimAtSpeaker(() -> SmartDashboard.getNumber("trap pivot angle", 0)),
-            // TODO
-            this.flywheel.revSpeakerFromRPM(
-                () -> SmartDashboard.getNumber("trap flywheel rpm", 0))),
-        // TODO
+            // this.pivot.aimAtSpeaker(() -> SmartDashboard.getNumber("trap pivot angle", 0)),
+            this.pivot.aimAtTrap(),
+
+            // this.flywheel.revSpeakerFromRPM(
+            //     () -> SmartDashboard.getNumber("trap flywheel rpm", 0)),
+            this.flywheel.revTrap()
+        ),
         this.indexer.outtake(),
         this.indexer.off(),
         this.flywheel.off());

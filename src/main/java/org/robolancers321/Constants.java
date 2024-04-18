@@ -124,7 +124,7 @@ public final class Constants {
 
     public enum RetractorSetpoint {
       kRetracted(182),
-      kMating(165), // 173
+      kMating(150), // 165 // 173
       kIntake(-6),
       kOuttake(45.0),
       kSpeaker(173),
@@ -176,7 +176,7 @@ public final class Constants {
       kShiftBackwardSlow(-400),
       kAmp(900.0),
       kSpeaker(2500.0),
-      kSource(-600),
+      kTrap(4900),
       kFeeder(3200);
 
       public final double rpm;
@@ -240,7 +240,7 @@ public final class Constants {
       kShift(-9.0),
       kMating(-7.0), // -23
       kAmp(77.0),
-      kTrap(75.0),
+      kTrap(1.0),
       kSpeaker(-23.0);
 
       public final double angle;

@@ -176,6 +176,14 @@ public class Flywheel extends SubsystemBase {
         .alongWith(new WaitUntilCommand(this::isRevved));
   }
 
+  public Command revTrap() {
+    return runOnce(
+      () -> {
+        this.goalRPM = FlywheelConstants.FlywheelSetpoint.kTrap.rpm;
+      }
+    ).alongWith(new WaitUntilCommand(this::isRevved));
+  }
+
   public Command revFeeder() {
     return runOnce(
             () -> {
@@ -190,13 +198,6 @@ public class Flywheel extends SubsystemBase {
               this.goalRPM = rpm.getAsDouble();
             })
         .alongWith(new WaitUntilCommand(this::isRevved));
-  }
-
-  public Command intakeSource() {
-    return runOnce(
-        () -> {
-          this.goalRPM = FlywheelSetpoint.kSource.rpm;
-        });
   }
 
   public Command tuneController() {

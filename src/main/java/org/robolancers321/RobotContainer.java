@@ -4,6 +4,8 @@ package org.robolancers321;
 import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -14,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -45,6 +48,7 @@ import org.robolancers321.commands.ScoreAmpIntake;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
+import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.subsystems.Climber;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
@@ -276,9 +280,12 @@ public class RobotContainer {
    * Left Bumper: left climber up
    * Left Trigger: left climber down
    */
+
   private void configureManipulatorController() {
     new Trigger(this.manipulatorController::getBButton)
-        .onTrue((new Mate().andThen(new Shift()).unless(() -> climbing)));
+        .onTrue((new Mate()
+        .andThen(new Shift())
+        .unless(() -> climbing)));
 
     // .onlyIf(this.sucker::noteDetected)
 
@@ -300,7 +307,9 @@ public class RobotContainer {
     new Trigger(this.manipulatorController::getXButton)
         .and(() -> !climbing)
         .onFalse(
-            new ParallelDeadlineGroup(
+            new SequentialCommandGroup(
+                this.retractor.moveToSpeaker(),
+                new ParallelDeadlineGroup(
                     (new WaitUntilCommand(this.indexer::exitBeamBroken)
                             .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
                             .andThen(new WaitCommand(0.1)))
@@ -308,11 +317,13 @@ public class RobotContainer {
                     this.indexer.outtake(),
                     this.sucker.out(),
                     Commands.idle(this.pivot, this.flywheel))
-                .unless(() -> climbing));
+            ).unless(() -> climbing));
 
-    new Trigger(() -> this.manipulatorController.getLeftBumper())
-        .and(() -> !climbing)
-        .onTrue(new AutoScoreTrap());
+    new Trigger(this.manipulatorController::getLeftBumper).onTrue(toggleClimbingMode());
+
+    // new Trigger(() -> this.manipulatorController.getLeftBumper())
+    //     .and(() -> !climbing)
+    //     .onTrue(new AutoScoreTrap());
 
     new Trigger(() -> this.manipulatorController.getPOV() == 0)
         .and(() -> !climbing)
@@ -375,19 +386,20 @@ public class RobotContainer {
                     })
                 .onlyIf(() -> climbing));
 
-    new Trigger(this.manipulatorController::getLeftBumper)
-        .whileTrue(
-            climber
-                .run(() -> climber.setLeftPower(0.2))
-                .finallyDo(() -> climber.setLeftPower(0))
-                .onlyIf(() -> climbing));
+    // new Trigger(this.manipulatorController::getLeftBumper)
+    //     .and(() -> climbing)
+    //     .whileTrue(
+    //         climber
+    //             .run(() -> climber.setLeftPower(0.2))
+    //             .finallyDo(() -> climber.setLeftPower(0))
+    //             .onlyIf(() -> climbing));
 
-    new Trigger(this.manipulatorController::getRightBumper)
-        .whileTrue(
-            climber
-                .run(() -> climber.setRightPower(0.2))
-                .finallyDo(() -> climber.setRightPower(0))
-                .onlyIf(() -> climbing));
+    // new Trigger(this.manipulatorController::getRightBumper)
+    //     .whileTrue(
+    //         climber
+    //             .run(() -> climber.setRightPower(0.2))
+    //             .finallyDo(() -> climber.setRightPower(0))
+    //             .onlyIf(() -> climbing));
 
     new Trigger(() -> this.manipulatorController.getLeftTriggerAxis() > 0.5)
         .whileTrue(
@@ -415,17 +427,13 @@ public class RobotContainer {
     Skip - pickup center note first then go back for front note
      */
 
-    this.autoChooser.addOption(
-        "Do Nothing",
-        Commands.idle(
-            this.drivetrain,
-            this.retractor,
-            this.sucker,
-            this.pivot,
-            this.indexer,
-            this.flywheel,
-            this.climber));
+    this.autoChooser.addOption("Do Nothing",
+        new InstantCommand(
+            () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())));
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreAndSit());
+
+    this.autoChooser.addOption("TESTING DONT USE", new InstantCommand(
+            () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())).andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
 
     // this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
     // this.autoChooser.addOption("4NT Close", new Auto4NTClose());

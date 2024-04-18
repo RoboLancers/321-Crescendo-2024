@@ -34,13 +34,9 @@ public class Mate extends SequentialCommandGroup {
         this.flywheel.off(),
         this.indexer.off(),
         new ParallelCommandGroup(
-            this.retractor.moveToAngle(
-                () ->
-                    SmartDashboard.getNumber(
-                        "handoff retractor angle", RetractorSetpoint.kMating.angle)),
-            this.pivot.moveToAngle(
-                () ->
-                    SmartDashboard.getNumber("handoff pivot angle", PivotSetpoint.kMating.angle))),
+            // supplier for tuning, use SD from above
+            this.retractor.moveToAngle(RetractorSetpoint.kMating.angle),
+            this.pivot.moveToAngle(PivotSetpoint.kMating.angle)),
         new ParallelCommandGroup(
                 this.indexer.acceptHandoff(), this.sucker.out(), this.flywheel.acceptHandoff())
             .until(this.indexer::exitBeamBroken)

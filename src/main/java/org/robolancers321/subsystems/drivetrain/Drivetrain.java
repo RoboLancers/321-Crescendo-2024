@@ -4,6 +4,7 @@ package org.robolancers321.subsystems.drivetrain;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.GeometryUtil;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -115,16 +116,21 @@ public class Drivetrain extends SubsystemBase {
     this.configureField();
   }
 
+  public void setYaw(double angle){
+    this.gyro.setAngleAdjustment(-angle - this.gyro.getYaw());
+  }
+
   public void configureGyro() {
-    this.gyro.zeroYaw();
-    this.gyro.setAngleAdjustment(180.0); // bruh
+    this.setYaw(0.0);
+    // this.gyro.zeroYaw();
+    // this.gyro.setAngleAdjustment(180.0); // bruh
   }
 
   // TODO: what the fuckkkkk why is this
-  public void setYaw(double angle) {
-    this.gyro.zeroYaw();
-    this.gyro.setAngleAdjustment(angle);
-  }
+  // public void setYaw(double angle) {
+  //   this.gyro.zeroYaw();
+  //   this.gyro.setAngleAdjustment(angle);
+  // }
 
   private void configureController() {
     this.headingController.setPID(
@@ -143,13 +149,17 @@ public class Drivetrain extends SubsystemBase {
         this::driveFromSpeeds,
         new HolonomicPathFollowerConfig(
             new PIDConstants(
+                // 0,0,0
                 DrivetrainConstants.kTranslationP,
                 DrivetrainConstants.kTranslationI,
-                DrivetrainConstants.kTranslationD),
+                DrivetrainConstants.kTranslationD
+                ),
             new PIDConstants(
+                // 0,0,0
                 DrivetrainConstants.kRotationP,
                 DrivetrainConstants.kRotationI,
-                DrivetrainConstants.kRotationD),
+                DrivetrainConstants.kRotationD
+                ),
             DrivetrainConstants.kMaxSpeedMetersPerSecond,
             0.5
                 * Math.hypot(
@@ -172,7 +182,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public double getYawDeg() {
-    return this.gyro.getAngle();
+    return -this.gyro.getAngle();
   }
 
   public Pose2d getPose() {
@@ -181,7 +191,7 @@ public class Drivetrain extends SubsystemBase {
 
   public void resetPose(Pose2d pose) {
     this.odometry.resetPosition(
-        Rotation2d.fromDegrees(this.getYawDeg()), this.getModulePositions(), pose);
+        this.gyro.getRotation2d(), this.getModulePositions(), pose);
   }
 
   private SwerveModuleState[] getModuleStates() {
@@ -241,7 +251,7 @@ public class Drivetrain extends SubsystemBase {
                 correctedStrafe,
                 correctedThrottle,
                 correctedOmega,
-                Rotation2d.fromDegrees(-(this.getYawDeg() - 2 * this.gyro.getAngleAdjustment())))
+                this.gyro.getRotation2d())
             : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
 
     this.driveFromSpeeds(speeds);
@@ -325,11 +335,19 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public TrapPose getClosestTrapPosition() {
-    Pose2d[] trapPosesForTeam = {
+    Pose2d[] blueTrapPoses = {
       new Pose2d(new Translation2d(3.835, 2.29), Rotation2d.fromDegrees(-120)),
       new Pose2d(new Translation2d(3.835, 5.91), Rotation2d.fromDegrees(120)),
-      new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0)),
+      new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0))
     };
+
+    Pose2d[] redTrapPoses = {
+      GeometryUtil.flipFieldPose(new Pose2d(new Translation2d(3.835, 2.29), Rotation2d.fromDegrees(-120))),
+      GeometryUtil.flipFieldPose(new Pose2d(new Translation2d(3.835, 5.91), Rotation2d.fromDegrees(120))),
+      GeometryUtil.flipFieldPose(new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0)))
+    };
+
+    Pose2d[] trapPosesForTeam = MyAlliance.isRed() ? redTrapPoses : blueTrapPoses;
 
     TrapPose closestPose = new TrapPose();
 
@@ -340,6 +358,9 @@ public class Drivetrain extends SubsystemBase {
       if (distance < closestPose.getDistance())
         closestPose = new TrapPose(distance, trapPosesForTeam[i]);
     }
+
+    SmartDashboard.putNumber("Closest Trap Pose Dist", closestPose.distance);
+    SmartDashboard.putString("Closest Trap Pose", closestPose.pose.toString());
 
     return closestPose;
   }
@@ -613,7 +634,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command pathfindToTrap() {
-    return AutoBuilder.pathfindToPoseFlipped(
+    return AutoBuilder.pathfindToPose(
         this.getClosestTrapPosition().pose, DrivetrainConstants.kAutoConstraints);
   }
 }
