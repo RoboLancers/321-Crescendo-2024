@@ -207,21 +207,22 @@ public class Pivot extends SubsystemBase {
 
   public Command moveToAngle(DoubleSupplier angleDegSupplier) {
     return new SequentialCommandGroup(
-        new InstantCommand(
-            () ->
-                this.setGoal(
-                    MathUtil.clamp(
-                        angleDegSupplier.getAsDouble(),
-                        PivotConstants.kMinAngle,
-                        PivotConstants.kMaxAngle))),
-        this.run(
+            new InstantCommand(
                 () ->
                     this.setGoal(
                         MathUtil.clamp(
                             angleDegSupplier.getAsDouble(),
                             PivotConstants.kMinAngle,
-                            PivotConstants.kMaxAngle)))
-            .until(this::atGoal)).withTimeout(4.0);
+                            PivotConstants.kMaxAngle))),
+            this.run(
+                    () ->
+                        this.setGoal(
+                            MathUtil.clamp(
+                                angleDegSupplier.getAsDouble(),
+                                PivotConstants.kMinAngle,
+                                PivotConstants.kMaxAngle)))
+                .until(this::atGoal))
+        .withTimeout(4.0);
   }
 
   public Command moveToAngle(double angleDeg) {

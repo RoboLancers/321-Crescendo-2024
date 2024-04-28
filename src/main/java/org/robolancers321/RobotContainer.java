@@ -5,7 +5,6 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -25,8 +24,8 @@ import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
+import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.commands.AutoPickupNote;
-import org.robolancers321.commands.AutoScoreTrap;
 import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.FeederShot;
 import org.robolancers321.commands.IntakeNote;
@@ -50,7 +49,6 @@ import org.robolancers321.commands.ScoreAmpIntake;
 import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
-import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.subsystems.Climber;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
@@ -156,8 +154,7 @@ public class RobotContainer {
 
     LED.registerSignal(
         6,
-        () ->
-        this.retractor.getGoal() == RetractorConstants.RetractorSetpoint.kAmp.angle,
+        () -> this.retractor.getGoal() == RetractorConstants.RetractorSetpoint.kAmp.angle,
         LED.solid(Section.FULL, new Color(20, 0, 50)));
   }
 
@@ -283,9 +280,7 @@ public class RobotContainer {
 
   private void configureManipulatorController() {
     new Trigger(this.manipulatorController::getBButton)
-        .onTrue((new Mate()
-        .andThen(new Shift())
-        .unless(() -> climbing)));
+        .onTrue((new Mate().andThen(new Shift()).unless(() -> climbing)));
 
     // .onlyIf(this.sucker::noteDetected)
 
@@ -308,16 +303,16 @@ public class RobotContainer {
         .and(() -> !climbing)
         .onFalse(
             new SequentialCommandGroup(
-                this.retractor.moveToSpeaker(),
-                new ParallelDeadlineGroup(
-                    (new WaitUntilCommand(this.indexer::exitBeamBroken)
-                            .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
-                            .andThen(new WaitCommand(0.1)))
-                        .withTimeout(1.0),
-                    this.indexer.outtake(),
-                    this.sucker.out(),
-                    Commands.idle(this.pivot, this.flywheel))
-            ).unless(() -> climbing));
+                    this.retractor.moveToSpeaker(),
+                    new ParallelDeadlineGroup(
+                        (new WaitUntilCommand(this.indexer::exitBeamBroken)
+                                .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
+                                .andThen(new WaitCommand(0.1)))
+                            .withTimeout(1.0),
+                        this.indexer.outtake(),
+                        this.sucker.out(),
+                        Commands.idle(this.pivot, this.flywheel)))
+                .unless(() -> climbing));
 
     new Trigger(this.manipulatorController::getLeftBumper).onTrue(toggleClimbingMode());
 
@@ -428,13 +423,17 @@ public class RobotContainer {
     Skip - pickup center note first then go back for front note
      */
 
-    this.autoChooser.addOption("Do Nothing",
+    this.autoChooser.addOption(
+        "Do Nothing",
         new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())));
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreAndSit());
 
-    this.autoChooser.addOption("TESTING DONT USE", new InstantCommand(
-            () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())).andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
+    this.autoChooser.addOption(
+        "TESTING DONT USE",
+        new InstantCommand(
+                () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees()))
+            .andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
 
     // this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
     // this.autoChooser.addOption("4NT Close", new Auto4NTClose());
@@ -465,7 +464,7 @@ public class RobotContainer {
 
     this.autoChooser.addOption("3 piece bottom center only", new ThreeBotCenter());
     this.autoChooser.addOption("3 piece bottom center only second note", new ThreeBotCenterAlt());
-    
+
     this.autoChooser.addOption("top chaos", new TopDisrupt());
     this.autoChooser.addOption("bottom chaos", new BotDisrupt());
 

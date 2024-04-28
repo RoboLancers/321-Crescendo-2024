@@ -31,8 +31,7 @@ public class TrapShot extends SequentialCommandGroup {
 
             // this.flywheel.revSpeakerFromRPM(
             //     () -> SmartDashboard.getNumber("trap flywheel rpm", 0)),
-            this.flywheel.revTrap()
-        ),
+            this.flywheel.revTrap()),
         this.indexer.outtake(),
         this.indexer.off(),
         this.flywheel.off());

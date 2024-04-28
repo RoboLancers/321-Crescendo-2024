@@ -1,8 +1,6 @@
 /* (C) Robolancers 2024 */
 package org.robolancers321.subsystems.launcher;
 
-import org.robolancers321.Constants.AimConstants;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AimTable {

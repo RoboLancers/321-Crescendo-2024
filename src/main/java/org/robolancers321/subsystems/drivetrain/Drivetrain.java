@@ -24,8 +24,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -118,7 +116,7 @@ public class Drivetrain extends SubsystemBase {
     this.configureField();
   }
 
-  public void setYaw(double angle){
+  public void setYaw(double angle) {
     this.gyro.setAngleAdjustment(-angle - this.gyro.getYaw());
   }
 
@@ -154,14 +152,12 @@ public class Drivetrain extends SubsystemBase {
                 // 0,0,0
                 DrivetrainConstants.kTranslationP,
                 DrivetrainConstants.kTranslationI,
-                DrivetrainConstants.kTranslationD
-                ),
+                DrivetrainConstants.kTranslationD),
             new PIDConstants(
                 // 0,0,0
                 DrivetrainConstants.kRotationP,
                 DrivetrainConstants.kRotationI,
-                DrivetrainConstants.kRotationD
-                ),
+                DrivetrainConstants.kRotationD),
             DrivetrainConstants.kMaxSpeedMetersPerSecond,
             0.5
                 * Math.hypot(
@@ -192,8 +188,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void resetPose(Pose2d pose) {
-    this.odometry.resetPosition(
-        this.gyro.getRotation2d(), this.getModulePositions(), pose);
+    this.odometry.resetPosition(this.gyro.getRotation2d(), this.getModulePositions(), pose);
   }
 
   private SwerveModuleState[] getModuleStates() {
@@ -250,10 +245,7 @@ public class Drivetrain extends SubsystemBase {
     ChassisSpeeds speeds =
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                correctedStrafe,
-                correctedThrottle,
-                correctedOmega,
-                this.gyro.getRotation2d())
+                correctedStrafe, correctedThrottle, correctedOmega, this.gyro.getRotation2d())
             : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
 
     this.driveFromSpeeds(speeds);
@@ -344,9 +336,12 @@ public class Drivetrain extends SubsystemBase {
     };
 
     Pose2d[] redTrapPoses = {
-      GeometryUtil.flipFieldPose(new Pose2d(new Translation2d(3.835, 2.29), Rotation2d.fromDegrees(-120))),
-      GeometryUtil.flipFieldPose(new Pose2d(new Translation2d(3.835, 5.91), Rotation2d.fromDegrees(120))),
-      GeometryUtil.flipFieldPose(new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0)))
+      GeometryUtil.flipFieldPose(
+          new Pose2d(new Translation2d(3.835, 2.29), Rotation2d.fromDegrees(-120))),
+      GeometryUtil.flipFieldPose(
+          new Pose2d(new Translation2d(3.835, 5.91), Rotation2d.fromDegrees(120))),
+      GeometryUtil.flipFieldPose(
+          new Pose2d(new Translation2d(6.97, 4.1), Rotation2d.fromDegrees(0)))
     };
 
     Pose2d[] trapPosesForTeam = MyAlliance.isRed() ? redTrapPoses : blueTrapPoses;
@@ -641,7 +636,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   // TODO: distance filter, same as trap
-  public Command alignToAmp(){
-    return AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("AmpAlign"), DrivetrainConstants.kAutoConstraints);
+  public Command alignToAmp() {
+    return AutoBuilder.pathfindThenFollowPath(
+        PathPlannerPath.fromPathFile("AmpAlign"), DrivetrainConstants.kAutoConstraints);
   }
 }

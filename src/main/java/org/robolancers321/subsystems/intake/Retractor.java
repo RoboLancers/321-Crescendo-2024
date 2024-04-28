@@ -234,21 +234,22 @@ public class Retractor extends SubsystemBase {
 
   public Command moveToAngle(DoubleSupplier angleDegSupplier) {
     return new SequentialCommandGroup(
-        new InstantCommand(
-            () ->
-                this.setGoal(
-                    MathUtil.clamp(
-                        angleDegSupplier.getAsDouble(),
-                        RetractorConstants.kMinAngle,
-                        RetractorConstants.kMaxAngle))),
-        this.run(
+            new InstantCommand(
                 () ->
                     this.setGoal(
                         MathUtil.clamp(
                             angleDegSupplier.getAsDouble(),
                             RetractorConstants.kMinAngle,
-                            RetractorConstants.kMaxAngle)))
-            .until(this::atGoal)).withTimeout(4.0);
+                            RetractorConstants.kMaxAngle))),
+            this.run(
+                    () ->
+                        this.setGoal(
+                            MathUtil.clamp(
+                                angleDegSupplier.getAsDouble(),
+                                RetractorConstants.kMinAngle,
+                                RetractorConstants.kMaxAngle)))
+                .until(this::atGoal))
+        .withTimeout(4.0);
   }
 
   public Command moveToAngle(double angleDeg) {

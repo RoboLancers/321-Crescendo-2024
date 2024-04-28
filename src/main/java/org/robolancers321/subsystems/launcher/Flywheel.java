@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import java.util.function.DoubleSupplier;
 import org.robolancers321.Constants.FlywheelConstants;
-import org.robolancers321.Constants.FlywheelConstants.FlywheelSetpoint;
 
 public class Flywheel extends SubsystemBase {
   private static Flywheel instance = null;
@@ -178,10 +177,10 @@ public class Flywheel extends SubsystemBase {
 
   public Command revTrap() {
     return runOnce(
-      () -> {
-        this.goalRPM = FlywheelConstants.FlywheelSetpoint.kTrap.rpm;
-      }
-    ).alongWith(new WaitUntilCommand(this::isRevved));
+            () -> {
+              this.goalRPM = FlywheelConstants.FlywheelSetpoint.kTrap.rpm;
+            })
+        .alongWith(new WaitUntilCommand(this::isRevved));
   }
 
   public Command revFeeder() {

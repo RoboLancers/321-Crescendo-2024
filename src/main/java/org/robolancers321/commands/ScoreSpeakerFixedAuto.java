@@ -29,9 +29,10 @@ public class ScoreSpeakerFixedAuto extends SequentialCommandGroup {
 
     this.addCommands(
         new ParallelCommandGroup(
-            this.flywheel.revSpeaker(),
-            this.retractor.moveToSpeaker(),
-            this.pivot.aimAtSpeakerFixed()).withTimeout(3.0),
+                this.flywheel.revSpeaker(),
+                this.retractor.moveToSpeaker(),
+                this.pivot.aimAtSpeakerFixed())
+            .withTimeout(3.0),
         new ParallelDeadlineGroup(
             (new WaitUntilCommand(this.indexer::exitBeamBroken)
                     .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
