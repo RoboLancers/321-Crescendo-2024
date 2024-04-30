@@ -12,10 +12,9 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import org.robolancers321.Constants;
@@ -124,7 +123,7 @@ public class Pivot extends SubsystemBase {
   protected void useOutput(TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
         this.feedforwardController.calculate(
-            setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+            Units.degreesToRadians(setpoint.position), Units.degreesToRadians(setpoint.velocity));
 
     SmartDashboard.putNumber("pivot position setpoint mp (deg)", setpoint.position);
     SmartDashboard.putNumber("pivot velocity setpoint mp (deg)", setpoint.velocity);
@@ -206,22 +205,15 @@ public class Pivot extends SubsystemBase {
   }
 
   public Command moveToAngle(DoubleSupplier angleDegSupplier) {
-    return new SequentialCommandGroup(
-            new InstantCommand(
-                () ->
-                    this.setGoal(
-                        MathUtil.clamp(
-                            angleDegSupplier.getAsDouble(),
-                            PivotConstants.kMinAngle,
-                            PivotConstants.kMaxAngle))),
-            this.run(
-                    () ->
-                        this.setGoal(
-                            MathUtil.clamp(
-                                angleDegSupplier.getAsDouble(),
-                                PivotConstants.kMinAngle,
-                                PivotConstants.kMaxAngle)))
-                .until(this::atGoal))
+    // somewhat expensive with new TrapezoidProfile.State() every loop
+    // (change detection optimization?)
+    return run(() ->
+            this.setGoal(
+                MathUtil.clamp(
+                    angleDegSupplier.getAsDouble(),
+                    PivotConstants.kMinAngle,
+                    PivotConstants.kMaxAngle)))
+        .until(this::atGoal)
         .withTimeout(4.0);
   }
 
@@ -248,10 +240,6 @@ public class Pivot extends SubsystemBase {
   public Command aimAtTrap() {
     return this.moveToAngle(PivotConstants.PivotSetpoint.kTrap.angle);
   }
-
-  // public Command aimAtSource() {
-  //   return this.moveToAngle()
-  // }
 
   public Command aimAtSpeaker(DoubleSupplier angleDegSupplier) {
     return this.moveToAngle(angleDegSupplier);

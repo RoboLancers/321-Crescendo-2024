@@ -73,13 +73,6 @@ public class Sucker extends SubsystemBase {
   }
 
   public Command off() {
-    return run(
-        () -> {
-          this.motor.set(0.0);
-        });
-  }
-
-  public Command offInstantly() {
     return runOnce(
         () -> {
           this.motor.set(0.0);

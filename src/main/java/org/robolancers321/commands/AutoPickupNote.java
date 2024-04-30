@@ -42,6 +42,6 @@ public class AutoPickupNote extends SequentialCommandGroup {
                         this.retractor.moveToMating()),
                     new InstantCommand(),
                     this.drivetrain::seesNote))),
-        this.sucker.offInstantly());
+        this.sucker.off()); // Instantly
   }
 }

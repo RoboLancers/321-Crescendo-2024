@@ -20,7 +20,7 @@ public class IntakeNote extends SequentialCommandGroup {
             new WaitUntilCommand(this.sucker::noteDetected),
             this.retractor.moveToIntake(),
             this.sucker.in()),
-        this.sucker.offInstantly(),
+        this.sucker.off(), // Instantly
         this.retractor.moveToMating());
   }
 }

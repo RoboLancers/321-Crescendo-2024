@@ -13,11 +13,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.robolancers321.Constants.FlywheelConstants;
@@ -26,7 +21,6 @@ import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
 import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.commands.AutoPickupNote;
-import org.robolancers321.commands.EmergencyCancel;
 import org.robolancers321.commands.FeederShot;
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.IntakeNoteManual;
@@ -162,7 +156,7 @@ public class RobotContainer {
     this.drivetrain.setDefaultCommand( // this.drivetrain.tuneModules());
         this.drivetrain.teleopDrive(driverController, true));
 
-    this.sucker.setDefaultCommand(this.sucker.off());
+    this.sucker.setDefaultCommand(this.sucker.off().repeatedly());
     this.indexer.setDefaultCommand(this.indexer.off());
 
     this.flywheel.setDefaultCommand(
@@ -222,12 +216,12 @@ public class RobotContainer {
     // TODO: technically we can just pull the bumper state off of the controller inside teleop
     // command but maybe this offers more control programmatically
     new Trigger(this.driverController::getRightBumper)
-        .whileTrue(new InstantCommand(() -> this.drivetrain.slowMode = true));
+        .whileTrue(Commands.runOnce(() -> this.drivetrain.slowMode = true));
     new Trigger(this.driverController::getRightBumper)
-        .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
+        .whileFalse(Commands.runOnce(() -> this.drivetrain.slowMode = false));
 
     new Trigger(this.driverController::getLeftBumper).whileTrue(this.sucker.in());
-    new Trigger(this.driverController::getLeftBumper).whileFalse(this.sucker.off());
+    new Trigger(this.driverController::getLeftBumper).whileFalse(this.sucker.off().repeatedly());
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
         .whileTrue(new IntakeNoteManual().unless(() -> climbing));
@@ -246,7 +240,9 @@ public class RobotContainer {
         .whileTrue(new AutoPickupNote().unless(() -> climbing));
 
     new Trigger(this.driverController::getXButton)
-        .onTrue(new EmergencyCancel().unless(() -> climbing));
+        .onTrue(
+            Commands.runOnce(() -> {}, drivetrain, retractor, sucker, indexer, flywheel, pivot)
+                .unless(() -> climbing));
 
     new Trigger(this.driverController::getYButton).onTrue(toggleClimbingMode());
   }
@@ -302,12 +298,13 @@ public class RobotContainer {
     new Trigger(this.manipulatorController::getXButton)
         .and(() -> !climbing)
         .onFalse(
-            new SequentialCommandGroup(
+            Commands.sequence(
                     this.retractor.moveToSpeaker(),
-                    new ParallelDeadlineGroup(
-                        (new WaitUntilCommand(this.indexer::exitBeamBroken)
-                                .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
-                                .andThen(new WaitCommand(0.1)))
+                    Commands.deadline(
+                        Commands.sequence(
+                                Commands.waitUntil(this.indexer::exitBeamBroken),
+                                Commands.waitUntil(this.indexer::exitBeamNotBroken),
+                                Commands.waitSeconds(0.1))
                             .withTimeout(1.0),
                         this.indexer.outtake(),
                         this.sucker.out(),
@@ -326,10 +323,11 @@ public class RobotContainer {
     new Trigger(() -> this.manipulatorController.getPOV() == 0)
         .and(() -> !climbing)
         .onFalse(
-            new ParallelDeadlineGroup(
-                    (new WaitUntilCommand(this.indexer::exitBeamBroken)
-                            .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
-                            .andThen(new WaitCommand(0.1)))
+            Commands.deadline(
+                    Commands.sequence(
+                            Commands.waitUntil(this.indexer::exitBeamBroken),
+                            Commands.waitUntil(this.indexer::exitBeamNotBroken),
+                            Commands.waitSeconds(0.1))
                         .withTimeout(1.0),
                     this.indexer.outtake(),
                     this.sucker.out(),
@@ -425,13 +423,13 @@ public class RobotContainer {
 
     this.autoChooser.addOption(
         "Do Nothing",
-        new InstantCommand(
+        Commands.runOnce(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())));
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreAndSit());
 
     this.autoChooser.addOption(
         "TESTING DONT USE",
-        new InstantCommand(
+        Commands.runOnce(
                 () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees()))
             .andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
 
