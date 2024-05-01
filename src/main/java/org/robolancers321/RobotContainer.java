@@ -20,12 +20,8 @@ import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
 import org.robolancers321.commands.AutoCommands.PathAndRetract;
-import org.robolancers321.commands.AutoPickupNote;
-import org.robolancers321.commands.FeederShot;
 import org.robolancers321.commands.IntakeNote;
-import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
-import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.PPAutos.BotDisrupt;
 import org.robolancers321.commands.PPAutos.BotTaxi;
 import org.robolancers321.commands.PPAutos.FourBottom;
@@ -38,9 +34,6 @@ import org.robolancers321.commands.PPAutos.ThreeBotCenterAlt;
 import org.robolancers321.commands.PPAutos.ThreeTopCenter;
 import org.robolancers321.commands.PPAutos.TopDisrupt;
 import org.robolancers321.commands.PPAutos.TopTaxi;
-import org.robolancers321.commands.ScoreAmp;
-import org.robolancers321.commands.ScoreAmpIntake;
-import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
 import org.robolancers321.subsystems.Climber;
@@ -224,20 +217,20 @@ public class RobotContainer {
     new Trigger(this.driverController::getLeftBumper).whileFalse(this.sucker.off().repeatedly());
 
     new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(new IntakeNoteManual().unless(() -> climbing));
+        .whileTrue(manuallyIntakeNote().unless(() -> climbing));
 
     // for auto handoff, putting it on a button instead is safer so fender shot is still viable
     // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
     //     .onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
 
     new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .whileTrue(new OuttakeNote().unless(() -> climbing));
+        .whileTrue(outtakeNote().unless(() -> climbing));
 
     new Trigger(this.driverController::getAButton)
         .whileTrue(this.drivetrain.alignToAmp().unless(() -> climbing));
 
     new Trigger(this.driverController::getBButton)
-        .whileTrue(new AutoPickupNote().unless(() -> climbing));
+        .whileTrue(autoPickupNote().unless(() -> climbing));
 
     new Trigger(this.driverController::getXButton)
         .onTrue(
@@ -281,7 +274,7 @@ public class RobotContainer {
     // .onlyIf(this.sucker::noteDetected)
 
     new Trigger(this.manipulatorController::getAButton)
-        .whileTrue(new ScoreAmp().unless(() -> climbing));
+        .whileTrue(scoreAmp().unless(() -> climbing));
     new Trigger(this.manipulatorController::getAButton)
         .onFalse(
             this.indexer
@@ -294,7 +287,7 @@ public class RobotContainer {
 
     new Trigger(this.manipulatorController::getXButton)
         .and(() -> !climbing)
-        .whileTrue(new ScoreSpeakerFixedTeleop().unless(() -> climbing));
+        .whileTrue(scoreSpeakerFixed().unless(() -> climbing));
     new Trigger(this.manipulatorController::getXButton)
         .and(() -> !climbing)
         .onFalse(
@@ -319,7 +312,7 @@ public class RobotContainer {
 
     new Trigger(() -> this.manipulatorController.getPOV() == 0)
         .and(() -> !climbing)
-        .whileTrue(new FeederShot().unless(() -> climbing));
+        .whileTrue(feed().unless(() -> climbing));
     new Trigger(() -> this.manipulatorController.getPOV() == 0)
         .and(() -> !climbing)
         .onFalse(
@@ -336,7 +329,7 @@ public class RobotContainer {
 
     new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
-        .onTrue(new ScoreAmpIntake().unless(() -> climbing));
+        .onTrue(scoreAmpWithIntake().unless(() -> climbing));
 
     // new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
     //     .and(() -> !climbing)
@@ -504,6 +497,58 @@ public class RobotContainer {
                     return PivotConstants.PivotSetpoint.kRetracted.angle;
                   }));
         });
+  }
+
+  private Command manuallyIntakeNote() {
+    return this.retractor.moveToIntake().alongWith(this.sucker.in());
+  }
+
+  private Command outtakeNote() {
+    return this.retractor.moveToOuttake().andThen(this.sucker.out());
+  }
+
+  private Command scoreAmp() {
+    return Commands.sequence(this.pivot.aimAtAmp(), this.flywheel.revAmp(), Commands.idle());
+  }
+
+  private Command scoreAmpWithIntake() {
+    return this.retractor
+        .moveToAmp()
+        .until(() -> this.retractor.atGoalTimed(0.5))
+        .andThen(this.sucker.ampShot().withTimeout(0.4))
+        .withTimeout(3.0);
+  }
+
+  private Command scoreSpeakerFixed() {
+    return Commands.parallel(
+        this.flywheel.revSpeaker(), this.pivot.aimAtSpeakerFixed(), Commands.idle());
+  }
+
+  private Command feed() {
+    return Commands.parallel(
+        this.flywheel.revFeeder(),
+        this.retractor.moveToMating(),
+        this.pivot.aimAtSpeakerFixed(),
+        Commands.idle());
+  }
+
+  private Command autoPickupNote() {
+    return this.sucker
+        .in()
+        .raceWith(
+            Commands.sequence(
+                this.retractor.moveToIntake(),
+                Commands.waitSeconds(0.5),
+                Commands.sequence(
+                        this.drivetrain.driveIntoNote(),
+                        this.drivetrain
+                            .driveCommand(0.0, 1.5, 0.0, false)
+                            .until(this.sucker::noteDetected)
+                            .withTimeout(1.0),
+                        this.drivetrain.stop(),
+                        this.retractor.moveToMating())
+                    .onlyIf(this.drivetrain::seesNote)))
+        .andThen(this.sucker.off());
   }
 
   public Command getAutonomousCommand() {
