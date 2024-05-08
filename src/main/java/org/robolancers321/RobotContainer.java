@@ -5,6 +5,7 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.robolancers321.Constants.ClimbConstants;
 import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
@@ -36,9 +38,9 @@ import org.robolancers321.commands.PPAutos.TopDisrupt;
 import org.robolancers321.commands.PPAutos.TopTaxi;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
-import org.robolancers321.subsystems.Climber;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
+import org.robolancers321.subsystems.climb.Climber;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -54,7 +56,8 @@ public class RobotContainer {
   private Pivot pivot;
   private Indexer indexer;
   private Flywheel flywheel;
-  private Climber climber;
+  private Climber leftClimber;
+  private Climber rightClimber;
 
   private CommandXboxController driverController;
   private CommandXboxController manipulatorController;
@@ -73,7 +76,8 @@ public class RobotContainer {
     this.pivot = Pivot.getInstance();
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
-    this.climber = Climber.getInstance();
+    this.leftClimber = new Climber(ClimbConstants.leftClimberConfig);
+    this.rightClimber = new Climber(ClimbConstants.rightClimberConfig);
 
     this.driverController = new CommandXboxController(0);
     this.manipulatorController = new CommandXboxController(1);
@@ -339,36 +343,6 @@ public class RobotContainer {
     new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
         .onTrue(this.pivot.moveToRetracted().unless(() -> climbing));
 
-    new Trigger(() -> -this.manipulatorController.getRightY() > 0.2)
-        .whileTrue(
-            climber
-                .run(
-                    () -> {
-                      climber.setLeftPower(-this.manipulatorController.getRightY());
-                      climber.setRightPower(-this.manipulatorController.getRightY());
-                    })
-                .finallyDo(
-                    () -> {
-                      climber.setLeftPower(0);
-                      climber.setRightPower(0);
-                    })
-                .onlyIf(() -> climbing));
-
-    new Trigger(() -> -this.manipulatorController.getRightY() < -0.2)
-        .whileTrue(
-            climber
-                .run(
-                    () -> {
-                      climber.setLeftPower(-this.manipulatorController.getRightY());
-                      climber.setRightPower(-this.manipulatorController.getRightY());
-                    })
-                .finallyDo(
-                    () -> {
-                      climber.setLeftPower(0);
-                      climber.setRightPower(0);
-                    })
-                .onlyIf(() -> climbing));
-
     // new Trigger(this.manipulatorController::getLeftBumper)
     //     .and(() -> climbing)
     //     .whileTrue(
@@ -386,19 +360,11 @@ public class RobotContainer {
 
     this.manipulatorController
         .leftTrigger(0.5)
-        .whileTrue(
-            climber
-                .run(() -> climber.setLeftPower(-0.2))
-                .finallyDo(() -> climber.setLeftPower(0))
-                .onlyIf(() -> climbing));
+        .whileTrue(leftClimber.runPower(() -> -0.2).onlyIf(() -> climbing));
 
     this.manipulatorController
         .rightTrigger(0.5)
-        .whileTrue(
-            climber
-                .run(() -> climber.setRightPower(-0.2))
-                .finallyDo(() -> climber.setRightPower(0))
-                .onlyIf(() -> climbing));
+        .whileTrue(rightClimber.runPower(() -> -0.2).onlyIf(() -> climbing));
 
     // new Trigger(this.manipulatorController::getXButton).and(() -> climbing).onTrue(new
     // ScoreTrap());
@@ -476,6 +442,13 @@ public class RobotContainer {
           this.climbing = true;
           this.pivot.setDefaultCommand(this.pivot.moveToRetracted());
           // this.pivot.setDefaultCommand(this.pivot.aimAtTrap());
+
+          this.leftClimber.setDefaultCommand(
+              this.leftClimber.runPower(
+                  () -> MathUtil.applyDeadband(-this.manipulatorController.getRightY(), 0.2)));
+          this.rightClimber.setDefaultCommand(
+              this.rightClimber.runPower(
+                  () -> MathUtil.applyDeadband(-this.manipulatorController.getRightY(), 0.2)));
         });
   }
 
@@ -494,6 +467,9 @@ public class RobotContainer {
 
                     return PivotConstants.PivotSetpoint.kRetracted.angle;
                   }));
+
+          this.leftClimber.removeDefaultCommand();
+          this.rightClimber.removeDefaultCommand();
         });
   }
 

@@ -294,14 +294,11 @@ public final class Constants {
     }
   }
 
-  public static final class ClimberConstants {
-    public static final int kLeftClimberPort = 19;
-    // public static final int kLeftLimitSwitchPort = 0;
-    public static final boolean kLeftClimberInverted = false;
+  public static final class ClimbConstants {
+    public record Config(String name, int motorId, boolean motorInverted) {}
 
-    public static final int kRightClimberPort = 18;
-    // public static final int kRightLimitSwitchPort = 1;
-    public static final boolean kRightClimberInverted = true;
+    public static final Config leftClimberConfig = new Config("Left Climber", 19, false);
+    public static final Config rightClimberConfig = new Config("Right Climber", 18, true);
 
     public static final int kCurrentLimit = 40;
     public static final float kMaxSoftLimit = 64;
