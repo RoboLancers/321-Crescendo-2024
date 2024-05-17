@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7121880748754355,
-        "y": 3.372720925185073
+        "x": 1.4187317942065913,
+        "y": 2.297767445407665
       },
       "isLocked": false,
       "linkedName": "BotStart"
     },
     {
       "anchor": {
-        "x": 5.365969077159265,
-        "y": 0.7893554248646963
+        "x": 5.293603258962244,
+        "y": 1.0235509529543236
       },
       "prevControl": {
-        "x": 4.402885297205359,
-        "y": 0.7993875475725486
+        "x": 3.528500084989992,
+        "y": 1.1115249163361902
       },
       "nextControl": {
-        "x": 6.49020938555429,
-        "y": 0.777644588318916
+        "x": 6.416510720552471,
+        "y": 0.967584468182303
       },
       "isLocked": false,
       "linkedName": null
@@ -55,7 +55,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 270.0,
     "maxAngularAcceleration": 360.0
   },

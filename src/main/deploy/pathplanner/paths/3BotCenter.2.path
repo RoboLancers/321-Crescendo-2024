@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.3965226931880395,
-        "y": 0.8197585582047061
+        "x": 6.536486558978209,
+        "y": 0.7415522210179295
       },
       "isLocked": false,
       "linkedName": "3BotCenter.1End"
     },
     {
       "anchor": {
-        "x": 3.2814401720101576,
-        "y": 1.955709703145511
+        "x": 2.713837081618184,
+        "y": 1.1697725176620835
       },
       "prevControl": {
-        "x": 4.206596259126896,
-        "y": 1.276481183490184
+        "x": 3.556931256793417,
+        "y": 0.6162258369914757
       },
       "nextControl": {
-        "x": 2.2155200107985715,
-        "y": 2.7382839987185745
+        "x": 1.6798417311847351,
+        "y": 1.8486583538052574
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 4.485250397034318
       },
       "prevControl": {
-        "x": 1.36086297850199,
-        "y": 3.7943110408332084
+        "x": 1.39784299924834,
+        "y": 3.363095988278491
       },
       "nextControl": null,
       "isLocked": false,
@@ -55,7 +55,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 270.0,
     "maxAngularAcceleration": 360.0
   },
