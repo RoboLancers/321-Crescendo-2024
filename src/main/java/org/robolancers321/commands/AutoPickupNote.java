@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -33,7 +35,7 @@ public class AutoPickupNote extends SequentialCommandGroup {
                         //     .driveCommand(0.0, 2.0, 0.0, false)
                         //     .until(() -> !this.drivetrain.seesNote())
                         //     .withTimeout(1.5),
-                        this.drivetrain.driveIntoNote(),
+                        this.drivetrain.driveIntoNote().raceWith(new WaitUntilCommand(this.sucker::noteDetected)),
                         this.drivetrain
                             .driveCommand(0.0, 1.5, 0.0, false)
                             .until(this.sucker::noteDetected)

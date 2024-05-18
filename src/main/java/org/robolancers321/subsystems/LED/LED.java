@@ -18,6 +18,8 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+
+import org.robolancers321.util.MathUtils;
 import org.robolancers321.util.VirtualSubsystem;
 
 /*
@@ -41,13 +43,13 @@ public class LED extends VirtualSubsystem {
   private static final double kWaveDuration = 3.0;
   private static final double kStripeDuration = 0.5;
 
-  private static final int kWavefrontSpeed = 28;
-  private static final int kFadeSpeed = 900;
-  private static final double kFadeProbability = 0.34;
-  private static final int kWavefrontSeparation = 42;
-  private static final int kWavefrontLength = 2;
+  private static final int kWavefrontSpeed = 20;
+  private static final int kFadeSpeed = 3000;
+  private static final double kFadeProbability = 0.3;
+  private static final int kWavefrontSeparation = 38;
+  private static final int kWavefrontLength = 1;
 
-  public static final rgb[] kDrivingMeteor = {new rgb(180, 15, 0)}; // 255, 40, 0
+  public static final rgb[] kDrivingMeteor = { new rgb(255, 50, 20)}; // 255, 40, 0
   public static final rgb[] kClimbingMeteor = {new rgb(0, 0, 255)};
 
   public static final rgb[] kNoteMeteorColors = {
@@ -289,9 +291,9 @@ public class LED extends VirtualSubsystem {
 
   private static void fadeToBlack(AddressableLEDBuffer buffer, int ledNo, double dt) {
     Color8Bit color = buffer.getLED8Bit(ledNo);
-    int r = (int) Math.max(color.red - kFadeSpeed * dt, 0);
-    int g = (int) Math.max(color.green - kFadeSpeed * dt, 0);
-    int b = (int) Math.max(color.blue - kFadeSpeed * dt, 0);
+    int r = (int) MathUtil.clamp(color.red - kFadeSpeed * dt * (Math.random() - 0.1) * (color.red > 0 ? 1 : 0), 0, 255);
+    int g = (int) MathUtil.clamp(color.green - kFadeSpeed * dt * (Math.random() - 0.1) * (color.green > 0 ? 1 : 0), 0, 255);
+    int b = (int) MathUtil.clamp(color.blue - kFadeSpeed * dt * (Math.random() - 0.1) * (color.blue > 0 ? 1 : 0), 0, 255);
 
     meteorBuf[ledNo] = new rgb(r, g, b);
   }

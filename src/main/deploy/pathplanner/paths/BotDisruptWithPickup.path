@@ -71,70 +71,6 @@
         "x": 7.494947962968767,
         "y": 7.5310633125325825
       },
-      "nextControl": {
-        "x": 7.528704319495153,
-        "y": 6.400225368898574
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.507815524536903,
-        "y": 1.0754967663781487
-      },
-      "prevControl": {
-        "x": 7.489537828948432,
-        "y": 2.1871895839358344
-      },
-      "nextControl": {
-        "x": 7.526093220125373,
-        "y": -0.036196051179535615
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.496371565580283,
-        "y": 6.799302758910862
-      },
-      "prevControl": {
-        "x": 7.505999994506352,
-        "y": 4.7375911910499084
-      },
-      "nextControl": {
-        "x": 7.486743136654214,
-        "y": 8.861014326771818
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.507815524536903,
-        "y": 1.0754967663781487
-      },
-      "prevControl": {
-        "x": 7.505862299813023,
-        "y": 2.958765543169226
-      },
-      "nextControl": {
-        "x": 7.5097687492607825,
-        "y": -0.8077720104129291
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.507815524536903,
-        "y": 7.164856670680264
-      },
-      "prevControl": {
-        "x": 7.486926729578653,
-        "y": 8.18868379760639
-      },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
@@ -167,8 +103,8 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
-    "rotateFast": false
+    "rotation": -90.0,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "BotDisrupt",

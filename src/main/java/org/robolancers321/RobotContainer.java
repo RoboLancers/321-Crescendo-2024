@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -25,6 +26,7 @@ import org.robolancers321.commands.AutoCommands.PathAndRetract;
 import org.robolancers321.commands.IntakeNote;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.PPAutos.BotDisrupt;
+import org.robolancers321.commands.PPAutos.BotDisruptWithPickup;
 import org.robolancers321.commands.PPAutos.BotTaxi;
 import org.robolancers321.commands.PPAutos.FourBottom;
 import org.robolancers321.commands.PPAutos.FourMid;
@@ -122,7 +124,7 @@ public class RobotContainer {
 
     // note in sucker, solid white
     LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(100, 150, 150)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(90, 90, 150)));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -302,7 +304,7 @@ public class RobotContainer {
                         this.indexer.outtake(),
                         this.sucker.out(),
                         Commands.idle(this.pivot, this.flywheel)))
-                .unless(() -> climbing));
+                .unless(() -> climbing || this.manipulatorController.getLeftTriggerAxis() > 0.5));
 
     this.manipulatorController.leftBumper().onTrue(toggleClimbingMode());
 
@@ -315,16 +317,18 @@ public class RobotContainer {
         .and(() -> !climbing)
         .whileTrue(feed().unless(() -> climbing))
         .onFalse(
-            Commands.deadline(
-                    Commands.sequence(
-                            Commands.waitUntil(this.indexer::exitBeamBroken),
-                            Commands.waitUntil(this.indexer::exitBeamNotBroken),
-                            Commands.waitSeconds(0.1))
-                        .withTimeout(1.0),
-                    this.indexer.outtake(),
-                    this.sucker.out(),
-                    Commands.idle(this.pivot, this.flywheel))
-                .unless(() -> climbing));
+            Commands.sequence(
+                    this.retractor.moveToSpeaker(),
+                    Commands.deadline(
+                        Commands.sequence(
+                                Commands.waitUntil(this.indexer::exitBeamBroken),
+                                Commands.waitUntil(this.indexer::exitBeamNotBroken),
+                                Commands.waitSeconds(0.1))
+                            .withTimeout(1.0),
+                        this.indexer.outtake(),
+                        this.sucker.out(),
+                        Commands.idle(this.pivot, this.flywheel)))
+                .unless(() -> climbing || this.manipulatorController.getLeftTriggerAxis() > 0.5));
 
     this.manipulatorController
         .rightTrigger(0.5)
@@ -380,13 +384,13 @@ public class RobotContainer {
 
     this.autoChooser.addOption(
         "Do Nothing",
-        Commands.runOnce(
+        new InstantCommand(
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())));
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreAndSit());
 
     this.autoChooser.addOption(
         "TESTING DONT USE",
-        Commands.runOnce(
+        new InstantCommand(
                 () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees()))
             .andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
 
@@ -422,6 +426,7 @@ public class RobotContainer {
 
     this.autoChooser.addOption("top chaos", new TopDisrupt());
     this.autoChooser.addOption("bottom chaos", new BotDisrupt());
+    this.autoChooser.addOption("bottom chaos with pickup", new BotDisruptWithPickup());
 
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
