@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
-import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.launcher.AimTable;
 import org.robolancers321.subsystems.launcher.Flywheel;
 import org.robolancers321.subsystems.launcher.Indexer;
@@ -13,7 +12,6 @@ import org.robolancers321.subsystems.launcher.Pivot;
 
 public class ScoreSpeakerFromDistance extends SequentialCommandGroup {
   private Pivot pivot;
-  private Retractor retractor;
   private Indexer indexer;
   private Flywheel flywheel;
   private Drivetrain drivetrain;

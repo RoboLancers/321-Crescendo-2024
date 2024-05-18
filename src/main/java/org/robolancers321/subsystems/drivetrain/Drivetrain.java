@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -289,14 +290,14 @@ public class Drivetrain extends SubsystemBase {
     double angle =
         -180
             + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
-            + this.getYawDeg();
+            - this.getYawDeg();
 
     if (!MyAlliance.isRed()) return angle;
 
-    double x = Math.cos(angle * Math.PI / 180);
-    double y = Math.sin(angle * Math.PI / 180);
+    double x = Math.cos(Units.degreesToRadians(angle));
+    double y = Math.sin(Units.degreesToRadians(angle));
 
-    return -Math.atan2(y, -x) * 180 / Math.PI;
+    return Units.radiansToDegrees(-Math.atan2(y, -x));
   }
 
   public double getDistanceToSpeaker() {

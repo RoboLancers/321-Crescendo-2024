@@ -2,6 +2,7 @@
 package org.robolancers321.subsystems.intake;
 
 import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
+import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkBase;
@@ -14,11 +15,10 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import org.robolancers321.Constants.RetractorConstants;
@@ -141,7 +141,7 @@ public class Retractor extends SubsystemBase {
   protected void useOutput(TrapezoidProfile.State setpoint) {
     double feedforwardOutput =
         this.feedforwardController.calculate(
-            setpoint.position * Math.PI / 180.0, setpoint.velocity * Math.PI / 180.0);
+            Units.degreesToRadians(setpoint.position), Units.degreesToRadians(setpoint.velocity));
 
     SmartDashboard.putNumber("retractor position setpoint mp (deg)", setpoint.position);
     SmartDashboard.putNumber("retractor velocity setpoint mp (deg)", setpoint.velocity);
@@ -233,22 +233,16 @@ public class Retractor extends SubsystemBase {
   }
 
   public Command moveToAngle(DoubleSupplier angleDegSupplier) {
-    return new SequentialCommandGroup(
-            new InstantCommand(
-                () ->
-                    this.setGoal(
-                        MathUtil.clamp(
-                            angleDegSupplier.getAsDouble(),
-                            RetractorConstants.kMinAngle,
-                            RetractorConstants.kMaxAngle))),
-            this.run(
-                    () ->
-                        this.setGoal(
-                            MathUtil.clamp(
-                                angleDegSupplier.getAsDouble(),
-                                RetractorConstants.kMinAngle,
-                                RetractorConstants.kMaxAngle)))
-                .until(this::atGoal))
+    // technically the `DoubleSupplier` should be polled repeatedly but this is a minor optimization
+    // as a dynamic angle setpoint is never used (see Pivot for proper angle setpoint polling)
+    return runOnce(
+            () ->
+                this.setGoal(
+                    MathUtil.clamp(
+                        angleDegSupplier.getAsDouble(),
+                        RetractorConstants.kMinAngle,
+                        RetractorConstants.kMaxAngle)))
+        .andThen(idle(this).until(this::atGoal))
         .withTimeout(4.0);
   }
 

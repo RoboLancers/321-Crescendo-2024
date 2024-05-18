@@ -5,7 +5,7 @@ import static org.robolancers321.util.MathUtils.epsilonEquals;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.simulation.AddressableLEDSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,25 +14,19 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.robolancers321.Constants.ClimbConstants;
 import org.robolancers321.Constants.FlywheelConstants;
 import org.robolancers321.Constants.PivotConstants;
 import org.robolancers321.Constants.RetractorConstants;
 import org.robolancers321.Constants.RetractorConstants.RetractorSetpoint;
 import org.robolancers321.commands.AutoCommands.PathAndRetract;
-import org.robolancers321.commands.AutoPickupNote;
-import org.robolancers321.commands.EmergencyCancel;
-import org.robolancers321.commands.FeederShot;
 import org.robolancers321.commands.IntakeNote;
-import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
-import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.PPAutos.BotDisrupt;
+import org.robolancers321.commands.PPAutos.BotDisruptWithPickup;
 import org.robolancers321.commands.PPAutos.BotTaxi;
 import org.robolancers321.commands.PPAutos.FourBottom;
 import org.robolancers321.commands.PPAutos.FourMid;
@@ -44,14 +38,11 @@ import org.robolancers321.commands.PPAutos.ThreeBotCenterAlt;
 import org.robolancers321.commands.PPAutos.ThreeTopCenter;
 import org.robolancers321.commands.PPAutos.TopDisrupt;
 import org.robolancers321.commands.PPAutos.TopTaxi;
-import org.robolancers321.commands.ScoreAmp;
-import org.robolancers321.commands.ScoreAmpIntake;
-import org.robolancers321.commands.ScoreSpeakerFixedTeleop;
 import org.robolancers321.commands.ScoreSpeakerFromDistance;
 import org.robolancers321.commands.Shift;
-import org.robolancers321.subsystems.Climber;
 import org.robolancers321.subsystems.LED.LED;
 import org.robolancers321.subsystems.LED.LED.Section;
+import org.robolancers321.subsystems.climb.Climber;
 import org.robolancers321.subsystems.drivetrain.Drivetrain;
 import org.robolancers321.subsystems.intake.Retractor;
 import org.robolancers321.subsystems.intake.Sucker;
@@ -67,10 +58,11 @@ public class RobotContainer {
   private Pivot pivot;
   private Indexer indexer;
   private Flywheel flywheel;
-  private Climber climber;
+  private Climber leftClimber;
+  private Climber rightClimber;
 
-  private XboxController driverController;
-  private XboxController manipulatorController;
+  private CommandXboxController driverController;
+  private CommandXboxController manipulatorController;
 
   private SendableChooser<Command> autoChooser;
 
@@ -86,10 +78,11 @@ public class RobotContainer {
     this.pivot = Pivot.getInstance();
     this.indexer = Indexer.getInstance();
     this.flywheel = Flywheel.getInstance();
-    this.climber = Climber.getInstance();
+    this.leftClimber = new Climber(ClimbConstants.leftClimberConfig);
+    this.rightClimber = new Climber(ClimbConstants.rightClimberConfig);
 
-    this.driverController = new XboxController(0);
-    this.manipulatorController = new XboxController(1);
+    this.driverController = new CommandXboxController(0);
+    this.manipulatorController = new CommandXboxController(1);
 
     this.configureNamedCommands();
 
@@ -131,7 +124,7 @@ public class RobotContainer {
 
     // note in sucker, solid white
     LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(100, 150, 150)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(90, 90, 150)));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -160,9 +153,9 @@ public class RobotContainer {
 
   private void configureDefaultCommands() {
     this.drivetrain.setDefaultCommand( // this.drivetrain.tuneModules());
-        this.drivetrain.teleopDrive(driverController, true));
+        this.drivetrain.teleopDrive(driverController.getHID(), true));
 
-    this.sucker.setDefaultCommand(this.sucker.off());
+    this.sucker.setDefaultCommand(this.sucker.off().repeatedly());
     this.indexer.setDefaultCommand(this.indexer.off());
 
     this.flywheel.setDefaultCommand(
@@ -215,40 +208,42 @@ public class RobotContainer {
    */
   private void configureDriverController() {
     // TODO: i think we keep this just in case for teleop
-    new Trigger(
-            () -> this.driverController.getLeftBumper() && this.driverController.getRightBumper())
+    this.driverController
+        .leftBumper()
+        .and(this.driverController.rightBumper())
         .onTrue(this.drivetrain.zeroYaw());
 
     // TODO: technically we can just pull the bumper state off of the controller inside teleop
     // command but maybe this offers more control programmatically
-    new Trigger(this.driverController::getRightBumper)
-        .whileTrue(new InstantCommand(() -> this.drivetrain.slowMode = true));
-    new Trigger(this.driverController::getRightBumper)
-        .whileFalse(new InstantCommand(() -> this.drivetrain.slowMode = false));
+    this.driverController
+        .rightBumper()
+        .whileTrue(Commands.runOnce(() -> this.drivetrain.slowMode = true))
+        .whileFalse(Commands.runOnce(() -> this.drivetrain.slowMode = false));
 
-    new Trigger(this.driverController::getLeftBumper).whileTrue(this.sucker.in());
-    new Trigger(this.driverController::getLeftBumper).whileFalse(this.sucker.off());
+    this.driverController
+        .leftBumper()
+        .whileTrue(this.sucker.in())
+        .whileFalse(this.sucker.off().repeatedly());
 
-    new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
-        .whileTrue(new IntakeNoteManual().unless(() -> climbing));
+    this.driverController.rightTrigger(0.8).whileTrue(manuallyIntakeNote().unless(() -> climbing));
 
     // for auto handoff, putting it on a button instead is safer so fender shot is still viable
     // new Trigger(() -> this.driverController.getRightTriggerAxis() > 0.8)
     //     .onFalse((new Mate().andThen(new Shift())).onlyIf(this.sucker::noteDetected));
 
-    new Trigger(() -> this.driverController.getLeftTriggerAxis() > 0.8)
-        .whileTrue(new OuttakeNote().unless(() -> climbing));
+    this.driverController.leftTrigger(0.8).whileTrue(outtakeNote().unless(() -> climbing));
 
-    new Trigger(this.driverController::getAButton)
-        .whileTrue(this.drivetrain.alignToAmp().unless(() -> climbing));
+    this.driverController.a().whileTrue(this.drivetrain.alignToAmp().unless(() -> climbing));
 
-    new Trigger(this.driverController::getBButton)
-        .whileTrue(new AutoPickupNote().unless(() -> climbing));
+    this.driverController.b().whileTrue(autoPickupNote().unless(() -> climbing));
 
-    new Trigger(this.driverController::getXButton)
-        .onTrue(new EmergencyCancel().unless(() -> climbing));
+    this.driverController
+        .x()
+        .onTrue(
+            Commands.runOnce(() -> {}, drivetrain, retractor, sucker, indexer, flywheel, pivot)
+                .unless(() -> climbing));
 
-    new Trigger(this.driverController::getYButton).onTrue(toggleClimbingMode());
+    this.driverController.y().onTrue(toggleClimbingMode());
   }
 
   /*
@@ -279,66 +274,66 @@ public class RobotContainer {
    */
 
   private void configureManipulatorController() {
-    new Trigger(this.manipulatorController::getBButton)
-        .onTrue((new Mate().andThen(new Shift()).unless(() -> climbing)));
+    this.manipulatorController.b().onTrue((new Mate().andThen(new Shift()).unless(() -> climbing)));
 
     // .onlyIf(this.sucker::noteDetected)
-
-    new Trigger(this.manipulatorController::getAButton)
-        .whileTrue(new ScoreAmp().unless(() -> climbing));
-    new Trigger(this.manipulatorController::getAButton)
+    this.manipulatorController
+        .a()
+        .whileTrue(scoreAmp().unless(() -> climbing))
         .onFalse(
             this.indexer
                 .outtake()
                 .raceWith(Commands.idle(this.pivot, this.flywheel))
                 .unless(() -> climbing));
 
-    new Trigger(this.manipulatorController::getYButton)
-        .onTrue(new ScoreSpeakerFromDistance().unless(() -> climbing));
+    this.manipulatorController.y().onTrue(new ScoreSpeakerFromDistance().unless(() -> climbing));
 
-    new Trigger(this.manipulatorController::getXButton)
+    this.manipulatorController
+        .x()
         .and(() -> !climbing)
-        .whileTrue(new ScoreSpeakerFixedTeleop().unless(() -> climbing));
-    new Trigger(this.manipulatorController::getXButton)
-        .and(() -> !climbing)
+        .whileTrue(scoreSpeakerFixed().unless(() -> climbing))
         .onFalse(
-            new SequentialCommandGroup(
+            Commands.sequence(
                     this.retractor.moveToSpeaker(),
-                    new ParallelDeadlineGroup(
-                        (new WaitUntilCommand(this.indexer::exitBeamBroken)
-                                .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
-                                .andThen(new WaitCommand(0.1)))
+                    Commands.deadline(
+                        Commands.sequence(
+                                Commands.waitUntil(this.indexer::exitBeamBroken),
+                                Commands.waitUntil(this.indexer::exitBeamNotBroken),
+                                Commands.waitSeconds(0.1))
                             .withTimeout(1.0),
                         this.indexer.outtake(),
                         this.sucker.out(),
                         Commands.idle(this.pivot, this.flywheel)))
-                .unless(() -> climbing));
+                .unless(() -> climbing || this.manipulatorController.getLeftTriggerAxis() > 0.5));
 
-    new Trigger(this.manipulatorController::getLeftBumper).onTrue(toggleClimbingMode());
+    this.manipulatorController.leftBumper().onTrue(toggleClimbingMode());
 
     // new Trigger(() -> this.manipulatorController.getLeftBumper())
     //     .and(() -> !climbing)
     //     .onTrue(new AutoScoreTrap());
 
-    new Trigger(() -> this.manipulatorController.getPOV() == 0)
+    this.manipulatorController
+        .povUp()
         .and(() -> !climbing)
-        .whileTrue(new FeederShot().unless(() -> climbing));
-    new Trigger(() -> this.manipulatorController.getPOV() == 0)
-        .and(() -> !climbing)
+        .whileTrue(feed().unless(() -> climbing))
         .onFalse(
-            new ParallelDeadlineGroup(
-                    (new WaitUntilCommand(this.indexer::exitBeamBroken)
-                            .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
-                            .andThen(new WaitCommand(0.1)))
-                        .withTimeout(1.0),
-                    this.indexer.outtake(),
-                    this.sucker.out(),
-                    Commands.idle(this.pivot, this.flywheel))
-                .unless(() -> climbing));
+            Commands.sequence(
+                    this.retractor.moveToSpeaker(),
+                    Commands.deadline(
+                        Commands.sequence(
+                                Commands.waitUntil(this.indexer::exitBeamBroken),
+                                Commands.waitUntil(this.indexer::exitBeamNotBroken),
+                                Commands.waitSeconds(0.1))
+                            .withTimeout(1.0),
+                        this.indexer.outtake(),
+                        this.sucker.out(),
+                        Commands.idle(this.pivot, this.flywheel)))
+                .unless(() -> climbing || this.manipulatorController.getLeftTriggerAxis() > 0.5));
 
-    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
+    this.manipulatorController
+        .rightTrigger(0.5)
         .and(() -> !climbing)
-        .onTrue(new ScoreAmpIntake().unless(() -> climbing));
+        .onTrue(scoreAmpWithIntake().unless(() -> climbing));
 
     // new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
     //     .and(() -> !climbing)
@@ -351,36 +346,6 @@ public class RobotContainer {
         .onTrue(this.pivot.aimAtAmp().unless(() -> climbing));
     new Trigger(() -> this.manipulatorController.getLeftY() > 0.8)
         .onTrue(this.pivot.moveToRetracted().unless(() -> climbing));
-
-    new Trigger(() -> -this.manipulatorController.getRightY() > 0.2)
-        .whileTrue(
-            climber
-                .run(
-                    () -> {
-                      climber.setLeftPower(-this.manipulatorController.getRightY());
-                      climber.setRightPower(-this.manipulatorController.getRightY());
-                    })
-                .finallyDo(
-                    () -> {
-                      climber.setLeftPower(0);
-                      climber.setRightPower(0);
-                    })
-                .onlyIf(() -> climbing));
-
-    new Trigger(() -> -this.manipulatorController.getRightY() < -0.2)
-        .whileTrue(
-            climber
-                .run(
-                    () -> {
-                      climber.setLeftPower(-this.manipulatorController.getRightY());
-                      climber.setRightPower(-this.manipulatorController.getRightY());
-                    })
-                .finallyDo(
-                    () -> {
-                      climber.setLeftPower(0);
-                      climber.setRightPower(0);
-                    })
-                .onlyIf(() -> climbing));
 
     // new Trigger(this.manipulatorController::getLeftBumper)
     //     .and(() -> climbing)
@@ -397,19 +362,13 @@ public class RobotContainer {
     //             .finallyDo(() -> climber.setRightPower(0))
     //             .onlyIf(() -> climbing));
 
-    new Trigger(() -> this.manipulatorController.getLeftTriggerAxis() > 0.5)
-        .whileTrue(
-            climber
-                .run(() -> climber.setLeftPower(-0.2))
-                .finallyDo(() -> climber.setLeftPower(0))
-                .onlyIf(() -> climbing));
+    this.manipulatorController
+        .leftTrigger(0.5)
+        .whileTrue(leftClimber.runPower(() -> -0.2).onlyIf(() -> climbing));
 
-    new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
-        .whileTrue(
-            climber
-                .run(() -> climber.setRightPower(-0.2))
-                .finallyDo(() -> climber.setRightPower(0))
-                .onlyIf(() -> climbing));
+    this.manipulatorController
+        .rightTrigger(0.5)
+        .whileTrue(rightClimber.runPower(() -> -0.2).onlyIf(() -> climbing));
 
     // new Trigger(this.manipulatorController::getXButton).and(() -> climbing).onTrue(new
     // ScoreTrap());
@@ -467,6 +426,7 @@ public class RobotContainer {
 
     this.autoChooser.addOption("top chaos", new TopDisrupt());
     this.autoChooser.addOption("bottom chaos", new BotDisrupt());
+    this.autoChooser.addOption("bottom chaos with pickup", new BotDisruptWithPickup());
 
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
@@ -487,6 +447,13 @@ public class RobotContainer {
           this.climbing = true;
           this.pivot.setDefaultCommand(this.pivot.moveToRetracted());
           // this.pivot.setDefaultCommand(this.pivot.aimAtTrap());
+
+          this.leftClimber.setDefaultCommand(
+              this.leftClimber.runPower(
+                  () -> MathUtil.applyDeadband(-this.manipulatorController.getRightY(), 0.2)));
+          this.rightClimber.setDefaultCommand(
+              this.rightClimber.runPower(
+                  () -> MathUtil.applyDeadband(-this.manipulatorController.getRightY(), 0.2)));
         });
   }
 
@@ -505,7 +472,62 @@ public class RobotContainer {
 
                     return PivotConstants.PivotSetpoint.kRetracted.angle;
                   }));
+
+          this.leftClimber.removeDefaultCommand();
+          this.rightClimber.removeDefaultCommand();
         });
+  }
+
+  private Command manuallyIntakeNote() {
+    return this.retractor.moveToIntake().alongWith(this.sucker.in());
+  }
+
+  private Command outtakeNote() {
+    return this.retractor.moveToOuttake().andThen(this.sucker.out());
+  }
+
+  private Command scoreAmp() {
+    return Commands.sequence(this.pivot.aimAtAmp(), this.flywheel.revAmp(), Commands.idle());
+  }
+
+  private Command scoreAmpWithIntake() {
+    return this.retractor
+        .moveToAmp()
+        .until(() -> this.retractor.atGoalTimed(0.5))
+        .andThen(this.sucker.ampShot().withTimeout(0.4))
+        .withTimeout(3.0);
+  }
+
+  private Command scoreSpeakerFixed() {
+    return Commands.parallel(
+        this.flywheel.revSpeaker(), this.pivot.aimAtSpeakerFixed(), Commands.idle());
+  }
+
+  private Command feed() {
+    return Commands.parallel(
+        this.flywheel.revFeeder(),
+        this.retractor.moveToMating(),
+        this.pivot.aimAtSpeakerFixed(),
+        Commands.idle());
+  }
+
+  private Command autoPickupNote() {
+    return this.sucker
+        .in()
+        .raceWith(
+            Commands.sequence(
+                this.retractor.moveToIntake(),
+                Commands.waitSeconds(0.5),
+                Commands.sequence(
+                        this.drivetrain.driveIntoNote(),
+                        this.drivetrain
+                            .driveCommand(0.0, 1.5, 0.0, false)
+                            .until(this.sucker::noteDetected)
+                            .withTimeout(1.0),
+                        this.drivetrain.stop(),
+                        this.retractor.moveToMating())
+                    .onlyIf(this.drivetrain::seesNote)))
+        .andThen(this.sucker.off());
   }
 
   public Command getAutonomousCommand() {

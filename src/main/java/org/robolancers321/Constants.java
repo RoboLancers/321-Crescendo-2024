@@ -27,7 +27,10 @@ public final class Constants {
 
     public static final Transform3d kRobotToCameraTransform =
         new Transform3d(
-            -0.35, 0, 0.516, new Rotation3d(0, -31.5 * Math.PI / 180.0, Math.PI)); // 0.34, 0 ,-0.48
+            -0.35,
+            0,
+            0.516,
+            new Rotation3d(0, Units.degreesToRadians(-31.5), Math.PI)); // 0.34, 0 ,-0.48
     // 0.33, 0.513
     public static final double kNoteCameraMountHeight =
         Units.inchesToMeters(11.0); // rough estimate of camera height while mounted on crate
@@ -44,7 +47,7 @@ public final class Constants {
     public static final double kMaxTeleopRotationPercent = 1.0;
 
     public static final PathConstraints kAutoConstraints =
-        new PathConstraints(4.0, 4.0, 270 * Math.PI / 180, 360 * Math.PI / 180);
+        new PathConstraints(4.0, 3.0, Units.degreesToRadians(270), Units.degreesToRadians(360));
 
     public static final SwerveDriveKinematics kSwerveKinematics =
         new SwerveDriveKinematics(
@@ -194,7 +197,7 @@ public final class Constants {
     public static final int kExitBeamBreakPort = 9;
 
     public static final boolean kInvertMotor = true;
-    public static final int kCurrentLimit = 40;
+    public static final int kCurrentLimit = 60;
 
     public static final double kFF = 0.000153;
 
@@ -253,13 +256,18 @@ public final class Constants {
 
   public static final class AimConstants {
     public static final double kMinDistance = 1.00;
-    public static final double kMaxDistance = 2.6;
+    public static final double kMaxDistance = 3.00;
 
     public static final class PivotAngleCoefficients {
-      public static final double kA = 8.31998;
-      public static final double kB = 3.60133;
-      public static final double kC = -5.22848;
-      public static final double kD = -14.9893;
+      public static final double kA = 44.28;
+      public static final double kB = 0.260282;
+      public static final double kC = -0.798989;
+      public static final double kD = 0;
+
+      // public static final double kA = 8.31998;
+      // public static final double kB = 3.60133;
+      // public static final double kC = -5.22848;
+      // public static final double kD = -14.9893;
 
       // with 5th point
       // public static final double kA = 12.1173;
@@ -279,10 +287,10 @@ public final class Constants {
     }
 
     public static final class FlywheelRPMCoefficients {
-      public static final double kA = 294.705;
-      public static final double kB = 1.60814;
-      public static final double kC = -3.7283;
-      public static final double kD = 2777.62;
+      public static final double kA = 210.534;
+      public static final double kB = 5.19789;
+      public static final double kC = -14.2995;
+      public static final double kD = 2692.22;
 
       // public static final double kA = -1004.55;
       // public static final double kB = -0.884096;
@@ -291,14 +299,11 @@ public final class Constants {
     }
   }
 
-  public static final class ClimberConstants {
-    public static final int kLeftClimberPort = 19;
-    // public static final int kLeftLimitSwitchPort = 0;
-    public static final boolean kLeftClimberInverted = false;
+  public static final class ClimbConstants {
+    public record Config(String name, int motorId, boolean motorInverted) {}
 
-    public static final int kRightClimberPort = 18;
-    // public static final int kRightLimitSwitchPort = 1;
-    public static final boolean kRightClimberInverted = true;
+    public static final Config leftClimberConfig = new Config("Left Climber", 19, false);
+    public static final Config rightClimberConfig = new Config("Right Climber", 18, true);
 
     public static final int kCurrentLimit = 40;
     public static final float kMaxSoftLimit = 64;

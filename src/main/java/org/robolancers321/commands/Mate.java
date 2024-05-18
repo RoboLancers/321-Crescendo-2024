@@ -55,7 +55,7 @@ public class Mate extends SequentialCommandGroup {
         //     this.sucker.out(),
         //     this.flywheel.shiftForward()),
 
-        this.sucker.offInstantly(),
+        this.sucker.off(), // Instantly
         this.indexer.off(),
         this.flywheel.off(),
         new ParallelCommandGroup(this.retractor.moveToRetracted()));
