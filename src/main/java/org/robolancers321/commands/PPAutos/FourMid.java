@@ -48,6 +48,8 @@ public class FourMid extends SequentialCommandGroup {
         new PathAndIntake(pathGroup.get(4)),
         new PathAndRetract(pathGroup.get(5)),
         new ScoreSpeakerFixedAuto()
+        // new PathAndRetract(pathGroup.get(6)),
+        // this.drivetrain.driveCommand(0, 0, 1.0, false)
 
         // new PathAndShoot(PathPlannerPath.fromPathFile("SweepStraight4M.5"))
         );
