@@ -33,6 +33,7 @@ import org.robolancers321.commands.IntakeNoteManual;
 import org.robolancers321.commands.Mate;
 import org.robolancers321.commands.OuttakeNote;
 import org.robolancers321.commands.PPAutos.BotDisrupt;
+import org.robolancers321.commands.PPAutos.BotDisruptWithPickup;
 import org.robolancers321.commands.PPAutos.BotTaxi;
 import org.robolancers321.commands.PPAutos.FourBottom;
 import org.robolancers321.commands.PPAutos.FourMid;
@@ -131,7 +132,7 @@ public class RobotContainer {
 
     // note in sucker, solid white
     LED.registerSignal(
-        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(100, 150, 150)));
+        3, this.sucker::noteDetected, LED.solid(Section.FULL, new Color(90, 90, 150)));
 
     // flywheel is revving, solid yellow
     LED.registerSignal(
@@ -312,7 +313,7 @@ public class RobotContainer {
                         this.indexer.outtake(),
                         this.sucker.out(),
                         Commands.idle(this.pivot, this.flywheel)))
-                .unless(() -> climbing));
+                .unless(() -> climbing || this.manipulatorController.getLeftTriggerAxis() > 0.5));
 
     new Trigger(this.manipulatorController::getLeftBumper).onTrue(toggleClimbingMode());
 
@@ -326,15 +327,17 @@ public class RobotContainer {
     new Trigger(() -> this.manipulatorController.getPOV() == 0)
         .and(() -> !climbing)
         .onFalse(
-            new ParallelDeadlineGroup(
-                    (new WaitUntilCommand(this.indexer::exitBeamBroken)
-                            .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
-                            .andThen(new WaitCommand(0.1)))
-                        .withTimeout(1.0),
-                    this.indexer.outtake(),
-                    this.sucker.out(),
-                    Commands.idle(this.pivot, this.flywheel))
-                .unless(() -> climbing));
+            new SequentialCommandGroup(
+                    this.retractor.moveToSpeaker(),
+                    new ParallelDeadlineGroup(
+                        (new WaitUntilCommand(this.indexer::exitBeamBroken)
+                                .andThen(new WaitUntilCommand(this.indexer::exitBeamNotBroken))
+                                .andThen(new WaitCommand(0.1)))
+                            .withTimeout(1.0),
+                        this.indexer.outtake(),
+                        this.sucker.out(),
+                        Commands.idle(this.pivot, this.flywheel)))
+                .unless(() -> climbing || this.manipulatorController.getLeftTriggerAxis() > 0.5));
 
     new Trigger(() -> this.manipulatorController.getRightTriggerAxis() > 0.5)
         .and(() -> !climbing)
@@ -467,6 +470,7 @@ public class RobotContainer {
 
     this.autoChooser.addOption("top chaos", new TopDisrupt());
     this.autoChooser.addOption("bottom chaos", new BotDisrupt());
+    this.autoChooser.addOption("bottom chaos with pickup", new BotDisruptWithPickup());
 
     // this.autoChooser.addOption("2 piece mid", new Close3M());
 
