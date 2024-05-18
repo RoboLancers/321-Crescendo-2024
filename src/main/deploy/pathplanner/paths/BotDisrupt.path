@@ -143,32 +143,22 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 2.0,
-      "rotationDegrees": -131.16,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 3.15,
-      "rotationDegrees": -131.16,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 4.0,
-      "rotationDegrees": 140.0,
+      "rotationDegrees": -131.16420231185015,
       "rotateFast": false
     }
   ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 5.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 270.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
-    "rotateFast": false
+    "rotation": -130.0,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "BotDisrupt",

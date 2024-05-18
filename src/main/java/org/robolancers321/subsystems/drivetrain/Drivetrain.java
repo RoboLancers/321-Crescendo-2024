@@ -297,7 +297,7 @@ public class Drivetrain extends SubsystemBase {
     double angle =
         -180
             + speakerLocation.minus(this.getPose().getTranslation()).getAngle().getDegrees()
-            - this.getYawDeg();
+            + this.getYawDeg();
 
     if (!MyAlliance.isRed()) return angle;
 
