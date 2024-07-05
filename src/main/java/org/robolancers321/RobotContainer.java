@@ -432,11 +432,11 @@ public class RobotContainer {
             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees())));
     this.autoChooser.setDefaultOption("Score And Sit", new ScoreAndSit());
 
-    this.autoChooser.addOption(
-        "TESTING DONT USE",
-        new InstantCommand(
-                () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees()))
-            .andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
+    // this.autoChooser.addOption(
+    //     "TESTING DONT USE",
+    //     new InstantCommand(
+    //             () -> this.drivetrain.setYaw(this.drivetrain.getPose().getRotation().getDegrees()))
+    //         .andThen(new PathAndRetract(PathPlannerPath.fromPathFile("Bruh"))));
 
     // this.autoChooser.addOption("4NT Sweep", new Auto4NTSweep());
     // this.autoChooser.addOption("4NT Close", new Auto4NTClose());
