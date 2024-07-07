@@ -37,7 +37,7 @@ public class SwerveModule extends VirtualSubsystem {
 
   public static SwerveModule getFrontLeft() {
     if (frontLeft == null)
-      frontLeft = new SwerveModule("front left", 2, 1, 9, false, true, false, -0.447021);
+      frontLeft = new SwerveModule("front left", 2, 1, 9, true, true, false, 0.158203125);
 
     return frontLeft;
   }
@@ -46,7 +46,7 @@ public class SwerveModule extends VirtualSubsystem {
 
   public static SwerveModule getFrontRight() {
     if (frontRight == null)
-      frontRight = new SwerveModule("front right", 4, 3, 10, true, true, false, -0.362793);
+      frontRight = new SwerveModule("front right", 4, 3, 10, true, true, false, -0.210205078125);
 
     return frontRight;
   }
@@ -55,7 +55,7 @@ public class SwerveModule extends VirtualSubsystem {
 
   public static SwerveModule getBackRight() {
     if (backRight == null)
-      backRight = new SwerveModule("back right", 6, 5, 11, false, true, false, 0.363281);
+      backRight = new SwerveModule("back right", 6, 5, 11, true, true, false, -0.43017578125);
 
     return backRight;
   }
@@ -64,7 +64,7 @@ public class SwerveModule extends VirtualSubsystem {
 
   public static SwerveModule getBackLeft() {
     if (backLeft == null)
-      backLeft = new SwerveModule("back left", 8, 7, 12, false, true, false, -0.090088);
+      backLeft = new SwerveModule("back left", 8, 7, 12, true, true, false, 0.38037109375);
 
     return backLeft;
   }
