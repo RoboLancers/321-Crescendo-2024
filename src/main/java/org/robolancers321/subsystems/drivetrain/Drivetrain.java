@@ -34,6 +34,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.robolancers321.Constants;
 import org.robolancers321.Constants.DrivetrainConstants;
 import org.robolancers321.util.MathUtils;
 import org.robolancers321.util.MyAlliance;
@@ -114,6 +115,9 @@ public class Drivetrain extends SubsystemBase {
     this.configureController();
     this.configurePathPlanner();
     this.configureField();
+
+    SmartDashboard.putNumber("drive max speed (meters)", Constants.DrivetrainConstants.kMaxSpeedMetersPerSecond);
+    SmartDashboard.putNumber("drive max rotation speed (radians)", Constants.DrivetrainConstants.kMaxOmegaRadiansPerSecond);
   }
 
   public void setYaw(double angle) {
@@ -467,6 +471,9 @@ public class Drivetrain extends SubsystemBase {
     this.frontRight.doSendables();
     this.backRight.doSendables();
     this.backLeft.doSendables();
+
+    Constants.DrivetrainConstants.kMaxSpeedMetersPerSecond = SmartDashboard.getNumber("drive max speed (meters)", Constants.DrivetrainConstants.kMaxSpeedMetersPerSecond);
+    Constants.DrivetrainConstants.kMaxOmegaRadiansPerSecond = SmartDashboard.getNumber("drive max rotation speed (radians)", Constants.DrivetrainConstants.kMaxOmegaRadiansPerSecond);
   }
 
   public Command zeroYaw() {
