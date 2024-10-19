@@ -19,12 +19,18 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import swervelib.SwerveDrive;
+import swervelib.parser.SwerveParser;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -51,44 +57,23 @@ public class Drivetrain extends SubsystemBase {
     return instance;
   }
 
-  /*
-   * Implementation
-   */
-
-  private final SwerveModule frontLeft;
-  private final SwerveModule frontRight;
-  private final SwerveModule backRight;
-  private final SwerveModule backLeft;
-
-  private final AHRS gyro;
-
-  private final PIDController headingController;
+  private SwerveDrive swerveDrive; 
 
   private final PhotonCamera mainCamera;
   private final PhotonCamera noteCamera;
 
   private final PhotonPoseEstimator visionEstimator;
 
-  private final SwerveDrivePoseEstimator odometry;
-
   private final Field2d field;
   private final Field2d visionField;
 
   public boolean slowMode = false;
 
-  private Drivetrain() {
-    this.frontLeft = SwerveModule.getFrontLeft();
-    this.frontRight = SwerveModule.getFrontRight();
-    this.backRight = SwerveModule.getBackRight();
-    this.backLeft = SwerveModule.getBackLeft();
+  private Drivetrain() throws IOException {
 
-    this.gyro = new AHRS(SPI.Port.kMXP);
-
-    this.headingController =
-        new PIDController(
-            DrivetrainConstants.kHeadingP,
-            DrivetrainConstants.kHeadingI,
-            DrivetrainConstants.kHeadingD);
+    double maximumSpeed = 4.5; 
+    File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
+    swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(maximumSpeed);
 
     this.mainCamera = new PhotonCamera(DrivetrainConstants.kMainCameraName);
     this.noteCamera = new PhotonCamera(DrivetrainConstants.kNoteCameraName);
@@ -100,13 +85,6 @@ public class Drivetrain extends SubsystemBase {
             mainCamera,
             DrivetrainConstants.kRobotToCameraTransform);
 
-    this.odometry =
-        new SwerveDrivePoseEstimator(
-            DrivetrainConstants.kSwerveKinematics,
-            this.gyro.getRotation2d(),
-            this.getModulePositions(),
-            new Pose2d());
-
     this.field = new Field2d();
     this.visionField = new Field2d();
 
@@ -117,7 +95,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void setYaw(double angle) {
-    this.gyro.setAngleAdjustment(-angle - this.gyro.getYaw());
+    throw new Exception("Not implemented"); 
   }
 
   public void configureGyro() {
@@ -133,12 +111,13 @@ public class Drivetrain extends SubsystemBase {
   // }
 
   private void configureController() {
-    this.headingController.setPID(
-        DrivetrainConstants.kHeadingP,
-        DrivetrainConstants.kHeadingI,
-        DrivetrainConstants.kHeadingD);
-    this.headingController.enableContinuousInput(-180.0, 180.0);
-    this.headingController.setTolerance(1.5);
+    // TODO: heading shit, will probably be removed with YAGSL
+    // this.headingController.setPID(
+    //     DrivetrainConstants.kHeadingP,
+    //     DrivetrainConstants.kHeadingI,
+    //     DrivetrainConstants.kHeadingD);
+    // this.headingController.enableContinuousInput(-180.0, 180.0);
+    // this.headingController.setTolerance(1.5);
   }
 
   private void configurePathPlanner() {
@@ -180,24 +159,19 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public double getYawDeg() {
-    return -this.gyro.getAngle();
+    return this.swerveDrive.getYaw().getDegrees(); 
   }
 
   public Pose2d getPose() {
-    return this.odometry.getEstimatedPosition();
+    return this.swerveDrive.getPose();
   }
 
   public void resetPose(Pose2d pose) {
-    this.odometry.resetPosition(this.gyro.getRotation2d(), this.getModulePositions(), pose);
+    this.swerveDrive.resetOdometry(pose);
   }
 
   private SwerveModuleState[] getModuleStates() {
-    return new SwerveModuleState[] {
-      this.frontLeft.getState(),
-      this.frontRight.getState(),
-      this.backRight.getState(),
-      this.backLeft.getState()
-    };
+    return this.swerveDrive.getStates(); 
   }
 
   public ChassisSpeeds getChassisSpeeds() {
@@ -205,59 +179,11 @@ public class Drivetrain extends SubsystemBase {
   }
 
   private SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[] {
-      this.frontLeft.getPosition(),
-      this.frontRight.getPosition(),
-      this.backRight.getPosition(),
-      this.backLeft.getPosition()
-    };
+    return this.swerveDrive.getModulePositions();
   }
 
   private void updateModules(SwerveModuleState[] states) {
-    this.frontLeft.update(states[0]);
-    this.frontRight.update(states[1]);
-    this.backRight.update(states[2]);
-    this.backLeft.update(states[3]);
-  }
-
-  private void driveFromInput(
-      double desiredThrottleMPS,
-      double desiredStrafeMPS,
-      double desiredOmegaRadPerSec,
-      boolean fieldRelative) {
-    double correctedOmega =
-        MathUtil.clamp(
-            desiredOmegaRadPerSec,
-            -DrivetrainConstants.kMaxOmegaRadiansPerSecond,
-            DrivetrainConstants.kMaxOmegaRadiansPerSecond);
-
-    // apply corrective pose logarithm
-    double dt = DrivetrainConstants.kSecondOrderKinematicsDt;
-    double angularDisplacement =
-        -correctedOmega * dt; // TODO: why is this negative, maybe gyro orientation
-
-    double sin = Math.sin(0.5 * angularDisplacement);
-    double cos = Math.cos(0.5 * angularDisplacement);
-
-    double correctedThrottle = desiredStrafeMPS * sin + desiredThrottleMPS * cos;
-    double correctedStrafe = desiredStrafeMPS * cos - desiredThrottleMPS * sin;
-
-    ChassisSpeeds speeds =
-        fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                correctedStrafe, correctedThrottle, correctedOmega, this.gyro.getRotation2d())
-            : new ChassisSpeeds(correctedStrafe, correctedThrottle, correctedOmega);
-
-    this.driveFromSpeeds(speeds);
-  }
-
-  private void driveFromSpeeds(ChassisSpeeds speeds) {
-    SwerveModuleState[] states = DrivetrainConstants.kSwerveKinematics.toSwerveModuleStates(speeds);
-
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-        states, DrivetrainConstants.kMaxSpeedMetersPerSecond);
-
-    this.updateModules(states);
+    this.swerveDrive.setModuleStates(states, false);
   }
 
   public boolean seesTag() {
@@ -271,7 +197,7 @@ public class Drivetrain extends SubsystemBase {
 
     visionField.setRobotPose(visionEstimate.get().estimatedPose.toPose2d());
 
-    this.odometry.addVisionMeasurement(
+    this.swerveDrive.addVisionMeasurement(
         visionEstimate.get().estimatedPose.toPose2d(), visionEstimate.get().timestampSeconds);
 
     SmartDashboard.putNumber("vision estimate x", visionEstimate.get().estimatedPose.getX());
@@ -362,6 +288,14 @@ public class Drivetrain extends SubsystemBase {
     return closestPose;
   }
 
+  public void driveFromRobotRelativeSpeeds(ChassisSpeeds speeds) {
+    driveFromInput(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, false);
+  }
+
+  public void driveFromInput(double forward, double strafe, double rotate, boolean fieldRelative) {
+    this.swerveDrive.drive(new Translation2d(forward, strafe), rotate, fieldRelative, false);
+  }
+
   public boolean seesNote() {
     return this.noteCamera.getLatestResult().hasTargets();
     // && Math.abs(this.noteCamera.getLatestResult().getBestTarget().getYaw()) < 15.0;
@@ -410,14 +344,16 @@ public class Drivetrain extends SubsystemBase {
   }
 
   private void tune() {
-    double tunedHeadingP =
-        SmartDashboard.getNumber("drive heading kp", DrivetrainConstants.kHeadingP);
-    double tunedHeadingI =
-        SmartDashboard.getNumber("drive heading ki", DrivetrainConstants.kHeadingI);
-    double tunedHeadingD =
-        SmartDashboard.getNumber("drive heading kd", DrivetrainConstants.kHeadingD);
+    // TOOD: implement
+    throw new Exception("Not Implemented"); 
+    // double tunedHeadingP =
+    //     SmartDashboard.getNumber("drive heading kp", DrivetrainConstants.kHeadingP);
+    // double tunedHeadingI =
+    //     SmartDashboard.getNumber("drive heading ki", DrivetrainConstants.kHeadingI);
+    // double tunedHeadingD =
+    //     SmartDashboard.getNumber("drive heading kd", DrivetrainConstants.kHeadingD);
 
-    this.headingController.setPID(tunedHeadingP, tunedHeadingI, tunedHeadingD);
+    // this.headingController.setPID(tunedHeadingP, tunedHeadingI, tunedHeadingD);
 
     // double targetHeading = SmartDashboard.getNumber("drive target heading", this.getYawDeg());
 
@@ -430,8 +366,8 @@ public class Drivetrain extends SubsystemBase {
 
   private void doSendables() {
     SmartDashboard.putNumber("drive heading (deg)", this.getYawDeg());
-    SmartDashboard.putNumber("internal navx sensor yaw", this.gyro.getYaw());
-    SmartDashboard.putNumber("internal navx angle adjustment", this.gyro.getAngleAdjustment());
+    SmartDashboard.putNumber("internal navx sensor yaw", this.swerveDrive.getYaw().getDegrees());
+    // SmartDashboard.putNumber("internal navx angle adjustment", this.swerveDrive.getAn);
 
     Pose2d odometryPose = this.getPose();
 
@@ -456,17 +392,12 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
+    // this.odometry.update(this.gyro.getRotation2d(), this.getModulePositions());
     this.fuseVision();
 
     this.field.setRobotPose(this.getPose());
 
     this.doSendables();
-
-    this.frontLeft.doSendables();
-    this.frontRight.doSendables();
-    this.backRight.doSendables();
-    this.backLeft.doSendables();
   }
 
   public Command zeroYaw() {
@@ -533,39 +464,43 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command turnToAngle(double angle) {
-    return runOnce(() -> this.headingController.setSetpoint(angle))
-        .andThen(
-            run(() -> {
-                  double headingControllerOutput =
-                      -this.headingController.calculate(this.getYawDeg(), angle);
+    // TODO: implement turn to angle with SwerveDrive
+    throw new Exception("Not Implemented"); 
+    // return runOnce(() -> this.headingController.setSetpoint(angle))
+    //     .andThen(
+    //         run(() -> {
+    //               double headingControllerOutput =
+    //                   -this.headingController.calculate(this.getYawDeg(), angle);
 
-                  this.driveFromInput(0.0, 0.0, headingControllerOutput, true);
-                })
-                .until(this.headingController::atSetpoint));
+    //               this.driveFromInput(0.0, 0.0, headingControllerOutput, true);
+    //             })
+    //             .until(this.headingController::atSetpoint));
   }
 
   public Command driveIntoNote() {
-    return run(() -> {
-          double headingControllerOutput =
-              -this.headingController.calculate(this.getNoteAngle(), 0.0);
+    throw new Exception("Not Implemented"); 
+    // return run(() -> {
+    //       double headingControllerOutput =
+    //           -this.headingController.calculate(this.getNoteAngle(), 0.0);
 
-          this.driveFromInput(0.0, 1.5, headingControllerOutput, false);
-        })
-        .until(() -> !this.seesNote())
-        .withTimeout(2.5);
+    //       this.driveFromInput(0.0, 1.5, headingControllerOutput, false);
+    //     })
+    //     .until(() -> !this.seesNote())
+    //     .withTimeout(2.5);
   }
 
   private Command turnToAngle(DoubleSupplier angleSupplier) {
-    return runOnce(() -> this.headingController.setSetpoint(angleSupplier.getAsDouble()))
-        .andThen(
-            run(
-                () -> {
-                  double headingControllerOutput =
-                      -this.headingController.calculate(angleSupplier.getAsDouble(), 0.0);
+    throw new Exception("Not Implemented"); 
+    // return runOnce(() -> this.headingController.setSetpoint(angleSupplier.getAsDouble()))
+    //     .andThen(
+    //         run(
+    //             () -> {
+    //               double headingControllerOutput =
+    //                   -this.headingController.calculate(angleSupplier.getAsDouble(), 0.0);
 
-                  this.driveFromInput(0.0, 0.0, headingControllerOutput, true);
-                }))
-        .until(this.headingController::atSetpoint);
+    //               this.driveFromInput(0.0, 0.0, headingControllerOutput, true);
+    //             }))
+    //     .until(this.headingController::atSetpoint);
   }
 
   public Command turnToNote() {
@@ -577,27 +512,29 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command tuneModules() {
-    SmartDashboard.putNumber("target module angle (deg)", 0.0);
-    SmartDashboard.putNumber("target module vel (m/s)", 0.0);
+    // TODO: implement
+    throw new Exception("Not Implemented"); 
+    // SmartDashboard.putNumber("target module angle (deg)", 0.0);
+    // SmartDashboard.putNumber("target module vel (m/s)", 0.0);
 
-    SwerveModule.initTuning();
+    // SwerveModule.initTuning();
 
-    return run(() -> {
-          double theta = SmartDashboard.getNumber("target module angle (deg)", 0.0);
-          double vel = SmartDashboard.getNumber("target module vel (m/s)", 0.0);
+    // return run(() -> {
+    //       double theta = SmartDashboard.getNumber("target module angle (deg)", 0.0);
+    //       double vel = SmartDashboard.getNumber("target module vel (m/s)", 0.0);
 
-          SwerveModuleState[] states = new SwerveModuleState[4];
-          for (int i = 0; i < 4; i++)
-            states[i] = new SwerveModuleState(vel, Rotation2d.fromDegrees(theta));
+    //       SwerveModuleState[] states = new SwerveModuleState[4];
+    //       for (int i = 0; i < 4; i++)
+    //         states[i] = new SwerveModuleState(vel, Rotation2d.fromDegrees(theta));
 
-          this.frontLeft.tune();
-          this.frontRight.tune();
-          this.backRight.tune();
-          this.backLeft.tune();
+    //       this.frontLeft.tune();
+    //       this.frontRight.tune();
+    //       this.backRight.tune();
+    //       this.backLeft.tune();
 
-          this.updateModules(states);
-        })
-        .finallyDo(() -> this.stop());
+    //       this.updateModules(states);
+    //     })
+    //     .finallyDo(() -> this.stop());
   }
 
   public Command tuneController(XboxController controller) {
@@ -607,23 +544,25 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command dangerouslyRunDrive(double speed) {
-    return run(
-        () -> {
-          this.frontLeft.dangerouslyRunDrive(speed);
-          this.frontRight.dangerouslyRunDrive(speed);
-          this.backRight.dangerouslyRunDrive(speed);
-          this.backLeft.dangerouslyRunDrive(speed);
-        });
+    throw new Exception("Not Implemented"); 
+    // return run(
+    //     () -> {
+    //       this.frontLeft.dangerouslyRunDrive(speed);
+    //       this.frontRight.dangerouslyRunDrive(speed);
+    //       this.backRight.dangerouslyRunDrive(speed);
+    //       this.backLeft.dangerouslyRunDrive(speed);
+    //     });
   }
 
   public Command dangerouslyRunTurn(double speed) {
-    return run(
-        () -> {
-          this.frontLeft.dangerouslyRunTurn(speed);
-          this.frontRight.dangerouslyRunTurn(speed);
-          this.backRight.dangerouslyRunTurn(speed);
-          this.backLeft.dangerouslyRunTurn(speed);
-        });
+    throw new Exception("Not Implemented"); 
+    // return run(
+    //     () -> {
+    //       this.frontLeft.dangerouslyRunTurn(speed);
+    //       this.frontRight.dangerouslyRunTurn(speed);
+    //       this.backRight.dangerouslyRunTurn(speed);
+    //       this.backLeft.dangerouslyRunTurn(speed);
+    //     });
   }
 
   public Command followPath(PathPlannerPath path) {

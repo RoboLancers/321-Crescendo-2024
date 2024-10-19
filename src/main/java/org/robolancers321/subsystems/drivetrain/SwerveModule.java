@@ -28,6 +28,7 @@ import org.robolancers321.Constants;
 import org.robolancers321.Constants.SwerveModuleConstants;
 import org.robolancers321.util.VirtualSubsystem;
 
+@Deprecated
 public class SwerveModule extends VirtualSubsystem {
   /*
    * Singletons
